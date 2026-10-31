@@ -25,6 +25,9 @@ defuse:
     max-retries: 2
     json-mode: ${DEFUSE_LLM_JSON_MODE:false}
     response-schema: ${DEFUSE_LLM_RESPONSE_SCHEMA:false}
+    # Greedy decoding: temperature 0 + top-k 1 gives repeatable output and no sampled inventions.
+    classifier: {temperature: 0.0, top-p: 1.0, top-k: 1, seed: 7, max-output-tokens: 1024, thinking-level: minimal}
+    reply: {temperature: 0.0, top-p: 1.0, top-k: 1, seed: 7, max-output-tokens: 400, thinking-level: minimal}
   max-ticket-chars: 5000
   cors-origins: http://localhost:5173,http://127.0.0.1:5173,http://localhost:15173,http://127.0.0.1:15173
 

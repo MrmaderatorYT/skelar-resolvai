@@ -1,6 +1,7 @@
 package com.skelar.defuse;
 import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.*;
+import com.skelar.defuse.service.llm.*;
 import java.text.Normalizer;
 import java.util.*;
 import org.junit.jupiter.api.Test;
@@ -18,5 +19,21 @@ class FewShotSeparationTest {
             assertThat(a).isNotEqualTo(b);
             assertThat((double)intersection.size()/Math.max(1,union.size())).as(ticket.path("id").asText()).isLessThanOrEqualTo(.8);
         }
+    }
+    @Test void everyExampleIsAFullSnakeCaseOutputThatPassesLiveValidation() throws Exception {
+        ObjectMapper m=new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        var service=new LlmClassifierService(org.mockito.Mockito.mock(LlmClient.class),
+                new LlmSettings("gold","gemma","gemma-4-31b-it","GEMINI_API_KEY",15000,2,false,false),m,5000);
+        Set<String> languages=new HashSet<>();
+        for(JsonNode example:m.readTree(getClass().getResourceAsStream("/prompts/classifier-fewshot.json"))) {
+            JsonNode features=example.path("features");String text=example.path("text").asText();
+            features.fieldNames().forEachRemaining(k->assertThat(k).as(text).matches("[a-z_]+"));
+            assertThat(features.path("evidence").size()).as(text).isPositive();
+            for(JsonNode e:features.path("evidence")) assertThat(text).contains(e.path("quote").asText());
+            var f=service.parse(features.toString(),text);
+            assertThat(f.intents()).as(text).isNotNull();assertThat(f.missingInformation()).as(text).isNotNull();
+            languages.add(f.language());
+        }
+        assertThat(languages).containsExactlyInAnyOrder("en","uk","de","es","pl");
     }
 }

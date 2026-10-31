@@ -37,8 +37,7 @@ public class GemmaClient implements LlmClient {
     }
 
     @Override public String generateJson(String prompt, String schemaHint) {
-        var config = GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(4096)
-                .thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build());
+        var config = config(settings.classifier());
         if (settings.jsonMode()) config.responseMimeType("application/json");
         if (settings.responseSchema()) config.responseSchema(Schema.fromJson(schemaHint));
         return nonempty(client().models.generateContent(settings.model(),
@@ -46,13 +45,19 @@ public class GemmaClient implements LlmClient {
     }
 
     @Override public String generateText(String prompt) {
-        var config = GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(2048)
-                .thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build()).build();
+        var config = config(settings.reply()).build();
         try { return nonempty(client().models.generateContent(replyModel, prompt, config).text()); }
         catch (RuntimeException e) {
             if (replyModel.equals(settings.model())) throw e;
             return nonempty(client().models.generateContent(settings.model(), prompt, config).text());
         }
+    }
+
+    /** Greedy decoding (temperature 0, top-k 1, fixed seed): deterministic output, no sampled inventions. */
+    static GenerateContentConfig.Builder config(LlmSettings.Generation g) {
+        return GenerateContentConfig.builder().temperature(g.temperature()).topP(g.topP()).topK((float) g.topK())
+                .seed(g.seed()).maxOutputTokens(g.maxOutputTokens())
+                .thinkingConfig(ThinkingConfig.builder().thinkingLevel(g.thinkingLevel()).build());
     }
 
     private String nonempty(String text) {
