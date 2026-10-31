@@ -18,6 +18,7 @@ class AuthChatTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @Autowired com.skelar.defuse.store.InMemoryStore store;
+    @Autowired com.skelar.defuse.service.audit.AuditService audit;
     @BeforeEach void reset() { store.reset(); }
     String login(String email, String pass) throws Exception {
         var result = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
@@ -62,6 +63,27 @@ class AuthChatTest {
         assertThat(mapper.readTree(history.getResponse().getContentAsString()).toString()).contains("We will review this for you.");
         mvc.perform(get("/api/analytics/diagnostics").header("Authorization", admin)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.resolved.human").isNumber()).andExpect(jsonPath("$.synthetic_segments").isArray());
+    }
+
+    @Test void auditActorComesFromSessionAndTracesRequestedExecutedVerified() throws Exception {
+        audit.clear();
+        String admin = login("admin@calmly.demo", "test-admin-pass");
+        mvc.perform(post("/api/tickets/T11/analyze").header("Authorization", admin)).andExpect(status().isOk());
+        var a = store.analyses.get("T11");
+        mvc.perform(post("/api/tickets/T11/approve").header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(java.util.Map.of("analysis_id", a.analysisId, "action_hash", a.actionHash))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("resolved"));
+        var events = audit.forTicket("T11");
+        assertThat(events).filteredOn(e -> "approved".equals(e.get("event"))).singleElement()
+                .satisfies(e -> assertThat(e).containsEntry("by", "admin").containsEntry("action_hash", a.actionHash));
+        var refund = events.stream().filter(e -> "refund_full".equals(e.get("action"))).map(e -> (String) e.get("event")).toList();
+        assertThat(refund).containsExactly("action_requested", "executed", "verified");
+        assertThat(events).filteredOn(e -> "refund_full".equals(e.get("action"))).allSatisfy(e -> assertThat(e)
+                .containsEntry("policy_version", a.policyVersion).containsEntry("action_hash", a.actionHash).containsEntry("amount_cents", 8999L));
+        assertThat(events).filteredOn(e -> "verified".equals(e.get("event")) && "refund_full".equals(e.get("action")))
+                .singleElement().satisfies(e -> assertThat(e).containsEntry("payment_status", "refunded").containsEntry("refunded_cents", 8999L));
+        assertThat(events).filteredOn(e -> "verified".equals(e.get("event")) && "cancel".equals(e.get("action")))
+                .singleElement().satisfies(e -> assertThat(e).containsEntry("subscription_status", "canceled"));
     }
 
 }

@@ -112,11 +112,13 @@ public class TicketController {
         customer.put("funnel", c.funnel);
         customer.put("quiz_goal", c.quizGoal);
         customer.put("offers_12m", c.offers12m);
-        customer.put("subscription", store.subscription(cid));
+        // ambiguous contracts (fixture 12): show no single subscription/context rather than a guessed one or a 409
+        boolean ambiguous = pipeline.ambiguousSubscriptions(cid) != null;
+        customer.put("subscription", ambiguous ? null : orNull(() -> store.subscription(cid)));
         customer.put("linked_subscriptions", store.subscriptions.stream().filter(s -> cid.equals(s.customerId)).toList());
         customer.put("usage", store.usage(cid));
         customer.put("payments", store.payments(cid));
-        customer.put("context", contexts.build(cid));
+        customer.put("context", ambiguous ? null : orNull(() -> contexts.build(cid)));
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("ticket", t);
         out.put("customer", customer);
@@ -124,6 +126,14 @@ public class TicketController {
         out.put("audit", audit.forTicket(id));
         out.put("evidence", store.evidence.get(id));
         return out;
+    }
+
+    private static Object orNull(java.util.function.Supplier<Object> read) {
+        try { return read.get(); }
+        catch (IllegalStateException e) {   // "...human review required": the analysis explains it, the page still loads
+            if (e.getMessage() == null || !e.getMessage().contains("human review required")) throw e;
+            return null;
+        }
     }
 
     @PostMapping({"/tickets", "/tickets/simulate", "/demo/simulate"})

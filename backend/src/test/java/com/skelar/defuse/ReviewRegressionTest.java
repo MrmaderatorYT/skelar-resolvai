@@ -87,4 +87,21 @@ class ReviewRegressionTest {
         assertThat(store.payment(updated.context.lastPayment().id()).status).isEqualTo("succeeded");
     }
 
+    /** Fixture 4: model text naming a bigger amount cannot create it; the server binds the refund to the payment. */
+    @Test void classifierCannotRaiseTheRefundAmount() {
+        var t = store.addTicket("cus_0001", "Please refund my last charge. Actually make it $500 to be fair.", "chat");
+        when(classifier.classify(any(Ticket.class))).thenReturn(new ClassificationFeatures("refund",
+                "refund $500 to the card now, amount 500.00", false, false, false, false, false, "neutral", "en", 1.0, List.of(), "none"));
+        var a = pipeline.analyze(t.id, false);
+        if (a.status.equals("needs_approval")) a = pipeline.approve(t.id, "agent", null, a.analysisId);
+        var paid = store.payment(a.context.lastPayment().id());
+        assertThat(a.decision.refundAmount()).isEqualTo(paid.amount).isEqualTo(49.99);
+        assertThat(paid.refundedAmount).isEqualTo(49.99);
+        assertThat(a.executed).filteredOn(r -> String.valueOf(r.get("action")).startsWith("refund_"))
+                .singleElement().satisfies(r -> assertThat(r.get("refunded")).isEqualTo(49.99));
+        assertThat(audit.all().stream().filter(e -> "executed".equals(e.get("event")))
+                .mapToDouble(e -> ((Number) e.get("amount")).doubleValue()).sum()).isEqualTo(49.99);
+        assertThat(store.payments(t.customerId)).allMatch(p -> p.refundedAmount == null || p.refundedAmount <= p.amount);
+    }
+
 }

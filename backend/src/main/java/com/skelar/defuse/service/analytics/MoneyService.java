@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
-/** Money at risk per ticket, priced with dispute rates from the (synthetic) history baseline. */
+/** Money at risk per ticket, priced with dispute rates from the (synthetic) history baseline. Scenarios, not savings. */
 @Service
 public class MoneyService {
     private final InMemoryStore store;
