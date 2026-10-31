@@ -1,8 +1,9 @@
-# End-to-end flow — triage
+# End-to-end flow
 
-1. Ticket arrives (seed queue or POST /api/tickets).
-2. `InjectionGuardService` runs regexes on the raw text (before any LLM).
-3. `LlmClassifierService` sends the text inside `<ticket>` tags to Claude Haiku 5.5 with structured output (`ClassificationFeatures`).
-4. Injection = regex OR model flag.
-5. `ReferencePolicyService.riskScore()` computes score and band from the features and the customer context.
-6. `priority()` sets P1–P4; the queue is sorted by priority, then risk score.
+1. Guard sees original, normalized and bounded decoded input; a hit skips classifier and reply model.
+2. Gold uses seed labels; live serializes the ticket as quoted JSON in a user turn; replay restores a matching recorded analysis without billing.
+3. Strict parse rejects missing/coerced/invalid features, requests one repair, then confidence0 fallback.
+4. Existing policy reads unchanged feature/context records.
+5. Executor resolves an action plugin and checks the actual billing provider's capabilities.
+6. Reply receives successful execution results and pending actions, after execution; exceptions use templates.
+7. API includes provenance; read-only replay rejects approval/offer mutations.

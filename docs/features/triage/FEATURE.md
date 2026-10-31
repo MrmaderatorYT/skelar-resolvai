@@ -1,9 +1,7 @@
-# Triage — intent, hidden emotion, dispute risk, priority
+# Triage
 
-Reads every incoming ticket, finds the customer's real goal, detects sarcasm, hidden and explicit aggression, dispute signals and prompt injection, scores chargeback risk and sets priority P1–P4.
+Classifies multilingual subscription-support tickets with Gemma and routes deterministic policy decisions. Live semantic quality is UNVERIFIED until an API-key run; offline parsing and guard safety are tested. Provider: gemma; documented default gemma-4-31b-it.
 
-**Who uses it:** support agents, support lead, product team.
+Modes: gold (label replay), live (actual model), replay (recorded live analyses, read-only). All are explicitly identified in API provenance. Key only in backend env. Classifier cannot set refund amounts or execute actions.
 
-**Main metric:** Sarcasm recall ≥ 80%, intent accuracy ≥ 85%, 0 missed injections (service/analytics/EvalService.java (POST /api/analytics/eval/run, ./gradlew liveEval)).
-
-**Status:** MVP (hackathon, 31.10.2026).
+Sources and account verification table: integrations.md. Frozen ClassificationFeatures and PolicyDecision records are unchanged.

@@ -1,0 +1,1 @@
+{"backend":["spi/*","registry/*","plugins/actions/*","plugins/billing/*","plugins/json/*","service/executor/ActionExecutorService.java","store/DataLoader.java"],"config":["defuse.datasources","defuse.billing"],"tests":["PluginIntegrationTest","PipelineTest","ReviewRegressionTest"]}

@@ -1,25 +1,6 @@
 {
-  "api": [
-    "POST /api/tickets/{id}/analyze",
-    "GET /api/tickets"
-  ],
-  "backend": [
-    "service/TicketPipelineService.java#analyze",
-    "service/llm/LlmClassifierService.java#classify",
-    "service/guard/InjectionGuardService.java#check",
-    "service/policy/ReferencePolicyService.java#riskScore"
-  ],
-  "frontend": [
-    "src/pages/Queue.tsx",
-    "src/components/SignalChips.tsx",
-    "src/components/HighlightedText.tsx"
-  ],
-  "scripts": [
-    "service/analytics/EvalService.java (POST /api/analytics/eval/run, ./gradlew liveEval)",
-    "defuse-data/evaluate.py"
-  ],
-  "tests": [
-    "src/test/.../InjectionGuardServiceTest.java",
-    "src/test/.../LiveEvalTest.java"
-  ]
+  "api": ["GET /api/health", "GET /api/demo/llm", "POST /api/demo/record", "POST /api/tickets/{id}/analyze", "POST /api/analytics/eval/run"],
+  "backend": ["service/llm/GemmaClient.java", "service/llm/LlmClassifierService.java", "service/llm/ReplayService.java", "service/analytics/EvalService.java"],
+  "scripts": ["backend/scripts/probe_gemma.py"],
+  "tests": ["GemmaClassifierTest", "FewShotSeparationTest", "ReplayServiceTest", "LiveEvalTest", "LiveRedTeamTest"]
 }

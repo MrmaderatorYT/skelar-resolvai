@@ -1,6 +1,5 @@
-# Data model — triage
+# Data model
 
-Reads: `tickets_eval.json` (text, channel, language), `customers.contacts_last_30d`.
-Writes: `analysis.features` = {intent, true_goal, sarcasm, hidden_aggression, explicit_aggression, dispute_signal, injection, sentiment, language, confidence, evidence[]}, `decision.risk_score`, `decision.risk_band`, `decision.priority`.
+ClassificationFeatures fields are frozen. Parser accepts camelCase aliases from trusted examples and snake_case responses, rejecting conflicting aliases. Booleans must be JSON booleans, confidence numeric/finite/0..1, intent and cancel_reason in fixed enums; evidence must quote literal substrings.
 
-Full schemas: `backend/data/*.json`, see repo README.
+TicketAnalysis retains all existing fields and adds runtime provenance: llm_mode, llm_provider, llm_model, recorded_at. Eval report includes provider, model, generated_at, complete coverage, per-ticket latency and model-only injection recall. Replay cache contains analyses, never gold labels or API keys.

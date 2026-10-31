@@ -4,6 +4,10 @@ import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.PolicyDecision;
 import com.skelar.defuse.service.audit.AuditService;
 import com.skelar.defuse.store.InMemoryStore;
+import com.skelar.defuse.registry.ActionRegistry;
+import com.skelar.defuse.registry.BillingRegistry;
+import com.skelar.defuse.spi.ActionContext;
+import com.skelar.defuse.spi.Capability;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,12 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class ActionExecutorService {
     private final InMemoryStore store;
-    private final MockBillingService billing;
+    private final BillingRegistry billing;
+    private final ActionRegistry handlers;
     private final AuditService audit;
 
-    public ActionExecutorService(InMemoryStore store, MockBillingService billing, AuditService audit) {
+    public ActionExecutorService(InMemoryStore store, BillingRegistry billing, ActionRegistry handlers, AuditService audit) {
         this.store = store;
         this.billing = billing;
+        this.handlers = handlers;
         this.audit = audit;
     }
 
@@ -44,10 +50,25 @@ public class ActionExecutorService {
             }
             Map<String, Object> result;
             try {
-                result = billing.run(action, ctx, d, ticketId);
-            } catch (BillingException e) {
-                audit.log("action_failed", ticketId, Map.of("action", action, "by", by, "error", e.getMessage()));
-                results.add(Map.of("action", action, "error", e.getMessage()));
+                var handler = handlers.forAction(action);
+                String processor = ctx.billingProcessor();
+                if (MockBillingService.MONEY_ACTIONS.contains(action)) {
+                    String paymentId = action.equals("refund_duplicate") ? ctx.duplicatePaymentId() : ctx.lastPayment().id();
+                    if (paymentId == null) throw new BillingException("No duplicate payment found");
+                    processor = store.payment(paymentId).processor;
+                }
+                var provider = billing.forProcessor(processor);
+                Capability required = handler.requiredCapability();
+                if ((handler.movesMoney() && required == null)
+                        || (required != null && !provider.capabilities().contains(required)))
+                    throw new BillingException("Provider " + processor + " lacks capability for " + action);
+                result = handler.run(new ActionContext(ticketId,ctx,d,provider));
+            } catch (RuntimeException e) {
+                if (store.tickets.containsKey(ticketId)) store.tickets.get(ticketId).status = "escalated";
+                if (store.analyses.containsKey(ticketId)) store.analyses.get(ticketId).status = "escalated";
+                String error = e instanceof BillingException && e.getMessage()!=null ? e.getMessage() : "Plugin failed: " + e.getClass().getSimpleName();
+                audit.log("action_failed", ticketId, Map.of("action", action, "by", by, "error", error));
+                results.add(Map.of("action", action, "error", error));
                 continue;
             }
             store.executed.put(key, result);

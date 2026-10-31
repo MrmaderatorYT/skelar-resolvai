@@ -1,7 +1,9 @@
-# Backend structure — triage
+# Backend structure
 
-- `service/guard/InjectionGuardService.java` — regex list, `check(text) -> InjectionCheck(flagged, patterns)`
-- `service/llm/Prompts.java` — `CLASSIFIER_SYSTEM`
-- `service/llm/LlmClassifierService.java` — `classify()`, `classifyLive()`, `fromGold()`, safe `ClassificationFeatures.fallback()` (confidence 0)
-- `model/dto/ClassificationFeatures.java, Evidence.java` — `Features`, `Evidence`
-- `service/policy/ReferencePolicyService.java (+ ContextBuilderService.java)` — `riskScore()`, `priority()`
+- `service/llm/LlmClient`: JSON/text transport contract.
+- `GemmaClient`: lazy official SDK client, bounded HTTP attempts; no tools.
+- `LlmClassifierService`: JSON-quoted ticket, unchanged labeling semantics, exact required types/enums, one repair then fallback.
+- `Prompts`: loads Opus-authored LABELING and few-shot resources unchanged.
+- `ReplyWriterService`: execution-aware reply payload and configured offer getters; exceptions use templates.
+- `ReplayService`: atomic record, hash-bound read-only restore; no gold-to-live substitution.
+- `EvalService`: fresh seed contexts, complete gold set, cancel_reason, latency and fallback diagnostics, baseline alongside live metadata.
