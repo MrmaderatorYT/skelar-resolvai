@@ -43,7 +43,10 @@ public class ReplyWriterService {
                 .map(result -> String.valueOf(result.get("action"))).toList();
         if ("suggest".equals(d.mode()) && !d.actions().isEmpty() && actuallyDone.containsAll(d.actions()))
             d=new PolicyDecision(d.actions(),"auto",d.refundAmount(),d.riskScore(),d.riskBand(),d.priority(),d.reasons());
-        if (!"live".equals(mode) || "escalate".equals(d.mode())) return template(customerName, d);
+        boolean affectsBilling = d.actions().stream().anyMatch(action -> action.startsWith("refund_")
+                || action.startsWith("offer_") || java.util.Set.of("cancel", "pause", "apply_discount", "extend_access_7d").contains(action));
+        // Financial or pending outcomes are rendered from policy and actual execution, not free-form model text.
+        if (!"live".equals(mode) || !"auto".equals(d.mode()) || affectsBilling) return template(customerName, d);
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("customer_first_name", customerName.split(" ")[0]);
         payload.put("ticket", t.text);
@@ -76,7 +79,7 @@ public class ReplyWriterService {
 
     public String offerOutcome(String name, String action, boolean failed) {
         String first = name.split(" ")[0];
-        if (failed) return "Hi " + first + ", thanks! A teammate is finishing this for you and will confirm within 1 hour." + SIGN;
+        if (failed) return "Hi " + first + ", thanks! A teammate will review your request." + SIGN;
         return "Hi " + first + ", " + switch (action) {
             case "apply_discount" -> String.format(Locale.US, "done - your next %d months are %d%% off. Glad you're staying!",
                     policy.retentionDiscountMonths(), policy.retentionDiscountPercent());
@@ -107,8 +110,8 @@ public class ReplyWriterService {
         if (acts.contains("cancel")) lines.add(pending && (d.reasons().contains("low_confidence") || d.reasons().stream().anyMatch(r -> r.startsWith("autonomy_gate_")))
                 ? "A teammate is reviewing your cancellation request." : "Your subscription is cancelled and you won't be charged again.");
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
-            String state = pending ? "is being confirmed by a teammate (within 1 hour)" : "is on its way";
-            lines.add(String.format(Locale.US, "A refund of $%.2f %s; card refunds land in 5-10 business days.", d.refundAmount(), state));
+            String state = pending ? "is awaiting review by a teammate" : "is on its way";
+            lines.add(String.format(Locale.US, "A refund of $%.2f %s.", d.refundAmount(), state));
         }
         if (acts.contains("pause")) lines.add(pending
                 ? "A teammate is reviewing your request to pause the subscription."

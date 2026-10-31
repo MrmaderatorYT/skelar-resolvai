@@ -46,8 +46,13 @@ public class GemmaClient implements LlmClient {
     }
 
     @Override public String generateText(String prompt) {
-        return nonempty(client().models.generateContent(replyModel, prompt,
-                GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(2048).thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build()).build()).text());
+        var config = GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(2048)
+                .thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build()).build();
+        try { return nonempty(client().models.generateContent(replyModel, prompt, config).text()); }
+        catch (RuntimeException e) {
+            if (replyModel.equals(settings.model())) throw e;
+            return nonempty(client().models.generateContent(settings.model(), prompt, config).text());
+        }
     }
 
     private String nonempty(String text) {
