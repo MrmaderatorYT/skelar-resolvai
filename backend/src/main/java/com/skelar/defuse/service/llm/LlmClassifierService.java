@@ -79,7 +79,9 @@ public class LlmClassifierService {
         fallbacks.incrementAndGet(); return ClassificationFeatures.fallback(t.language, reason);
     }
     public ClassificationFeatures parse(String json, String ticketText) throws java.io.IOException {
-        JsonNode raw = mapper.readTree(json);
+        String clean = json == null ? "" : json.trim();
+        if (clean.startsWith("```")) clean = clean.replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "");
+        JsonNode raw = mapper.readTree(clean);
         if (!(raw instanceof ObjectNode obj)) throw new IllegalArgumentException("Expected object");
         for (var entry : ALIASES.entrySet()) if (obj.has(entry.getKey())) {
             if (obj.has(entry.getValue()) && !obj.get(entry.getValue()).equals(obj.get(entry.getKey())))

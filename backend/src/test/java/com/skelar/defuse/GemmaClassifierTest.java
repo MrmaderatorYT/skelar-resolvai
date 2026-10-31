@@ -48,4 +48,9 @@ class GemmaClassifierTest {
     @Test void oversizedTicketNeverReachesTransport() {
         LlmClient client=mock(LlmClient.class);assertThat(classifier(client).classifyLive(ticket("x".repeat(5001))).confidence()).isZero();verifyNoInteractions(client);
     }
+    @Test void acceptsFencedJsonWhileKeepingStrictValidation() throws Exception {
+        var service = classifier(mock(LlmClient.class));
+        assertThat(service.parse("```json\n" + VALID + "\n```", "refund please").intent()).isEqualTo("refund");
+        assertThatThrownBy(() -> service.parse("```json\n" + VALID + " {}\n```", "refund please")).isInstanceOf(Exception.class);
+    }
 }
