@@ -25,7 +25,7 @@ export default function Dashboard() {
         <KpiCard label="Sarcasm / high risk caught" value={`${s.sarcasm_detected} / ${s.high_risk_tickets}`} />
         <KpiCard label="Injections blocked" value={s.injections_blocked} />
         <KpiCard label="Retention offers sent" value={s.retention.offers_sent}
-          hint={`accepted ${s.retention.offers_accepted} · declined ${s.retention.offers_declined} · save rate ${s.retention.save_rate ?? "—"}% · holdout ${s.retention.holdout_customers}`} />
+          hint={`accepted ${s.retention.offers_accepted} · declined ${s.retention.offers_declined} · acceptance ${s.retention.acceptance_rate ?? "—"}% · holdout ${s.retention.holdout_customers}`} />
         <KpiCard label="Discount cost" value={usd(s.retention.discount_cost_usd)} hint="accepted discounts × price × % × months" />
         <KpiCard label="Fees per dispute" value={usd(s.money_settings.dispute_fee_usd + s.money_settings.scheme_fee_per_dispute_usd)}
           hint={`Stripe dispute fee + contract fee · VAMP ${s.money_settings.merchant_region} ${(s.money_settings.vamp_threshold * 100).toFixed(1)}%`} />

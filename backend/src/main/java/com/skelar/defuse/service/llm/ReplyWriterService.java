@@ -117,8 +117,8 @@ public class ReplyWriterService {
             lines.add("We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
         }
         if (acts.contains("store_refund_instructions")) {
-            lines.add("Purchases made through Apple or Google can only be refunded by them: "
-                    + "Apple - reportaproblem.apple.com; Google - Play Store > Payments & subscriptions.");
+            lines.add("For App Store purchases, request a refund at reportaproblem.apple.com. "
+                    + "For Google Play purchases, request a refund through Google Play or contact the app's support team with your order ID.");
         }
         if (acts.contains("store_cancel_instructions")) {
             lines.add("To stop renewal: iPhone Settings > Apple ID > Subscriptions, or Play Store > Payments & subscriptions on Android.");

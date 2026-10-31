@@ -38,3 +38,9 @@ The probe exports only a listed model ID and verified schema flags through GITHU
 After a real live analysis run, `POST /api/demo/record` writes `backend/replay/analyses.json` when the app runs from backend. `DEFUSE_LLM_MODE=replay` reuses it with no model or billing calls. Cache entries bind ticket ID, customer ID and SHA-256 of text. Missing/mismatched entry fails with HTTP409; it never substitutes gold or calls live. Approve/offer mutations are refused in replay. The cache is local runtime evidence, not a checked-in fake live run.
 
 `GET /api/health` adds provider/model; `GET /api/demo/llm` provides runtime mode. Analyses add `llm_mode`, `llm_provider`, `llm_model`, `recorded_at`. Opus owns App.tsx: render “Replay of live Gemma run at HH:MM” from these fields; do not label gold as live/replay-of-live. This UI integration is requested in HANDOFF.
+
+## Store refund routing
+
+The MVP store providers advertise no write capabilities. This is a connector limitation, not a universal prohibition on developer refunds. Google Play exposes an authenticated developer `orders.refund` method, and Calm's current help page routes Google Play refunds to Calm Support. The fallback reply therefore directs App Store refunds to Apple and Google Play requests to Google or the app's support team.
+
+Sources: https://developers.google.com/android-publisher/api-ref/rest/v3/orders/refund ; https://support.calm.com/hc/en-us/articles/360008240974-Calm-App-Refund-Policy-How-to-Get-Your-Money-Back . No live store connector is implemented.

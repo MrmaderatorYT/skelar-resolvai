@@ -31,11 +31,13 @@ public class AnalyticsService {
 
     private final int retentionPercent;
     private final int retentionMonths;
+    private final Map<String, Integer> periodDays;
 
     public AnalyticsService(InMemoryStore store, AuditService audit, MoneyService money,
                             com.skelar.defuse.service.policy.ReferencePolicyService policy) {
         this.retentionPercent = policy.retentionDiscountPercent();
         this.retentionMonths = policy.retentionDiscountMonths();
+        this.periodDays = policy.properties().refund().planPeriodDays();
         this.store = store;
         this.audit = audit;
         this.money = money;
@@ -99,9 +101,12 @@ public class AnalyticsService {
         double discountCost = events.stream().filter(e -> "offer_accepted".equals(e.get("event")) && "apply_discount".equals(e.get("action")))
                 .mapToDouble(e -> {
                     var t = store.tickets.get((String) e.get("ticket_id"));
-                    return t == null ? 0 : store.subscription(t.customerId).price * retentionPercent / 100.0 * retentionMonths;
+                    if (t == null) return 0;
+                    var sub = store.subscription(t.customerId);
+                    int period = periodDays.getOrDefault(sub.plan, 30);
+                    return sub.price * 30.0 / period * retentionPercent / 100.0 * retentionMonths;   // monthly-equivalent price
                 }).sum();
-        retention.put("save_rate", sent == 0 ? null : Math.round(1000.0 * accepted / sent) / 10.0);
+        retention.put("acceptance_rate", sent == 0 ? null : Math.round(1000.0 * accepted / sent) / 10.0);
         retention.put("holdout_customers", as.stream().filter(a -> a.decision.reasons().contains("retention_not_eligible: retention_holdout")).count());
         retention.put("discount_cost_usd", r2(discountCost));
         s.put("retention", retention);

@@ -104,7 +104,7 @@ def build_context(customer_id, data=None):
         "chargebacks_lifetime": sum(1 for p in pays if p["status"] == "charged_back"),
         "subscription_status": sub["status"],
         "plan": sub["plan"],
-        "period_days": POLICY["plan_period_days"].get(sub["plan"], 30),
+        "period_days": POLICY["plan_period_days"].get(sub["plan"]),
         "price": sub["price"],
         "last_payment": {"id": last["id"], "amount": last["amount"], "status": last["status"],
                          "days_ago": _days_ago(last["created_at"])},
@@ -171,6 +171,8 @@ def _floor_cents(x):
 
 def _pro_rata(amount, days_ago, period_days):
     """Refund for the unused part of the paid period, floored to cents."""
+    if not period_days or period_days <= 0:
+        return 0.0
     unused = max(period_days - max(days_ago, 0), 0)
     return _floor_cents(amount * unused / period_days)
 
@@ -277,14 +279,23 @@ def decide(f, ctx, confidence=1.0):
             refund = lp["amount"]
         elif days <= POLICY["partial_refund_max_days"]:
             acts.append("refund_partial")
-            refund = _pro_rata(lp["amount"], days, ctx.get("period_days", 30))
+            refund = _pro_rata(lp["amount"], days, ctx.get("period_days"))
         elif band == "high":
             acts.append("refund_partial_goodwill")
-            refund = _pro_rata(lp["amount"], days, ctx.get("period_days", 30))
+            refund = _pro_rata(lp["amount"], days, ctx.get("period_days"))
             mode = "suggest"
             reasons.append("outside_window_but_high_dispute_risk: goodwill needs a human")
         else:
             reasons.append("outside_refund_window")
+        if any(a in acts for a in ("refund_partial", "refund_partial_goodwill")):
+            if not ctx.get("period_days"):
+                acts = [a for a in acts if not a.startswith("refund_")]
+                refund, mode = 0.0, "suggest"
+                reasons.append("unknown_plan_period: human decides the amount")
+            elif refund <= 0:
+                acts = [a for a in acts if not a.startswith("refund_")]
+                refund = 0.0
+                reasons.append("nothing_left_to_refund: paid period already used")
     elif intent == "pause":
         acts.append("pause")
     elif intent == "technical_issue" and (ctx["ltv_usd"] >= POLICY["goodwill_ltv_usd"]

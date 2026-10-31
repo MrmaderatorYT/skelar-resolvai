@@ -91,6 +91,7 @@ public class ReferencePolicyService {
 
     /** Refund for the unused part of the paid period (CRD art. 14(3), CJEU C-641/19), floored to cents. */
     static double proRata(double amount, long daysAgo, int periodDays) {
+        if (periodDays <= 0) return 0;
         long unused = Math.max(periodDays - Math.max(daysAgo, 0), 0);
         return floorCents(amount * unused / periodDays);
     }
@@ -201,6 +202,17 @@ public class ReferencePolicyService {
                 && (ctx.ltvUsd() >= refundCfg.goodwillLtvUsd() || !risk.band().equals("low"))) {
             acts.add("extend_access_7d");
             mode = "suggest";
+        }
+        boolean proRataRefund = acts.contains("refund_partial") || acts.contains("refund_partial_goodwill");
+        if (proRataRefund && refundCfg.periodDays(ctx.plan()) < 0) {
+            acts.removeIf(a -> a.startsWith("refund_"));
+            refund = 0;
+            mode = "suggest";
+            reasons.add("unknown_plan_period: human decides the amount");
+        } else if (proRataRefund && refund <= 0) {
+            acts.removeIf(a -> a.startsWith("refund_"));
+            refund = 0;
+            reasons.add("nothing_left_to_refund: paid period already used");
         }
         return out.of(acts, mode, refund);
     }

@@ -41,8 +41,10 @@ public record PolicyProperties(Refund refund, Retention retention, Risk risk, Mo
             require(share(minAutoConfidence), "min-auto-confidence must be in 0..1");
         }
 
+        /** Period of a plan, or -1 if the plan is not configured (callers must fail closed). */
         public int periodDays(String plan) {
-            return planPeriodDays.getOrDefault(plan, 30);
+            Integer d = plan == null ? null : planPeriodDays.get(plan);
+            return d == null ? -1 : d;
         }
     }
 
