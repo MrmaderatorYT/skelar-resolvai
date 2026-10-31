@@ -14,7 +14,7 @@ export const api = {
   ticket: (id: string) => req<TicketDetail>(`/tickets/${id}`),
   analyze: (id: string, force = false) => req<Analysis>(`/tickets/${id}/analyze${force ? "?force=true" : ""}`, {}),
   analyzeAll: () => req<string[]>("/tickets/analyze-all", {}),
-  approve: (id: string, reply_text?: string) => req<Analysis>(`/tickets/${id}/approve`, { reply_text }),
+  approve: (id: string, analysis_id: string, reply_text?: string) => req<Analysis>(`/tickets/${id}/approve`, { analysis_id, reply_text }),
   reject: (id: string, reason: string) => req<Analysis>(`/tickets/${id}/reject`, { reason }),
   createTicket: (customer_id: string, text: string, channel = "chat") =>
     req<{ id: string }>("/tickets", { customer_id, text, channel }),

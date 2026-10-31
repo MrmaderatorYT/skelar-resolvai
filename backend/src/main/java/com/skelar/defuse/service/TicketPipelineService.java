@@ -73,6 +73,7 @@ public class TicketPipelineService {
 
         TicketAnalysis a = new TicketAnalysis();
         a.ticketId = ticketId;
+        a.analysisId = java.util.UUID.randomUUID().toString();
         a.features = f;
         a.injectionGuard = check;
         a.context = ctx;
@@ -95,12 +96,15 @@ public class TicketPipelineService {
         return a;
     }
 
-    public TicketAnalysis approve(String ticketId, String agent, String replyText) {
-        synchronized (store) { return approveLocked(ticketId, agent, replyText); }
+    public TicketAnalysis approve(String ticketId, String agent, String replyText, String analysisId) {
+        synchronized (store) { return approveLocked(ticketId, agent, replyText, analysisId); }
     }
 
-    private TicketAnalysis approveLocked(String ticketId, String agent, String replyText) {
+    private TicketAnalysis approveLocked(String ticketId, String agent, String replyText, String analysisId) {
         TicketAnalysis a = analysis(ticketId);
+        if (analysisId == null || !analysisId.equals(a.analysisId)) {
+            throw new IllegalStateException("Analysis changed; review the latest decision before approving");
+        }
         if (!a.status.equals("needs_approval")) {
             throw new IllegalStateException("ticket " + ticketId + " is " + a.status + ", nothing to approve");
         }

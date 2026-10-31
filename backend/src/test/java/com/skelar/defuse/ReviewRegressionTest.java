@@ -57,7 +57,7 @@ class ReviewRegressionTest {
         disputed.processor = "card"; disputed.createdAt = "2026-10-31T11:59:59Z";
         store.payments.add(disputed);
         assertThat(policy.decide(analyzed.features, contexts.build(customer), analyzed.features.confidence()).mode()).isEqualTo("escalate");
-        assertThatThrownBy(() -> pipeline.approve("T11", "agent", null)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> pipeline.approve("T11", "agent", null, analyzed.analysisId)).isInstanceOf(IllegalStateException.class);
         assertThat(oldPayment.status).isEqualTo("succeeded");
     }
 
@@ -73,6 +73,16 @@ class ReviewRegressionTest {
         assertThat(strict.decide(f, contexts.build(store.tickets.get("T01").customerId), 1).mode()).isEqualTo("suggest");
         assertThatThrownBy(() -> new ReferencePolicyService(60, 14, 2, 30, 1.5, 100, .85))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test void approvalMustMatchAnalysisReviewedByOperator() {
+        when(classifier.classify(any(Ticket.class))).thenAnswer(i -> LlmClassifierService.fromGold(i.getArgument(0)));
+        var original = pipeline.analyze("T11", false);
+        var updated = pipeline.analyze("T11", true);
+        assertThat(updated.analysisId).isNotEqualTo(original.analysisId);
+        assertThatThrownBy(() -> pipeline.approve("T11", "agent", null, original.analysisId))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(store.payment(updated.context.lastPayment().id()).status).isEqualTo("succeeded");
     }
 
 }

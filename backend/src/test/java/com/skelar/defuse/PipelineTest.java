@@ -65,7 +65,7 @@ class PipelineTest {
         assertThat(a.status).isEqualTo("needs_approval");
         assertThat(store.subscription(cid("T11")).status).isEqualTo("canceled");
         assertThat(lastPayment("T11").status).isEqualTo("succeeded");
-        pipeline.approve("T11", "agent", null);
+        pipeline.approve("T11", "agent", null, a.analysisId);
         assertThat(lastPayment("T11").status).isEqualTo("refunded");
         assertThat(store.analyses.get("T11").status).isEqualTo("resolved");
     }

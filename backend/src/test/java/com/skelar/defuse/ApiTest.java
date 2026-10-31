@@ -60,7 +60,7 @@ class ApiTest {
     @Test
     void approveAndSimulateEndpoints() throws Exception {
         mvc.perform(post("/api/tickets/T12/analyze")).andExpect(jsonPath("$.status").value("needs_approval"));
-        mvc.perform(post("/api/tickets/T12/execute").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(post("/api/tickets/T12/execute").contentType(MediaType.APPLICATION_JSON).content("{\"analysis_id\":\"" + store.analyses.get("T12").analysisId + "\"}"))
                 .andExpect(jsonPath("$.status").value("resolved"));
         mvc.perform(post("/api/tickets/simulate").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"customer_id\":\"cus_0001\",\"text\":\"hi\"}"))
