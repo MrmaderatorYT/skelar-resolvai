@@ -1,0 +1,21 @@
+{
+  "api": [
+    "POST /api/tickets/{id}/analyze",
+    "POST /api/tickets/{id}/approve",
+    "POST /api/tickets/{id}/reject"
+  ],
+  "backend": [
+    "service/policy/ReferencePolicyService.java#decide",
+    "service/executor/ActionExecutorService.java#execute",
+    "service/executor/MockBillingService.java#run",
+    "service/audit/AuditService.java#log"
+  ],
+  "frontend": [
+    "src/components/DecisionCard.tsx"
+  ],
+  "tests": [
+    "src/test/.../ReferencePolicyServiceTest.java",
+    "src/test/.../PipelineTest.java",
+    "src/test/.../ApiTest.java"
+  ]
+}

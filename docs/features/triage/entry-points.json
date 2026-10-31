@@ -1,0 +1,25 @@
+{
+  "api": [
+    "POST /api/tickets/{id}/analyze",
+    "GET /api/tickets"
+  ],
+  "backend": [
+    "service/TicketPipelineService.java#analyze",
+    "service/llm/LlmClassifierService.java#classify",
+    "service/guard/InjectionGuardService.java#check",
+    "service/policy/ReferencePolicyService.java#riskScore"
+  ],
+  "frontend": [
+    "src/pages/Queue.tsx",
+    "src/components/SignalChips.tsx",
+    "src/components/HighlightedText.tsx"
+  ],
+  "scripts": [
+    "service/analytics/EvalService.java (POST /api/analytics/eval/run, ./gradlew liveEval)",
+    "defuse-data/evaluate.py"
+  ],
+  "tests": [
+    "src/test/.../InjectionGuardServiceTest.java",
+    "src/test/.../LiveEvalTest.java"
+  ]
+}

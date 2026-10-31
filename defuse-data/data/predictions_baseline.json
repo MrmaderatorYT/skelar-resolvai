@@ -1,0 +1,382 @@
+[
+  {
+    "ticket_id": "T01",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T02",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T03",
+    "intent": "cancel_refund",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T04",
+    "intent": "refund",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T05",
+    "intent": "unclear",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T06",
+    "intent": "unclear",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T07",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T08",
+    "intent": "refund",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T09",
+    "intent": "refund",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T10",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T11",
+    "intent": "cancel_refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T12",
+    "intent": "question",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T13",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T14",
+    "intent": "cancel_refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T15",
+    "intent": "cancel_refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T16",
+    "intent": "refund",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T17",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T18",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T19",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T20",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T21",
+    "intent": "question",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T22",
+    "intent": "question",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T23",
+    "intent": "question",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T24",
+    "intent": "technical_issue",
+    "sentiment": "negative",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T25",
+    "intent": "unclear",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T26",
+    "intent": "technical_issue",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T27",
+    "intent": "account_access",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T28",
+    "intent": "question",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T29",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T30",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T31",
+    "intent": "unclear",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T32",
+    "intent": "duplicate_charge",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T33",
+    "intent": "duplicate_charge",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T34",
+    "intent": "pause",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T35",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T36",
+    "intent": "technical_issue",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T37",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": true,
+    "injection": false
+  },
+  {
+    "ticket_id": "T38",
+    "intent": "question",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  }
+]

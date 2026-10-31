@@ -1,0 +1,22 @@
+{
+  "auto_refund_limit_usd": 60.0,
+  "full_refund_max_days": 14,
+  "full_refund_max_sessions": 2,
+  "partial_refund_max_days": 30,
+  "partial_refund_share": 0.5,
+  "goodwill_ltv_usd": 100.0,
+  "min_auto_confidence": 0.85,
+  "risk_weights": {
+    "base": 0.1,
+    "dispute_signal": 0.4,
+    "sarcasm": 0.25,
+    "aggression": 0.2,
+    "money": 0.15,
+    "per_recent_contact": 0.1,
+    "max_contacts": 3
+  },
+  "risk_bands": {
+    "high": 0.5,
+    "medium": 0.3
+  }
+}

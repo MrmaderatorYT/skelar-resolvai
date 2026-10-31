@@ -1,0 +1,19 @@
+{
+  "api": [
+    "GET /api/tickets/{id}",
+    "POST /api/tickets/{id}/approve",
+    "POST /api/tickets"
+  ],
+  "backend": [
+    "service/llm/ReplyWriterService.java#write",
+    "controller/TicketController.java + ActionController.java"
+  ],
+  "frontend": [
+    "src/pages/TicketView.tsx",
+    "src/components/CustomerPanel.tsx",
+    "src/components/ReplyEditor.tsx"
+  ],
+  "tests": [
+    "src/test/.../ApiTest.java"
+  ]
+}

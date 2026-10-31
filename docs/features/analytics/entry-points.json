@@ -1,0 +1,26 @@
+{
+  "api": [
+    "GET /api/analytics/summary",
+    "GET /api/analytics/root-causes",
+    "GET /api/analytics/eval"
+  ],
+  "backend": [
+    "service/analytics/AnalyticsService.java#summary",
+    "service/analytics/AnalyticsService.java#rootCauses",
+    "service/analytics/MoneyService.java#atRisk"
+  ],
+  "frontend": [
+    "src/pages/Dashboard.tsx",
+    "src/pages/EvalReport.tsx",
+    "src/components/RootCauseChart.tsx",
+    "src/components/KpiCard.tsx"
+  ],
+  "scripts": [
+    "service/analytics/EvalService.java (POST /api/analytics/eval/run, ./gradlew liveEval)",
+    "defuse-data/evaluate.py",
+    "defuse-data/baseline_keywords.py"
+  ],
+  "tests": [
+    "src/test/.../ApiTest.java#queueIsSortedAndDashboardCounts"
+  ]
+}

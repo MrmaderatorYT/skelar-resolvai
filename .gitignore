@@ -1,0 +1,18 @@
+.env
+.DS_Store
+# backend
+backend/build/
+backend/.gradle/
+backend/eval_report.json
+*.class
+.idea/
+*.iml
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+# python reference
+__pycache__/
+.pytest_cache/
+.venv/
+*.zip
