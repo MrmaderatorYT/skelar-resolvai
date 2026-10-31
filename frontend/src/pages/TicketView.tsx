@@ -55,6 +55,7 @@ export default function TicketView({ id, back }: { id: string; back: () => void 
                 </div>
               </>
             )}
+            {a?.status === "needs_approval" && <button disabled={busy} onClick={() => run(() => api.analyze(id, true))} className="w-full rounded-md border border-slate-300 py-2 text-sm disabled:opacity-50">Reanalyze (automatic actions may run)</button>}
             {!a && (
               <button disabled={busy} onClick={() => run(() => api.analyze(id))} className="w-full rounded-md bg-slate-900 text-white py-2 font-semibold disabled:opacity-50">
                 {busy ? "Analyzing…" : "Analyze with Defuse"}

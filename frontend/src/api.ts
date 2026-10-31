@@ -12,7 +12,7 @@ export const api = {
   health: () => req<{ llm_mode: string; classifier: string; reply_model: string }>("/health"),
   tickets: () => req<TicketRow[]>("/tickets"),
   ticket: (id: string) => req<TicketDetail>(`/tickets/${id}`),
-  analyze: (id: string) => req<Analysis>(`/tickets/${id}/analyze`, {}),
+  analyze: (id: string, force = false) => req<Analysis>(`/tickets/${id}/analyze${force ? "?force=true" : ""}`, {}),
   analyzeAll: () => req<string[]>("/tickets/analyze-all", {}),
   approve: (id: string, reply_text?: string) => req<Analysis>(`/tickets/${id}/approve`, { reply_text }),
   reject: (id: string, reason: string) => req<Analysis>(`/tickets/${id}/reject`, { reason }),

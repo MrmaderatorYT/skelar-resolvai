@@ -79,12 +79,15 @@ public class ReplyWriterService {
         }
         boolean pending = d.mode().equals("suggest");
         List<String> lines = new ArrayList<>();
-        if (acts.contains("cancel")) lines.add("Your subscription is cancelled and you won't be charged again.");
+        if (acts.contains("cancel")) lines.add(pending && d.reasons().contains("low_confidence")
+                ? "A teammate is reviewing your cancellation request." : "Your subscription is cancelled and you won't be charged again.");
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
             String state = pending ? "is being confirmed by a teammate (within 1 hour)" : "is on its way";
             lines.add(String.format(Locale.US, "A refund of $%.2f %s; card refunds land in 5-10 business days.", d.refundAmount(), state));
         }
-        if (acts.contains("pause")) lines.add("Your subscription is paused for 2 months; nothing will be charged meanwhile.");
+        if (acts.contains("pause")) lines.add(pending
+                ? "A teammate is reviewing your request to pause the subscription."
+                : "Your subscription is paused for 2 months; nothing will be charged meanwhile.");
         if (acts.contains("extend_access_7d")) {
             lines.add("We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
         }

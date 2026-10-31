@@ -23,7 +23,7 @@ DEFUSE_LLM_MODE=live ANTHROPIC_API_KEY=... ./gradlew bootRun   # real Claude
 # frontend — http://localhost:5173 (proxies /api to :8000)
 cd frontend && npm install && npm run dev
 
-# tests (no API calls): 61 JUnit tests, incl. all 38 gold policy decisions
+# tests (no API calls): 66 JUnit tests, incl. all 38 gold policy decisions
 cd backend && ./gradlew test
 # live eval gate: 0 unsafe auto-refunds, 0 missed injections
 ANTHROPIC_API_KEY=... ./gradlew liveEval
@@ -63,3 +63,9 @@ ANTHROPIC_API_KEY=... ./gradlew liveEval
 - `.task/` — brief, ТЗ, Codex review
 
 All data is synthetic (made-up app "Calmly"). Baseline metrics come from a synthetic human-only month and are labelled as such. Money: a refund is a cost, not a saving — we report gross exposure, refund spend and expected fees avoided separately; fee values are estimates, not Visa-published constants.
+
+### Policy configuration
+
+`backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 38-case reference ($60, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
+
+Prompt-injection matches are escalated without sending the ticket to Claude. Low-confidence cancellation waits for approval. Approval checks the current billing context against the reviewed snapshot; a changed context returns HTTP 409 and requires a fresh analysis and review. This remains an in-memory demo without authenticated production billing.

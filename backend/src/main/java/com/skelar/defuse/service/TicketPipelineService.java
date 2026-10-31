@@ -52,12 +52,18 @@ public class TicketPipelineService {
     }
 
     public TicketAnalysis analyze(String ticketId, boolean force) {
+        synchronized (store) { return analyzeLocked(ticketId, force); }
+    }
+
+    private TicketAnalysis analyzeLocked(String ticketId, boolean force) {
         if (!force && store.analyses.containsKey(ticketId)) return store.analyses.get(ticketId);
         Ticket t = ticket(ticketId);
         long started = System.nanoTime();
 
         InjectionCheck check = guard.check(t.text);
-        ClassificationFeatures llm = classifier.classify(t);
+        ClassificationFeatures llm = check.flagged()
+                ? ClassificationFeatures.fallback(t.language, "prompt injection: human review").withInjection(true)
+                : classifier.classify(t);
         ClassificationFeatures f = llm.withInjection(llm.injection() || check.flagged());
 
         CustomerContext ctx = contexts.build(t.customerId);
@@ -84,15 +90,31 @@ public class TicketPipelineService {
             a.decision = escalated;
             a.status = t.status = "escalated";
         }
-        a.reply = replies.write(t, f, ctx, a.decision, name);   // written after execution, from actual results
+        a.reply = f.injection() ? ReplyWriterService.template(name, a.decision) : replies.write(t, f, ctx, a.decision, name);   // written after execution, from actual results
         a.latencyMs = (System.nanoTime() - started) / 1_000_000;
         return a;
     }
 
     public TicketAnalysis approve(String ticketId, String agent, String replyText) {
+        synchronized (store) { return approveLocked(ticketId, agent, replyText); }
+    }
+
+    private TicketAnalysis approveLocked(String ticketId, String agent, String replyText) {
         TicketAnalysis a = analysis(ticketId);
         if (!a.status.equals("needs_approval")) {
             throw new IllegalStateException("ticket " + ticketId + " is " + a.status + ", nothing to approve");
+        }
+        CustomerContext current = contexts.build(ticket(ticketId).customerId);
+        boolean alreadyCancelled = store.executed.containsKey(ticketId + ":cancel");
+        if (alreadyCancelled && "canceled".equals(current.subscriptionStatus())) {
+            current = new CustomerContext(current.customerId(), current.platform(), current.billingProcessor(), current.ltvUsd(),
+                    current.contactsLast30d(), current.refundsLast180d(), current.chargebacksLifetime(), a.context.subscriptionStatus(),
+                    current.plan(), current.price(), current.lastPayment(), current.duplicatePaymentId(),
+                    current.sessionsSinceLastCharge(), current.cancelFlowAbandoned());
+        }
+        if (!a.context.equals(current)) {
+            audit.log("approval_stale", ticketId, Map.of("by", agent));
+            throw new IllegalStateException("Billing context changed; reanalyze and review before approving");
         }
         List<Map<String, Object>> results = executor.execute(ticketId, a.decision.actions(), a.decision, a.context, agent);
         a.executed.addAll(results);
@@ -109,6 +131,10 @@ public class TicketPipelineService {
     }
 
     public TicketAnalysis reject(String ticketId, String agent, String reason) {
+        synchronized (store) { return rejectLocked(ticketId, agent, reason); }
+    }
+
+    private TicketAnalysis rejectLocked(String ticketId, String agent, String reason) {
         TicketAnalysis a = analysis(ticketId);
         a.status = ticket(ticketId).status = "escalated";
         audit.log("rejected", ticketId, Map.of("by", agent, "reason", reason == null ? "" : reason));

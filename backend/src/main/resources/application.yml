@@ -9,6 +9,14 @@ defuse:
     mode: ${DEFUSE_LLM_MODE:gold}          # gold = eval labels, no API calls; live = Claude
     classifier-model: claude-haiku-5-5
     reply-model: claude-sonnet-5-5
+  policy:
+    auto-refund-limit-usd: 60.0
+    full-refund-max-days: 14
+    full-refund-max-sessions: 2
+    partial-refund-max-days: 30
+    partial-refund-share: 0.5
+    goodwill-ltv-usd: 100.0
+    min-auto-confidence: 0.85
   max-ticket-chars: 5000
   chargeback-fee-usd: 20.0                 # mid-point of the $15-25 issuer fee
   vamp-fee-usd: 8.0                        # Visa VAMP fee per dispute above the 1.5% threshold
