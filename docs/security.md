@@ -1,12 +1,13 @@
 # Security
 
-1. The LLM has no write tools. Only `ActionExecutorService.execute()` changes billing, and only after `decide()`.
-2. Ticket text is passed as data inside `<ticket>` tags, never into the system prompt.
-3. Prompt injection: regex guard (before the LLM) OR the model's `injection` flag → `escalate`, zero actions.
-4. Money gate on every refund path (incl. duplicates): auto-refund ≤ $60; refund/chargeback history → human; only `succeeded` card payments; never a future-dated payment; never more than the payment; never on a disputed payment; store purchases → instructions only. Routing by billing processor, not device.
-5. Idempotency: `ticket_id:action` — re-analysis or double Approve never refunds twice.
-6. Audit log for every analysis, execution, failure, approval. The reply is written after execution; a failed action escalates instead of claiming success.
-7. LLM output is a typed record; unknown intent or non-finite / out-of-range confidence → escalate. API error or refusal → confidence 0 → human.
-8. Gold labels never leave the backend. Ticket text rendered as React nodes, never `innerHTML`.
-9. API key only in the backend environment (`ANTHROPIC_API_KEY`), never in the frontend or repo. CORS: localhost only. Ticket length ≤ 5000 chars.
-10. Demo scope: no identity/authorization layer — synthetic data on localhost only. Before real data: server-side identity, ownership and agent rights, payment-level locks and provider idempotency keys.
+1. The model has no write tools. Deterministic policy selects actions; ActionExecutor dispatches trusted plugins with provider capability checks. Store providers expose no writes, including forced direct refunds. Core DTOs and policy remain unchanged.
+2. Tickets are JSON-quoted user data; `<`/`>` are escaped to prevent closing a textual delimiter. System prompts are never built from ticket text. Guard runs before model calls and checks original, Unicode-normalized, limited base64-decoded and ROT13 variants. It is a heuristic, not a sandbox.
+3. A flagged injection yields escalation and zero actions. Guard and model detections are reported separately. OWASP 2025 references: https://genai.owasp.org/llmrisk/llm01-prompt-injection/ ; https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/ ; https://genai.owasp.org/llmrisk/llm062025-excessive-agency/ . Regex coverage of 24 curated red-team cases does not prove universal attack detection.
+4. Classifier JSON validation requires every field with exact types: enum intent/cancel reason, finite numeric confidence0..1, real booleans, literal evidence. One repair only; transport/parse failure gives confidence0 and human review. Unknown extra properties are ignored, not instructions.
+5. Existing policy money gates and ledger status checks are preserved. Mock refund additionally rejects NaN/infinity. Actual payment processor, not a device claim, determines refund capability. Plugin exception is audited and escalates; unknown runtime exception text is not exposed as a secret-bearing error message.
+6. Existing idempotency key ticketId:action is carried in BillingCommand. In-memory scope is explicit: before production, add provider idempotency, durable atomic state and identity/authorization. See https://docs.stripe.com/api/idempotent_requests .
+7. Replies are written after execution and receive completed/pending actions plus actual results. Offer parameters use ReferencePolicyService getters. API/network failure uses a template. A reply string, including JSON-looking reply_text, cannot alter the stored action plan or amount.
+8. Customer input/evidence/replies remain text. API returns JSON and React must render text nodes, never innerHTML. Red-team tests verify exact tag payload round-tripping and unchanged approve actions/amount. They do not claim a browser penetration test.
+9. Key only in backend environment, GEMINI_API_KEY; client is lazy and gold/replay use no key. GitHub Actions passes the secret only to opted-in live steps. No key, URL query containing it, model raw error, or credentials are persisted in reports. Raw literal datasource password or credential-bearing DSN fails startup; use ${ENV} without a secret default.
+10. Replay cache records real live analyses only, identifies provenance/time, binds ticket/customer/text hash and never executes billing. Missing cache fails closed with HTTP409. Approval/offer writes in replay are refused. Local cache integrity is trusted-filesystem scope, not signed provenance.
+11. Demo remains synthetic/in-memory with localhost CORS and a 5000-character input limit. There is no production authentication layer. Public deployment requires backend access control and runtime secret injection; static frontend hosting alone cannot run the Java service.

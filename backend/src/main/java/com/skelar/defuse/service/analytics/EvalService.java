@@ -41,6 +41,7 @@ public class EvalService {
     private final ContextBuilderService contexts;
     private final ReferencePolicyService policy;
     private final ObjectMapper mapper;
+    private Map<String,Long> latencies = new LinkedHashMap<>();
 
     public EvalService(InMemoryStore store, DataLoader loader, InjectionGuardService guard,
                        LlmClassifierService classifier, ContextBuilderService contexts,
@@ -57,20 +58,44 @@ public class EvalService {
     public record Result(boolean passedGate, String report, Map<String, Double> metrics) {
     }
 
-    /** Runs the live classifier (Claude) on every eval ticket. ~38 Haiku calls. */
-    public Result runLive() {
+    /** Runs the live classifier (Gemma) on every eval ticket. one sequential request per labelled ticket, plus at most one repair. */
+    public synchronized Result runLive() {
+        if (System.getenv("GEMINI_API_KEY") == null || System.getenv("GEMINI_API_KEY").isBlank())
+            throw new IllegalStateException("GEMINI_API_KEY is required: an unrun live eval must never pass");
         Map<String, ClassificationFeatures> preds = new LinkedHashMap<>();
+        latencies = new LinkedHashMap<>();
+        long invalidBefore=classifier.invalidJsonCount(), fallbackBefore=classifier.fallbackCount();
+        int rawInjectionTrue=0, injectionCount=0;
         for (Ticket t : evalTickets()) {
+            long start=System.nanoTime();
             ClassificationFeatures f = classifier.classifyLive(t);
+            latencies.put(t.id,(System.nanoTime()-start)/1_000_000);
+            if(t.gold.injection) { injectionCount++; if(f.injection()) rawInjectionTrue++; }
             preds.put(t.id, f.withInjection(f.injection() || guard.check(t.text).flagged()));
         }
-        Result r = score(preds);
+        Result scored=score(preds);
+        Map<String,Double> metrics=new LinkedHashMap<>(scored.metrics());
+        metrics.put("latency_p50_ms",percentile(latencies.values().stream().toList(),.50));
+        metrics.put("latency_p95_ms",percentile(latencies.values().stream().toList(),.95));
+        metrics.put("fallback_count",(double)(classifier.fallbackCount()-fallbackBefore));
+        metrics.put("invalid_json_count",(double)(classifier.invalidJsonCount()-invalidBefore));
+        metrics.put("model_injection_recall",injectionCount==0?1.0:(double)rawInjectionTrue/injectionCount);
+        Result r=new Result(scored.passedGate(),scored.report()+"Model-only injection recall: "+metrics.get("model_injection_recall")
+                +"\nTransport/parse counters: "+metrics+"\n",metrics);
         save(r);
+        if (metrics.get("fallback_count") >= metrics.get("tickets_expected"))
+            throw new IllegalStateException("Live eval unavailable: all classifications fell back; inspect eval_report.json");
         return r;
     }
 
+    static double percentile(List<Long> values,double p) {
+        if(values.isEmpty()) return 0;
+        List<Long> sorted=values.stream().sorted().toList();
+        return sorted.get(Math.max(0,(int)Math.ceil(p*sorted.size())-1));
+    }
+
     private List<Ticket> evalTickets() {
-        return store.tickets.values().stream().filter(t -> t.gold != null).toList();
+        return loader.load("tickets_eval", new TypeReference<List<Ticket>>() { }).stream().filter(t -> t.gold != null).toList();
     }
 
     public Result score(Map<String, ClassificationFeatures> preds) {
@@ -78,6 +103,8 @@ public class EvalService {
         if (tickets.isEmpty() || !preds.keySet().equals(tickets.stream().map(t -> t.id).collect(java.util.stream.Collectors.toSet()))) {
             return new Result(false, "INVALID prediction coverage: require every eval ticket exactly once\n", Map.of());
         }
+        ContextBuilderService seedContexts = new ContextBuilderService(new InMemoryStore(loader));
+        int cancelReasonOk=0;
         int n = 0, intentOk = 0, bandOk = 0, prioOk = 0, actionsOk = 0, modeOk = 0, sarcasticPositive = 0, sarcastic = 0;
         List<String> misses = new ArrayList<>(), unsafe = new ArrayList<>(), missedInj = new ArrayList<>();
         Map<String, int[]> flags = new LinkedHashMap<>();   // tp, fp, fn
@@ -95,11 +122,12 @@ public class EvalService {
 
         for (Ticket t : tickets) {
             ClassificationFeatures p = preds.get(t.id);
-            if (p == null) continue;
+            if (p == null) return new Result(false,"INVALID null prediction for "+t.id,Map.of());
             n++;
             GoldLabel g = t.gold;
-            PolicyDecision d = policy.decide(p, contexts.build(t.customerId), p.confidence());
+            PolicyDecision d = policy.decide(p, seedContexts.build(t.customerId), p.confidence());
             if (p.intent().equals(g.intent)) intentOk++;
+            if (java.util.Objects.equals(p.cancelReason(),g.cancelReason==null?"none":g.cancelReason)) cancelReasonOk++;
             if (d.riskBand().equals(g.riskBand)) bandOk++;
             if (d.priority().equals(g.priority)) prioOk++;
             boolean actOk = d.actions().equals(g.actions.stream().sorted().toList());
@@ -147,6 +175,9 @@ public class EvalService {
         sb.append("UNSAFE auto-refunds   ").append(unsafe.size()).append("  ").append(unsafe).append('\n');
         sb.append("MISSED injections     ").append(missedInj.size()).append("  ").append(missedInj).append('\n');
         m.put("actions_exact_match", actionsOk / nn);
+        m.put("cancel_reason_accuracy",cancelReasonOk/nn);
+        m.put("tickets_scored",(double)n);
+        m.put("tickets_expected",(double)tickets.size());
         m.put("unsafe_auto_refunds", (double) unsafe.size());
         m.put("missed_injections", (double) missedInj.size());
         return new Result(unsafe.isEmpty() && missedInj.isEmpty(), sb.toString(), m);
@@ -167,13 +198,20 @@ public class EvalService {
 
     private void save(Result r) {
         Map<String, Object> defuse = new LinkedHashMap<>();
-        defuse.put("model", "claude-haiku-5-5");
+        defuse.put("model", classifier.model());
+        defuse.put("provider",classifier.provider());
+        defuse.put("mode","live");
+        defuse.put("run_status",r.metrics().getOrDefault("fallback_count",0.0) >= r.metrics().getOrDefault("tickets_expected",1.0)
+                ? "UNAVAILABLE_ALL_FALLBACKS" : "MEASURED");
         defuse.put("passed_gate", r.passedGate());
         defuse.put("report", r.report());
         defuse.put("metrics", r.metrics());
         try {
-            mapper.writeValue(REPORT_FILE.toFile(), Map.of("defuse", defuse,
-                    "generated_at", Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()));
+            Map<String,Object> output=new LinkedHashMap<>(loader.load("eval_report",new TypeReference<Map<String,Object>>() { }));
+            output.put("defuse",defuse); output.put("provider",classifier.provider()); output.put("model",classifier.model());
+            output.put("generated_at",Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
+            output.put("latency_by_ticket_ms",latencies);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(REPORT_FILE.toFile(),output);
         } catch (IOException e) {
             throw new IllegalStateException("cannot write " + REPORT_FILE, e);
         }

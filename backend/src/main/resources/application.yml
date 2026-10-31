@@ -6,9 +6,14 @@ spring:
     default-property-inclusion: always
 defuse:
   llm:
-    mode: ${DEFUSE_LLM_MODE:gold}          # gold = eval labels, no API calls; live = Claude
-    classifier-model: claude-haiku-5-5
-    reply-model: claude-sonnet-5-5
+    mode: ${DEFUSE_LLM_MODE:gold}          # gold | live | replay; no key needed for gold/replay
+    provider: gemma
+    model: ${DEFUSE_LLM_MODEL:gemma-4-31b-it}
+    api-key-env: GEMINI_API_KEY
+    timeout-ms: 15000
+    max-retries: 2
+    json-mode: ${DEFUSE_LLM_JSON_MODE:false}
+    response-schema: ${DEFUSE_LLM_RESPONSE_SCHEMA:false}
   policy:
     auto-refund-limit-usd: 60.0
     full-refund-max-days: 14
@@ -21,3 +26,12 @@ defuse:
   chargeback-fee-usd: 20.0                 # mid-point of the $15-25 issuer fee
   vamp-fee-usd: 8.0                        # Visa VAMP fee per dispute above the 1.5% threshold
   cors-origins: http://localhost:5173,http://127.0.0.1:5173
+
+  datasources:
+    customers: {type: json, path: data/customers.json}
+    engagement: {type: json, path: data/usage.json}
+    tickets: {type: json, path: data/tickets_eval.json}
+  billing:
+    - {processor: card, type: mock}
+    - {processor: app_store, type: store}
+    - {processor: google_play, type: store}

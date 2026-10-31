@@ -12,6 +12,8 @@ import com.skelar.defuse.service.executor.ActionExecutorService;
 import com.skelar.defuse.service.guard.InjectionGuardService;
 import com.skelar.defuse.service.llm.LlmClassifierService;
 import com.skelar.defuse.service.llm.ReplyWriterService;
+import com.skelar.defuse.service.llm.ReplayService;
+import com.skelar.defuse.service.llm.LlmSettings;
 import com.skelar.defuse.service.policy.ContextBuilderService;
 import com.skelar.defuse.service.policy.ReferencePolicyService;
 import com.skelar.defuse.store.InMemoryStore;
@@ -35,11 +37,13 @@ public class TicketPipelineService {
     private final MoneyService money;
     private final ActionExecutorService executor;
     private final AuditService audit;
+    private final ReplayService replay;
+    private final LlmSettings settings;
 
     public TicketPipelineService(InMemoryStore store, InjectionGuardService guard, LlmClassifierService classifier,
                                  ContextBuilderService contexts, ReferencePolicyService policy,
                                  ReplyWriterService replies, MoneyService money, ActionExecutorService executor,
-                                 AuditService audit) {
+                                 AuditService audit, ReplayService replay, LlmSettings settings) {
         this.store = store;
         this.guard = guard;
         this.classifier = classifier;
@@ -48,7 +52,7 @@ public class TicketPipelineService {
         this.replies = replies;
         this.money = money;
         this.executor = executor;
-        this.audit = audit;
+        this.audit = audit; this.replay = replay; this.settings = settings;
     }
 
     public TicketAnalysis analyze(String ticketId, boolean force) {
@@ -58,6 +62,7 @@ public class TicketPipelineService {
     private TicketAnalysis analyzeLocked(String ticketId, boolean force) {
         if (!force && store.analyses.containsKey(ticketId)) return store.analyses.get(ticketId);
         Ticket t = ticket(ticketId);
+        if ("replay".equals(settings.mode())) return replay.restore(t);
         long started = System.nanoTime();
 
         InjectionCheck check = guard.check(t.text);
@@ -73,6 +78,7 @@ public class TicketPipelineService {
 
         TicketAnalysis a = new TicketAnalysis();
         a.ticketId = ticketId;
+        a.llmMode=settings.mode(); a.llmProvider=settings.provider(); a.llmModel=settings.model();
         a.analysisId = java.util.UUID.randomUUID().toString();
         a.features = f;
         a.injectionGuard = check;
@@ -92,7 +98,7 @@ public class TicketPipelineService {
             a.decision = escalated;
             a.status = t.status = "escalated";
         }
-        a.reply = f.injection() ? ReplyWriterService.template(name, a.decision) : replies.write(t, f, ctx, a.decision, name);   // written after execution, from actual results
+        a.reply = f.injection() ? replies.template(name, a.decision) : replies.write(t, f, ctx, a.decision, name, a.executed);   // written after execution, from actual results
         a.latencyMs = (System.nanoTime() - started) / 1_000_000;
         return a;
     }
@@ -103,6 +109,7 @@ public class TicketPipelineService {
 
     private TicketAnalysis approveLocked(String ticketId, String agent, String replyText, String analysisId) {
         TicketAnalysis a = analysis(ticketId);
+        if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only; actions cannot be approved or executed");
         if (analysisId == null || !analysisId.equals(a.analysisId)) {
             throw new IllegalStateException("Analysis changed; review the latest decision before approving");
         }
@@ -132,6 +139,7 @@ public class TicketPipelineService {
         }
         // reply_text is plain text for the customer only; actions and amounts always come from the stored decision
         if (replyText != null && !replyText.isBlank()) a.reply = replyText;
+        else a.reply = replies.write(ticket(ticketId),a.features,a.context,a.decision,store.customer(a.context.customerId()).name,a.executed);
         boolean offer = a.decision.actions().stream().anyMatch(x -> x.startsWith("offer_"));
         a.status = ticket(ticketId).status = offer ? "offer_sent" : "resolved";
         audit.log("approved", ticketId, Map.of("by", agent));
@@ -152,6 +160,7 @@ public class TicketPipelineService {
 
     private TicketAnalysis offerPending(String ticketId) {
         TicketAnalysis a = analysis(ticketId);
+        if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only; actions cannot be approved or executed");
         if (!a.status.equals("offer_sent")) throw new IllegalStateException("ticket " + ticketId + " has no pending offer");
         return a;
     }
@@ -161,7 +170,7 @@ public class TicketPipelineService {
         a.executed.addAll(results);
         boolean failed = results.stream().anyMatch(r -> r.containsKey("error"));
         a.status = ticket(ticketId).status = failed ? "escalated" : "resolved";
-        a.reply = ReplyWriterService.offerOutcome(store.customer(a.context.customerId()).name, action, failed);
+        a.reply = replies.offerOutcome(store.customer(a.context.customerId()).name, action, failed);
         audit.log(event, ticketId, Map.of("by", "customer", "action", action));
         return a;
     }
@@ -172,6 +181,7 @@ public class TicketPipelineService {
 
     private TicketAnalysis rejectLocked(String ticketId, String agent, String reason) {
         TicketAnalysis a = analysis(ticketId);
+        if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only; actions cannot be approved or executed");
         a.status = ticket(ticketId).status = "escalated";
         audit.log("rejected", ticketId, Map.of("by", agent, "reason", reason == null ? "" : reason));
         return a;

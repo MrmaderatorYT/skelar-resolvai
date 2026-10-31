@@ -1,6 +1,3 @@
-# Frontend structure — triage
+# Frontend integration (Opus-owned)
 
-- `Queue.tsx` — table sorted by priority, signal chips, Analyze all
-- `SignalChips.tsx` — sarcasm / aggression / dispute / injection chips
-- `HighlightedText.tsx` — highlights evidence quotes (React nodes, no innerHTML)
-- `RiskBadge.tsx`, `PriorityPill.tsx`
+Existing queue and ticket contracts remain available. Health supplies provider/model; analyses add llm_mode, llm_model and recorded_at. App.tsx should display the provider/model and label gold as “Gold labels”; replay must display “Replay of live Gemma run at HH:MM”. Disable Approve/offer actions for replay (backend independently refuses them). No frontend files were changed by Codex; exact integration request is in HANDOFF-codex.md.

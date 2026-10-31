@@ -16,5 +16,10 @@ public class TicketAnalysis {
     public String reply;
     public String status;
     public long latencyMs;
+    // Additive provenance: callers retain all existing fields and REST paths.
+    public String llmMode;
+    public String llmProvider;
+    public String llmModel;
+    public String recordedAt;
     public List<Map<String, Object>> executed = new ArrayList<>();
 }

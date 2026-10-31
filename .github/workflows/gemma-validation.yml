@@ -1,0 +1,71 @@
+name: Gemma validation
+on:
+  push:
+    branches: [feat-codex]
+  workflow_dispatch:
+    inputs:
+      run_live:
+        description: Run account-specific Gemma probe, eval and red-team (uses API quota)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: gemma-validation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Offline tests (no API key)
+        run: ./gradlew test --no-daemon
+        env:
+          DEFUSE_LLM_MODE: gold
+      - name: Check live opt-in and secret availability
+        id: live
+        shell: bash
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RUN_LIVE: ${{ (github.event_name == 'workflow_dispatch' && inputs.run_live) || vars.GEMMA_RUN_LIVE == 'true' }}
+        run: |
+          if [[ "$RUN_LIVE" == "true" && -n "$GEMINI_API_KEY" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            python3 -c 'import json;json.dump({"status":"UNVERIFIED","reason":"Live run not opted in or GEMINI_API_KEY absent; no model quality measured"},open("gemma_api_probe.json","w"),indent=2)'
+            if [[ "$RUN_LIVE" == "true" ]]; then
+              echo "GEMINI_API_KEY is required for the requested live validation" >&2
+              exit 1
+            fi
+          fi
+      - name: Account-specific API probe
+        if: steps.live.outputs.ready == 'true'
+        run: python3 scripts/probe_gemma.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Live eval and red-team, sequential requests
+        if: steps.live.outputs.ready == 'true'
+        run: ./gradlew liveEval --no-daemon
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEFUSE_LLM_MODE: live
+      - name: Retain evidence without secrets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemma-validation-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            backend/gemma_api_probe.json
+            backend/eval_report.json
+            backend/redteam_report.json
+            backend/build/reports/tests/

@@ -1,7 +1,5 @@
 package com.skelar.defuse.service.llm;
 
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.TextBlock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skelar.defuse.model.domain.Ticket;
@@ -20,28 +18,32 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-/** Customer reply. live: Claude Sonnet, given the policy decision as input; gold: templates. */
+/** Customer reply. live: Gemma, given the policy decision as input; gold: templates. */
 @Service
 public class ReplyWriterService {
     private static final Logger log = LoggerFactory.getLogger(ReplyWriterService.class);
     private static final String SIGN = "\n\nCalmly Support";
 
-    private final AnthropicClientHolder clients;
+    private final LlmClient client;
+    private final ReferencePolicyService policy;
     private final ObjectMapper mapper;
     private final String mode;
-    private final String model;
 
-    public ReplyWriterService(AnthropicClientHolder clients, ObjectMapper mapper,
-                              @Value("${defuse.llm.mode}") String mode,
-                              @Value("${defuse.llm.reply-model}") String model) {
-        this.clients = clients;
-        this.mapper = mapper;
-        this.mode = mode;
-        this.model = model;
+    public ReplyWriterService(LlmClient client, ObjectMapper mapper, LlmSettings settings, ReferencePolicyService policy) {
+        this.client = client; this.mapper = mapper; this.mode = settings.mode(); this.policy = policy;
     }
 
-    public String write(Ticket t, ClassificationFeatures f, CustomerContext ctx, PolicyDecision d, String customerName) {
-        if (!"live".equals(mode)) return template(customerName, d);
+    public String write(Ticket t, ClassificationFeatures f, CustomerContext ctx, PolicyDecision d, String name) {
+        return write(t,f,ctx,d,name,List.of());
+    }
+
+    public String write(Ticket t, ClassificationFeatures f, CustomerContext ctx, PolicyDecision d, String customerName,
+                        List<Map<String,Object>> executionResults) {
+        var actuallyDone=executionResults.stream().filter(result -> !result.containsKey("error") && !result.containsKey("skipped"))
+                .map(result -> String.valueOf(result.get("action"))).toList();
+        if ("suggest".equals(d.mode()) && !d.actions().isEmpty() && actuallyDone.containsAll(d.actions()))
+            d=new PolicyDecision(d.actions(),"auto",d.refundAmount(),d.riskScore(),d.riskBand(),d.priority(),d.reasons());
+        if (!"live".equals(mode) || "escalate".equals(d.mode())) return template(customerName, d);
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("customer_first_name", customerName.split(" ")[0]);
         payload.put("ticket", t.text);
@@ -50,21 +52,21 @@ public class ReplyWriterService {
         payload.put("risk_band", d.riskBand());
         payload.put("mode", d.mode());
         payload.put("actions_taken_or_pending", d.actions());
+        payload.put("execution_results", executionResults);
+        var completed = executionResults.stream().filter(result -> !result.containsKey("error") && !result.containsKey("skipped"))
+                .map(result -> String.valueOf(result.get("action"))).toList();
+        payload.put("actions_completed", completed);
+        payload.put("actions_pending", d.actions().stream().filter(action -> !completed.contains(action)).toList());
+        payload.put("offer_discount_percent", policy.retentionDiscountPercent());
+        payload.put("offer_discount_months", policy.retentionDiscountMonths());
+        payload.put("offer_pause_months", policy.retentionPauseMonths());
         payload.put("refund_amount_usd", d.refundAmount());
         payload.put("reasons", d.reasons());
         payload.put("plan", ctx.plan());
         payload.put("platform", ctx.platform());
         try {
-            MessageCreateParams params = MessageCreateParams.builder()
-                    .model(model)
-                    .maxTokens(2000L)
-                    .system(Prompts.REPLY_SYSTEM)
-                    .addUserMessage(mapper.writeValueAsString(payload))
-                    .build();
-            String text = clients.get().messages().create(params).content().stream()
-                    .flatMap(cb -> cb.text().stream())
-                    .map(TextBlock::text)
-                    .collect(Collectors.joining());
+            String text = client.generateText(Prompts.REPLY_SYSTEM + "\nUNTRUSTED_TICKET_AND_VERIFIED_DECISION_JSON:\n"
+                    + mapper.writeValueAsString(payload).replace("<", "\\u003c").replace(">", "\\u003e"));
             return text.isBlank() ? template(customerName, d) : text;
         } catch (JsonProcessingException | RuntimeException e) {
             log.warn("reply writer failed for {}: {}", t.id, e.toString());
@@ -72,19 +74,19 @@ public class ReplyWriterService {
         }
     }
 
-    public static String offerOutcome(String name, String action, boolean failed) {
+    public String offerOutcome(String name, String action, boolean failed) {
         String first = name.split(" ")[0];
         if (failed) return "Hi " + first + ", thanks! A teammate is finishing this for you and will confirm within 1 hour." + SIGN;
         return "Hi " + first + ", " + switch (action) {
             case "apply_discount" -> String.format(Locale.US, "done - your next %d months are %d%% off. Glad you're staying!",
-                    ReferencePolicyService.DISCOUNT_MONTHS, ReferencePolicyService.DISCOUNT_PERCENT);
+                    policy.retentionDiscountMonths(), policy.retentionDiscountPercent());
             case "pause" -> String.format(Locale.US, "done - your subscription is paused for %d months and nothing will be charged. Your progress is saved.",
-                    ReferencePolicyService.PAUSE_MONTHS);
+                    policy.retentionPauseMonths());
             default -> "your subscription is cancelled and you won't be charged again.";
         } + SIGN;
     }
 
-    public static String template(String name, PolicyDecision d) {
+    public String template(String name, PolicyDecision d) {
         String first = name.split(" ")[0];
         List<String> acts = d.actions();
         if (d.mode().equals("escalate")) {
@@ -95,12 +97,12 @@ public class ReplyWriterService {
         String canStillCancel = " If you'd still like to cancel, just reply CANCEL and we'll do it right away - no questions asked.";
         if (acts.contains("offer_discount")) {
             lines.add(String.format(Locale.US, "Before you go: we can take %d%% off your next %d months.",
-                    ReferencePolicyService.DISCOUNT_PERCENT, ReferencePolicyService.DISCOUNT_MONTHS)
+                    policy.retentionDiscountPercent(), policy.retentionDiscountMonths())
                     + " Reply YES to keep Calmly at the lower price." + canStillCancel);
         }
         if (acts.contains("offer_pause")) {
             lines.add(String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months at no cost and keep your progress.",
-                    ReferencePolicyService.PAUSE_MONTHS) + " Reply PAUSE to do that." + canStillCancel);
+                    policy.retentionPauseMonths()) + " Reply PAUSE to do that." + canStillCancel);
         }
         if (acts.contains("cancel")) lines.add(pending && d.reasons().contains("low_confidence")
                 ? "A teammate is reviewing your cancellation request." : "Your subscription is cancelled and you won't be charged again.");
@@ -110,7 +112,7 @@ public class ReplyWriterService {
         }
         if (acts.contains("pause")) lines.add(pending
                 ? "A teammate is reviewing your request to pause the subscription."
-                : "Your subscription is paused for 2 months; nothing will be charged meanwhile.");
+                : "Your subscription is paused for " + policy.retentionPauseMonths() + " months; nothing will be charged meanwhile.");
         if (acts.contains("extend_access_7d")) {
             lines.add("We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
         }

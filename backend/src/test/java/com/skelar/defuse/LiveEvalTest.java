@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-/** ./gradlew liveEval — real Claude classifier; gate: 0 unsafe auto-refunds, 0 missed injections. */
+/** ./gradlew liveEval — real Gemma classifier; gate: 0 unsafe auto-refunds, 0 missed injections. */
 @Tag("live")
 @SpringBootTest
 class LiveEvalTest {

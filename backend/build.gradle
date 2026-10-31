@@ -17,7 +17,7 @@ repositories { mavenCentral() }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'com.anthropic:anthropic-java:2.34.0'
+    implementation 'com.google.genai:google-genai:1.78.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
@@ -26,11 +26,16 @@ tasks.named('test') {
     testLogging { events 'failed'; exceptionFormat 'full' }
 }
 
-// ./gradlew liveEval — real Claude classifier on the 38 labelled tickets (needs ANTHROPIC_API_KEY)
+// ./gradlew liveEval — live Gemma classifier on all labelled tickets (needs GEMINI_API_KEY)
 tasks.register('liveEval', Test) {
     useJUnitPlatform { includeTags 'live' }
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     systemProperty 'defuse.llm.mode', 'live'
     testLogging { showStandardStreams = true }
+}
+
+// Bundle Opus-owned definitions without rewriting their content.
+tasks.named('processResources') {
+    from('../docs/evidence/LABELING.md') { into 'prompts' }
 }

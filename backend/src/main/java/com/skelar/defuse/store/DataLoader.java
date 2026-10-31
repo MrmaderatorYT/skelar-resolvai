@@ -2,6 +2,9 @@ package com.skelar.defuse.store;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skelar.defuse.registry.PluginProperties;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -12,13 +15,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataLoader {
     private final ObjectMapper mapper;
+    private final PluginProperties config;
 
-    public DataLoader(ObjectMapper mapper) {
+    public DataLoader(ObjectMapper mapper, PluginProperties config) {
         this.mapper = mapper;
+        this.config = config;
     }
 
     public <T> T load(String name, TypeReference<T> type) {
-        try (InputStream in = new ClassPathResource("data/" + name + ".json").getInputStream()) {
+        String source = switch (name) { case "customers" -> "customers"; case "usage" -> "engagement"; case "tickets_eval" -> "tickets"; default -> null; };
+        String path = source == null ? "data/" + name + ".json"
+                : config.getDatasources().getOrDefault(source, java.util.Map.of()).getOrDefault("path", "data/" + name + ".json");
+        Resource resource = path.startsWith("file:") ? new FileSystemResource(path.substring(5))
+                : new ClassPathResource(path.replaceFirst("^classpath:", ""));
+        try (InputStream in = resource.getInputStream()) {
             return mapper.readValue(in, type);
         } catch (IOException e) {
             throw new UncheckedIOException("cannot load data/" + name + ".json", e);
