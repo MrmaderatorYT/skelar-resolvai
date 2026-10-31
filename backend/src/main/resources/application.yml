@@ -10,14 +10,15 @@ defuse:
   llm:
     mode: ${DEFUSE_LLM_MODE:gold}          # gold | live | replay; no key needed for gold/replay
     provider: gemma
-    model: ${DEFUSE_LLM_MODEL:gemma-4-31b-it}
+    model: ${DEFUSE_LLM_MODEL:gemma-4-26b-a4b-it}
+    reply-model: ${DEFUSE_LLM_REPLY_MODEL:gemma-4-31b-it}
     api-key-env: GEMINI_API_KEY
     timeout-ms: 15000
     max-retries: 2
     json-mode: ${DEFUSE_LLM_JSON_MODE:false}
     response-schema: ${DEFUSE_LLM_RESPONSE_SCHEMA:false}
   max-ticket-chars: 5000
-  cors-origins: http://localhost:5173,http://127.0.0.1:5173
+  cors-origins: http://localhost:5173,http://127.0.0.1:5173,http://localhost:15173,http://127.0.0.1:15173
 
   datasources:
     customers: {type: json, path: data/customers.json}

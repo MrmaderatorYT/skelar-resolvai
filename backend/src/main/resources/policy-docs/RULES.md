@@ -50,3 +50,7 @@ Values live in `backend/src/main/resources/defuse-policy.yml`; the Python refere
 - Visa VAMP fact sheet — https://corporate.visa.com/content/dam/VCOM/corporate/visa-perspectives/security-and-trust/documents/visa-acquirer-monitoring-program-fact-sheet-2025.pdf
 - Mastercard ECP — https://redo.com/resources/articles/chargebacks/mastercard-excessive-chargeback-program
 - RevenueCat SOSA 2026 — https://www.revenuecat.com/state-of-subscription-apps , summary https://saastr.com/the-top-10-learnings-from-revenuecats-state-of-subscription-apps-how-115000-mobile-apps-deliver-16b-in-revenue-whats-working-whats-quietly-killing-growth
+
+## Autonomy gate
+
+The initial per-intent error rates and AUTO/ASSIST thresholds in `defuse-policy.yml` are **heuristic priors (H)**, not calibrated production error rates. `p_err = max(prior, 1 − confidence)` and `expected loss = p_err × impact`; the stricter of policy and gate applies. Measure model errors on held-out labelled real-world tickets before treating the priors as empirical. The Python reference currently mirrors defaults and does not load YAML.

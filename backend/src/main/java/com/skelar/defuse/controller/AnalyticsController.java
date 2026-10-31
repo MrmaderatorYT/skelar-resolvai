@@ -38,6 +38,8 @@ public class AnalyticsController {
         return out;
     }
 
+    @GetMapping("/diagnostics") public Map<String, Object> diagnostics() { return analytics.diagnostics(); }
+
     @GetMapping("/eval")
     public Map<String, Object> evalReport() {
         return eval.report();

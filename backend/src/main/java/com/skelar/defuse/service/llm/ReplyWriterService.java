@@ -104,7 +104,7 @@ public class ReplyWriterService {
             lines.add(String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months at no cost and keep your progress.",
                     policy.retentionPauseMonths()) + " Reply PAUSE to do that." + canStillCancel);
         }
-        if (acts.contains("cancel")) lines.add(pending && d.reasons().contains("low_confidence")
+        if (acts.contains("cancel")) lines.add(pending && (d.reasons().contains("low_confidence") || d.reasons().stream().anyMatch(r -> r.startsWith("autonomy_gate_")))
                 ? "A teammate is reviewing your cancellation request." : "Your subscription is cancelled and you won't be charged again.");
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
             String state = pending ? "is being confirmed by a teammate (within 1 hour)" : "is on its way";

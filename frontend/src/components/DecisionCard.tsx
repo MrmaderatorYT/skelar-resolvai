@@ -25,6 +25,7 @@ export default function DecisionCard({ a, onApprove, onReject, onAccept, onDecli
         </span>
         <span className="text-xs text-slate-400 ml-auto">{a.latency_ms} ms · conf {a.features.confidence.toFixed(2)}</span>
       </div>
+      {a.autonomy && <div className="rounded-lg border bg-slate-50 p-3 text-xs text-slate-600"><div className="font-semibold">Autonomy gate: {a.autonomy.level}</div><div className="mt-2 grid gap-1"><label>p_err {(a.autonomy.p_err * 100).toFixed(1)}%<progress className="block w-full" max={1} value={a.autonomy.p_err}/></label><label>Impact {usd(a.autonomy.impact_usd)}<progress className="block w-full" max={500} value={Math.min(a.autonomy.impact_usd,500)}/></label><label>Expected loss {usd(a.autonomy.expected_loss_usd)}<progress className="block w-full" max={1.5} value={Math.min(a.autonomy.expected_loss_usd,1.5)}/></label></div><div className="mt-1 text-slate-400">Heuristic prior; not validated live performance.</div></div>}
       <ul className="space-y-1">
         {d.actions.length === 0 && <li className="text-slate-500">No actions — a human takes over</li>}
         {d.actions.map((x) => (

@@ -42,7 +42,7 @@ class ReviewRegressionTest {
     @Test void lowConfidenceCancellationDoesNotRunBeforeApproval() {
         var f = new ClassificationFeatures("cancel", "cancel", false, false, false, false, false, "neutral", "en", .2, List.of(), "none");
         var d = policy.decide(f, contexts.build(store.tickets.get("T01").customerId), .2);
-        assertThat(d.mode()).isEqualTo("suggest");
+        assertThat(d.mode()).isEqualTo("escalate");
         assertThat(ActionExecutorService.actionsToRunNow(d)).doesNotContain("cancel");
     }
     @Test void changedBillingContextMustNotUseCachedApprovalDecision() {
@@ -70,7 +70,7 @@ class ReviewRegressionTest {
     @Test void configurablePolicyUsesProvidedRefundLimit() {
         var base = com.skelar.defuse.config.policy.PolicyProperties.defaults();
         var strict = new ReferencePolicyService(new com.skelar.defuse.config.policy.PolicyProperties(new com.skelar.defuse.config.policy.PolicyProperties.Refund(14, 2, 30, base.refund().planPeriodDays(), 20, 100, .85),
-                base.retention(), base.risk(), base.money(), base.sources()));
+                base.retention(), base.risk(), base.money(), base.gate(), base.sources()));
         var f = LlmClassifierService.fromGold(store.tickets.get("T01"));
         assertThat(strict.decide(f, contexts.build(store.tickets.get("T01").customerId), 1).mode()).isEqualTo("suggest");
         assertThatThrownBy(() -> new com.skelar.defuse.config.policy.PolicyProperties.Refund(14, 2, 30, java.util.Map.of("monthly", 30), 60, 100, 1.5))

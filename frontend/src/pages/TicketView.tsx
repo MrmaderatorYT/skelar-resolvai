@@ -62,7 +62,7 @@ export default function TicketView({ id, back }: { id: string; back: () => void 
               </button>
             )}
           </section>
-          {a && <ReplyEditor value={reply} onChange={setReply} editable={a.status === "needs_approval"} />}
+          {a && <><ReplyEditor value={reply} onChange={setReply} editable={a.status === "needs_approval" || a.status === "escalated"} />{(a.status === "needs_approval" || a.status === "escalated") && <button disabled={busy || !reply.trim()} onClick={() => run(() => api.humanReply(id, reply))} className="rounded-md border border-slate-300 px-4 py-2 text-sm disabled:opacity-50">Відповісти самому</button>}</>}
         </div>
         <div className="space-y-4">
           {a && <DecisionCard a={a} onApprove={() => run(() => api.approve(id, a.analysis_id, reply))} onReject={() => run(() => api.reject(id, "agent escalated"))}

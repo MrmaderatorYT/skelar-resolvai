@@ -13,6 +13,8 @@ public final class Requests {
     public record Approve(@NotBlank String analysisId, @Size(max = 2000) String replyText) {
     }
 
+    public record HumanReply(@NotBlank @Size(max = 2000) String text) {}
+
     public record Reject(@Size(max = 500) String reason) {
     }
 }

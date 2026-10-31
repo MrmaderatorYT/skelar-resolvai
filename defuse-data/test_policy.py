@@ -33,7 +33,7 @@ def test_refund_above_limit_needs_human():
 def test_low_confidence_downgrades_auto_to_suggest():
     t = TICKETS["T01"]
     d = decide(t["gold"], build_context(t["customer_id"], DATA), confidence=0.5)
-    assert d["mode"] == "suggest"
+    assert d["mode"] == "escalate"
 
 
 def test_store_purchases_get_instructions_not_refunds():

@@ -124,7 +124,7 @@ class PolicyConfigTest {
         var t = store.tickets.get("T04");
         var base = PolicyProperties.defaults();
         var noMonthly = new PolicyProperties(new PolicyProperties.Refund(14, 2, 30, java.util.Map.of("annual", 365), 60, 100, .85),
-                base.retention(), base.risk(), base.money(), base.sources());
+                base.retention(), base.risk(), base.money(), base.gate(), base.sources());
         var d = new ReferencePolicyService(noMonthly).decide(
                 com.skelar.defuse.service.llm.LlmClassifierService.fromGold(t), contexts.build(t.customerId), 1);
         assertThat(d.refundAmount()).isZero();

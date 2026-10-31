@@ -5,8 +5,10 @@ import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.HttpOptions;
 import com.google.genai.types.HttpRetryOptions;
 import com.google.genai.types.Schema;
+import com.google.genai.types.ThinkingConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 /** Official SDK: https://github.com/googleapis/java-genai (timeouts in milliseconds).
  * Instructions use the initial user turn, compatible with Gemma 3 and Gemma 4.
@@ -15,9 +17,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class GemmaClient implements LlmClient {
     private final LlmSettings settings;
+    private final String replyModel;
     private volatile Client client;
 
-    public GemmaClient(LlmSettings settings) { this.settings = settings; }
+    public GemmaClient(LlmSettings settings, @Value("${defuse.llm.reply-model:gemma-4-31b-it}") String replyModel) { this.settings = settings; this.replyModel = replyModel; }
 
     private Client client() {
         if (client == null) synchronized (this) {
@@ -34,7 +37,8 @@ public class GemmaClient implements LlmClient {
     }
 
     @Override public String generateJson(String prompt, String schemaHint) {
-        var config = GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(4096);
+        var config = GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(4096)
+                .thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build());
         if (settings.jsonMode()) config.responseMimeType("application/json");
         if (settings.responseSchema()) config.responseSchema(Schema.fromJson(schemaHint));
         return nonempty(client().models.generateContent(settings.model(),
@@ -42,8 +46,8 @@ public class GemmaClient implements LlmClient {
     }
 
     @Override public String generateText(String prompt) {
-        return nonempty(client().models.generateContent(settings.model(), prompt,
-                GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(2048).build()).text());
+        return nonempty(client().models.generateContent(replyModel, prompt,
+                GenerateContentConfig.builder().temperature(0.0f).maxOutputTokens(2048).thinkingConfig(ThinkingConfig.builder().thinkingLevel("minimal").build()).build()).text());
     }
 
     private String nonempty(String text) {

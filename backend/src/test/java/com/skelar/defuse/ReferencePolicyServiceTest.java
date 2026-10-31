@@ -69,7 +69,7 @@ class ReferencePolicyServiceTest {
 
     @Test
     void lowConfidenceDowngradesAutoToSuggest() {
-        assertThat(decide("T01", 0.5).mode()).isEqualTo("suggest");
+        assertThat(decide("T01", 0.5).mode()).isEqualTo("escalate");
     }
 
     @Test

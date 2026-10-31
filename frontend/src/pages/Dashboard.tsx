@@ -6,14 +6,17 @@ import type { RootCause, Summary } from "../types";
 
 export default function Dashboard() {
   const [s, setS] = useState<Summary | null>(null);
+  const [diagnostics, setDiagnostics] = useState<Awaited<ReturnType<typeof api.diagnostics>> | null>(null);
   const [rc, setRc] = useState<RootCause[]>([]);
-  useEffect(() => { api.summary().then(setS); api.rootCauses().then(setRc); }, []);
+  useEffect(() => { api.summary().then(setS); api.rootCauses().then(setRc); api.diagnostics().then(setDiagnostics); }, []);
   if (!s) return <p>Loading…</p>;
   const b = s.baseline;
   const top = rc[0];
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-bold">Support performance</h1>
+      <p className="text-xs text-slate-500">Demo session and synthetic history. Financial estimates are scenarios, not measured savings or prevented disputes.</p>
+      {diagnostics && <div className="grid gap-3 md:grid-cols-2"><section className="rounded-xl border bg-white p-4"><h2 className="font-semibold">Resolved in this session</h2><p className="mt-2 text-sm">AI auto: {diagnostics.resolved.auto} · AI + human: {diagnostics.resolved.assisted} · Human reply: {diagnostics.resolved.human}</p><h3 className="mt-4 text-sm font-semibold">Why review was needed</h3>{Object.entries(diagnostics.reasons).length ? Object.entries(diagnostics.reasons).map(([reason,count])=><p key={reason} className="mt-1 text-xs text-slate-600">{reason}: {count}</p>) : <p className="text-xs text-slate-400">No reasons recorded yet.</p>}</section><section className="rounded-xl border bg-white p-4"><h2 className="font-semibold">Segments · synthetic history</h2><p className="mt-1 text-xs text-slate-400">Acquisition channel · root cause · payment processor</p>{diagnostics.synthetic_segments.slice(0,8).map(s=><p key={s.segment} className="mt-2 text-xs text-slate-600">{s.segment.replaceAll("_", " ")} — {s.count}</p>)}</section></div>}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Auto-resolved" value={`${s.auto_resolved_pct}%`} hint={`${s.analyzed} of ${s.tickets_total} analyzed`} />
         <KpiCard label="Needs approval / escalated" value={`${s.by_status.needs_approval ?? 0} / ${s.by_status.escalated ?? 0}`} />
@@ -21,7 +24,7 @@ export default function Dashboard() {
           hint={`baseline: ${b.median_resolution_hours} h median`} />
         <KpiCard label="Chargeback exposure (high risk)" value={usd(s.gross_exposure_usd)} hint="charge + est. chargeback & VAMP fees" />
         <KpiCard label="Refund spend (policy-entitled)" value={usd(s.refunded_usd)} hint="a refund is a cost, not a saving" />
-        <KpiCard label="Expected fees avoided" value={usd(s.expected_fees_avoided_usd)} hint={`≈ ${s.expected_chargebacks_avoided} chargebacks resolved before the bank`} />
+        <KpiCard label="Expected fees avoided" value={usd(s.expected_fees_avoided_usd)} hint={`Illustrative scenario: ${s.expected_chargebacks_avoided} expected events; not measured outcomes`} />
         <KpiCard label="Sarcasm / high risk caught" value={`${s.sarcasm_detected} / ${s.high_risk_tickets}`} />
         <KpiCard label="Injections blocked" value={s.injections_blocked} />
         <KpiCard label="Retention offers sent" value={s.retention.offers_sent}
@@ -38,7 +41,7 @@ export default function Dashboard() {
           <RootCauseChart rows={rc} />
           {top && (
             <p className="text-sm bg-amber-50 rounded p-2 mt-2">
-              <b>Top product fix:</b> {top.recommended_fix} — removes {Math.round(top.share * 100)}% of tickets.
+              <b>Top product fix:</b> {top.recommended_fix} — {Math.round(top.share * 100)}% of synthetic history tickets have this cause.
             </p>
           )}
         </section>

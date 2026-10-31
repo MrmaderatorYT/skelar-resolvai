@@ -102,7 +102,45 @@ public class ReferencePolicyService {
         return Set.of("question", "billing_question", "unclear").contains(f.intent()) ? "P4" : "P3";
     }
 
+    public record Autonomy(double pErr, double impactUsd, double expectedLossUsd, String level, String source) {}
+
+    public Autonomy assess(ClassificationFeatures f, CustomerContext ctx, PolicyDecision decision, double confidence) {
+        if (f == null || f.intent() == null || !Double.isFinite(confidence) || confidence < 0 || confidence > 1)
+            return new Autonomy(1, 0, 0, "HUMAN", "invalid_features");
+        var g = props.gate();
+        double prior = g.priors().getOrDefault(f.intent(), 1.0);
+        double pErr = Math.rint(Math.max(prior, 1 - confidence) * 1_000_000_000_000d) / 1_000_000_000_000d;
+        int days = refundCfg.periodDays(ctx.plan());
+        double impact = decision.refundAmount();
+        if (decision.actions().contains("offer_discount") || decision.actions().contains("apply_discount")) {
+            if (days <= 0) return new Autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
+            impact += ctx.price() * 30.0 / days * retentionCfg.discountPercent() / 100.0 * retentionCfg.discountMonths();
+        }
+        if (decision.actions().contains("extend_access_7d")) {
+            if (days <= 0) return new Autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
+            impact += ctx.price() * 7.0 / days;
+        }
+        double expectedLoss = pErr * impact;
+        boolean replyOnly = !decision.actions().isEmpty() && decision.actions().stream().allMatch(a -> Set.of("reply_only", "ask_clarification").contains(a));
+        String level;
+        if (f.injection() || "disputed".equals(ctx.lastPayment().status()) || Set.of("account_access", "account_security").contains(f.intent())) level = "HUMAN";
+        else if (replyOnly) level = "AUTO";
+        else if (pErr <= g.autoErrorMax() && impact <= g.autoImpactMaxUsd() && expectedLoss <= g.autoExpectedLossMaxUsd()) level = "AUTO";
+        else if (pErr <= g.assistErrorMax() && impact <= g.assistImpactMaxUsd()) level = "ASSIST";
+        else level = "HUMAN";
+        return new Autonomy(pErr, impact, expectedLoss, level, "heuristic_prior");
+    }
     public PolicyDecision decide(ClassificationFeatures f, CustomerContext ctx, double confidence) {
+        PolicyDecision base = decideBase(f, ctx, confidence);
+        Autonomy gate = assess(f, ctx, base, confidence);
+        int policyRank = switch (base.mode()) { case "auto" -> 0; case "suggest" -> 1; default -> 2; };
+        int gateRank = switch (gate.level()) { case "AUTO" -> 0; case "ASSIST" -> 1; default -> 2; };
+        if (gateRank <= policyRank) return base;
+        var reasons = new ArrayList<>(base.reasons());
+        reasons.add("autonomy_gate_" + gate.level().toLowerCase(java.util.Locale.ROOT));
+        return new PolicyDecision(base.actions(), gateRank == 1 ? "suggest" : "escalate", base.refundAmount(), base.riskScore(), base.riskBand(), base.priority(), reasons);
+    }
+    private PolicyDecision decideBase(ClassificationFeatures f, CustomerContext ctx, double confidence) {
         // Fail closed on anything the LLM could get wrong: unknown intent, NaN or out-of-range confidence.
         if (f == null || f.intent() == null || !INTENTS.contains(f.intent()) || !Double.isFinite(confidence) || confidence < 0 || confidence > 1) {
             return new PolicyDecision(List.of(), "escalate", 0, 0, "low", "P1",

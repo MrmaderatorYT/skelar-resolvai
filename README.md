@@ -71,3 +71,8 @@ All data is synthetic (made-up app "Calmly"). Baseline metrics come from a synth
 `backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 38-case reference ($60, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
 
 Prompt-injection matches are escalated without sending the ticket to Claude. Low-confidence cancellation waits for approval. Approval includes the reviewed analysis ID and checks the current billing context against that snapshot; a changed context returns HTTP 409 and requires a fresh analysis and review. This remains an in-memory demo without authenticated production billing.
+
+
+## Demo sign-in
+
+Set `DEFUSE_CUSTOMER_PASSWORD` and `DEFUSE_ADMIN_PASSWORD` in the backend environment before starting the server. No default passwords are provided. Sign in as `customer@calmly.demo` or `admin@calmly.demo`. Optionally set `DEFUSE_CUSTOMER_ID` to a seed customer ID (default `cus_0001`). Sessions are kept in server memory for eight hours; a restart removes them. This is a demonstration, not production authentication.

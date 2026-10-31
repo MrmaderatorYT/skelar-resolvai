@@ -58,7 +58,10 @@ public class AnalyticsService {
         List<TicketAnalysis> as = new ArrayList<>(store.analyses.values());
         int n = as.size();
         Map<String, Long> byStatus = as.stream().collect(Collectors.groupingBy(a -> a.status, TreeMap::new, Collectors.counting()));
-        long auto = as.stream().filter(a -> a.decision.mode().equals("auto")).count();
+        List<Map<String, Object>> events = audit.all();
+        var humanTickets = events.stream().filter(e -> "human_reply".equals(e.get("event")) || "approved".equals(e.get("event")))
+                .map(e -> (String) e.get("ticket_id")).collect(Collectors.toSet());
+        long auto = as.stream().filter(a -> "resolved".equals(a.status) && a.decision.mode().equals("auto") && !humanTickets.contains(a.ticketId)).count();
         double refunded = audit.all().stream().filter(e -> "executed".equals(e.get("event")))
                 .mapToDouble(e -> ((Number) e.getOrDefault("amount", 0)).doubleValue()).sum();
         List<TicketAnalysis> resolved = as.stream().filter(a -> a.status.equals("resolved")).toList();
@@ -88,7 +91,6 @@ public class AnalyticsService {
         s.put("injections_blocked", as.stream().filter(a -> a.features.injection()).count());
         s.put("ai_median_latency_ms", n == 0 ? null : median(as.stream().map(a -> (double) a.latencyMs).toList()));
         Map<String, Object> retention = new LinkedHashMap<>();
-        List<Map<String, Object>> events = audit.all();
         retention.put("offers_sent", as.stream().filter(a -> a.decision.actions().stream().anyMatch(x -> x.startsWith("offer_"))).count());
         retention.put("offers_accepted", events.stream().filter(e -> "offer_accepted".equals(e.get("event"))).count());
         retention.put("offers_declined", events.stream().filter(e -> "offer_declined".equals(e.get("event"))).count());
@@ -120,6 +122,38 @@ public class AnalyticsService {
         s.put("money_settings", fees);
         s.put("baseline", baseline);
         return s;
+    }
+
+    /** Current demo outcomes and historical synthetic segments; no causal savings claims. */
+    public Map<String, Object> diagnostics() {
+        synchronized (store) {
+            var events = audit.all();
+            var human = events.stream().filter(e -> "human_reply".equals(e.get("event"))).map(e -> (String) e.get("ticket_id")).collect(Collectors.toSet());
+            var approved = events.stream().filter(e -> "approved".equals(e.get("event"))).map(e -> (String) e.get("ticket_id")).collect(Collectors.toSet());
+            long humanOnly = 0, assisted = 0, automatic = 0;
+            for (var a : store.analyses.values()) {
+                if (!"resolved".equals(a.status)) continue;
+                if (human.contains(a.ticketId)) humanOnly++;
+                else if (approved.contains(a.ticketId)) assisted++;
+                else if ("auto".equals(a.decision.mode())) automatic++;
+            }
+            Map<String, Long> reasons = store.analyses.values().stream().flatMap(a -> a.decision.reasons().stream())
+                    .collect(Collectors.groupingBy(x -> x, TreeMap::new, Collectors.counting()));
+            Map<String, Long> segments = new TreeMap<>();
+            for (var h : store.history) {
+                try {
+                    var customer = store.customer(h.customerId); var subscription = store.subscription(h.customerId);
+                    String channel = customer.acquisitionChannel == null ? "unknown" : customer.acquisitionChannel;
+                    String processor = subscription.processor == null ? "unknown" : subscription.processor;
+                    String cause = h.rootCause == null ? "unknown" : h.rootCause;
+                    segments.merge(channel + " | " + cause + " | " + processor, 1L, Long::sum);
+                } catch (java.util.NoSuchElementException ignored) { /* Missing join is not attributed to a segment. */ }
+            }
+            var topSegments = segments.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed().thenComparing(Map.Entry::getKey))
+                    .limit(20).map(e -> Map.of("segment", e.getKey(), "count", e.getValue())).toList();
+            return Map.of("resolved", Map.of("auto", automatic, "assisted", assisted, "human", humanOnly),
+                    "reasons", reasons, "synthetic_segments", topSegments, "root_causes", rootCauses().stream().limit(5).toList());
+        }
     }
 
     public List<Map<String, Object>> rootCauses() {

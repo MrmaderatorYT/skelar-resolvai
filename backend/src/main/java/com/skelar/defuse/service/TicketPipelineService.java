@@ -84,6 +84,7 @@ public class TicketPipelineService {
         a.injectionGuard = check;
         a.context = ctx;
         a.decision = d;
+        a.autonomy = policy.assess(f, ctx, d, f.confidence());
         a.money = money.atRisk(f, d, ctx);
         a.status = t.status = d.mode().equals("auto") && d.actions().stream().anyMatch(x -> x.startsWith("offer_"))
                 ? "offer_sent" : STATUS.get(d.mode());
@@ -173,6 +174,17 @@ public class TicketPipelineService {
         a.reply = replies.offerOutcome(store.customer(a.context.customerId()).name, action, failed);
         audit.log(event, ticketId, Map.of("by", "customer", "action", action));
         return a;
+    }
+
+    public TicketAnalysis humanReply(String ticketId, String text, String agent) {
+        synchronized (store) {
+            TicketAnalysis a = analysis(ticketId);
+            if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only");
+            if (!List.of("needs_approval", "escalated").contains(a.status)) throw new IllegalStateException("Ticket is not awaiting a human");
+            if (text == null || text.isBlank()) throw new IllegalArgumentException("Reply is required");
+            a.reply = text.trim(); a.status = ticket(ticketId).status = "resolved";
+            audit.log("human_reply", ticketId, Map.of("by", agent)); return a;
+        }
     }
 
     public TicketAnalysis reject(String ticketId, String agent, String reason) {

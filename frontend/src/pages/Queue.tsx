@@ -11,7 +11,7 @@ const STATUS: Record<string, string> = {
   offer_sent: "bg-sky-100 text-sky-800",
 };
 
-export default function Queue({ open }: { open: (id: string) => void }) {
+export default function Queue({ open, inbox = false }: { open: (id: string) => void; inbox?: boolean }) {
   const [rows, setRows] = useState<TicketRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -27,7 +27,7 @@ export default function Queue({ open }: { open: (id: string) => void }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-bold">Support queue</h1>
+        <h1 className="text-xl font-bold">{inbox ? "Inbox · Needs human review" : "Support queue"}</h1>
         <span className="text-sm text-slate-500">{rows.filter((r) => r.status === "open").length} open</span>
         <div className="ml-auto flex gap-2">
           <button disabled={busy} onClick={() => setShowNew(true)} className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-white">New ticket</button>
@@ -44,7 +44,7 @@ export default function Queue({ open }: { open: (id: string) => void }) {
             <tr>{["Prio", "Risk", "Signals", "Customer", "Message", "Lang", "Status"].map((h) => <th key={h} className="p-2">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.filter(r => !inbox || r.status === "needs_approval" || r.status === "escalated").map((r) => (
               <tr key={r.id} onClick={() => open(r.id)} className={`border-b last:border-0 cursor-pointer hover:bg-slate-50 ${r.priority === "P1" ? "bg-red-50/40" : ""}`}>
                 <td className="p-2"><PriorityPill p={r.priority} /></td>
                 <td><RiskBadge band={r.risk_band} /></td>

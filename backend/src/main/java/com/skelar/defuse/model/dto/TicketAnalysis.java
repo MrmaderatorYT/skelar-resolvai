@@ -12,6 +12,7 @@ public class TicketAnalysis {
     public InjectionCheck injectionGuard;
     public CustomerContext context;
     public PolicyDecision decision;
+    public com.skelar.defuse.service.policy.ReferencePolicyService.Autonomy autonomy;
     public MoneyAtRisk money;
     public String reply;
     public String status;

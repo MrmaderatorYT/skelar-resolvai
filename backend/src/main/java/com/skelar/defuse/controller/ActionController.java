@@ -35,6 +35,11 @@ public class ActionController {
         return pipeline.declineOffer(id);
     }
 
+    @PostMapping("/human-reply")
+    public TicketAnalysis humanReply(@PathVariable String id, @Valid @RequestBody Requests.HumanReply body) {
+        return pipeline.humanReply(id, body.text(), "support-agent");
+    }
+
     @PostMapping("/reject")
     public TicketAnalysis reject(@PathVariable String id, @Valid @RequestBody(required = false) Requests.Reject body) {
         return pipeline.reject(id, "support-agent", body == null ? "" : body.reason());

@@ -304,3 +304,45 @@ def decide(f, ctx, confidence=1.0):
         mode = "suggest"
 
     return out(acts, mode, refund)
+
+# Heuristic autonomy priors. Keep in sync with defuse-policy.yml until Python reads YAML.
+GATE = {
+    "auto_error_max": .03, "assist_error_max": .15, "auto_impact_max_usd": 50,
+    "assist_impact_max_usd": 500, "auto_expected_loss_max_usd": 1.5,
+    "priors": {"question": .01, "billing_question": .02, "cancel": .01, "cancel_refund": .02,
+               "refund": .02, "duplicate_charge": .02, "pause": .02, "technical_issue": .05,
+               "account_access": .10, "account_security": .10, "unclear": .50},
+}
+_reference_decide = decide
+
+def decide(f, ctx, confidence=1.0):
+    base = _reference_decide(f, ctx, confidence)
+    if not isinstance(f, dict) or f.get("intent") not in INTENTS or type(confidence) not in (float, int) or not math.isfinite(confidence) or not 0 <= confidence <= 1:
+        return base
+    intent = f["intent"]
+    p_err = round(max(GATE["priors"].get(intent, 1.0), 1 - confidence), 12)
+    impact = base["refund_amount"]
+    period = ctx.get("period_days") or 0
+    if "offer_discount" in base["actions"] or "apply_discount" in base["actions"]:
+        if period <= 0: level = "HUMAN"
+        else:
+            impact += ctx["price"] * 30 / period * POLICY["retention"]["discount_percent"] / 100 * POLICY["retention"]["discount_months"]
+            level = None
+    else: level = None
+    if "extend_access_7d" in base["actions"]:
+        if period <= 0: level = "HUMAN"
+        else: impact += ctx["price"] * 7 / period
+    expected_loss = p_err * impact
+    if f["injection"] or ctx["last_payment"]["status"] == "disputed" or intent in ("account_access", "account_security"):
+        level = "HUMAN"
+    elif level is None:
+        if base["actions"] and all(a in ("reply_only", "ask_clarification") for a in base["actions"]): level = "AUTO"
+        elif p_err <= GATE["auto_error_max"] and impact <= GATE["auto_impact_max_usd"] and expected_loss <= GATE["auto_expected_loss_max_usd"]: level = "AUTO"
+        elif p_err <= GATE["assist_error_max"] and impact <= GATE["assist_impact_max_usd"]: level = "ASSIST"
+        else: level = "HUMAN"
+    rank = {"auto": 0, "suggest": 1, "escalate": 2}
+    gate_rank = {"AUTO": 0, "ASSIST": 1, "HUMAN": 2}[level]
+    if gate_rank > rank[base["mode"]]:
+        base["mode"] = "suggest" if gate_rank == 1 else "escalate"
+        base["reasons"].append("autonomy_gate_" + level.lower())
+    return base

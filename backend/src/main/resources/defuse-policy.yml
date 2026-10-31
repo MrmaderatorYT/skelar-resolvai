@@ -21,6 +21,13 @@ defuse:
       cooldown-days: 90              # Churnkey 3-month discount cooldown (C)
       max-offers-per-30d: 50         # budget cap (H)
       holdout-bucket: 3              # id % 10 == 3 never gets offers; -1 disables (H)
+    gate:
+      auto-error-max: 0.03
+      assist-error-max: 0.15
+      auto-impact-max-usd: 50
+      assist-impact-max-usd: 500
+      auto-expected-loss-max-usd: 1.50
+      priors: {question: 0.01, billing_question: 0.02, cancel: 0.01, cancel_refund: 0.02, refund: 0.02, duplicate_charge: 0.02, pause: 0.02, technical_issue: 0.05, account_access: 0.10, account_security: 0.10, unclear: 0.50}
     risk:
       base: 0.10
       dispute: 0.40
@@ -51,6 +58,7 @@ defuse:
       retention-min-tenure: "RULES.md#retention (H; B: RevenueCat SOSA 2026)"
       retention-max-offers-per-30d: "RULES.md#retention (H)"
       retention-holdout: "RULES.md#retention (H)"
+      autonomy-gate: "RULES.md#autonomy-gate (H: initial uncalibrated priors)"
       risk-weights: "RULES.md#risk (H; definitions in LABELING.md)"
       money-dispute-fee: "RULES.md#money (B: Stripe dispute fee)"
       money-scheme-fee: "RULES.md#money (contract value)"
