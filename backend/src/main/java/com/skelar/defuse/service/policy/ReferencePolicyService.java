@@ -6,9 +6,11 @@ import com.skelar.defuse.model.dto.LastPayment;
 import com.skelar.defuse.model.dto.PolicyDecision;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Deterministic policy, a 1:1 port of defuse-data/reference_policy.py.
@@ -16,13 +18,37 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ReferencePolicyService {
-    public static final double AUTO_REFUND_LIMIT_USD = 60.0;
-    public static final int FULL_REFUND_MAX_DAYS = 14;
-    public static final int FULL_REFUND_MAX_SESSIONS = 2;
-    public static final int PARTIAL_REFUND_MAX_DAYS = 30;
-    public static final double PARTIAL_REFUND_SHARE = 0.5;
-    public static final double GOODWILL_LTV_USD = 100.0;
-    public static final double MIN_AUTO_CONFIDENCE = 0.85;
+    private final double autoRefundLimitUsd;
+    private final int fullRefundMaxDays, fullRefundMaxSessions, partialRefundMaxDays;
+    private final double partialRefundShare, goodwillLtvUsd, minAutoConfidence;
+
+    public ReferencePolicyService(@Value("${defuse.policy.auto-refund-limit-usd:60}") double autoRefundLimitUsd,
+            @Value("${defuse.policy.full-refund-max-days:14}") int fullRefundMaxDays,
+            @Value("${defuse.policy.full-refund-max-sessions:2}") int fullRefundMaxSessions,
+            @Value("${defuse.policy.partial-refund-max-days:30}") int partialRefundMaxDays,
+            @Value("${defuse.policy.partial-refund-share:0.5}") double partialRefundShare,
+            @Value("${defuse.policy.goodwill-ltv-usd:100}") double goodwillLtvUsd,
+            @Value("${defuse.policy.min-auto-confidence:0.85}") double minAutoConfidence) {
+        if (!Double.isFinite(autoRefundLimitUsd) || autoRefundLimitUsd < 0 || fullRefundMaxDays < 0
+                || fullRefundMaxSessions < 0 || partialRefundMaxDays < fullRefundMaxDays
+                || !Double.isFinite(partialRefundShare) || partialRefundShare < 0 || partialRefundShare > 1
+                || !Double.isFinite(goodwillLtvUsd) || goodwillLtvUsd < 0
+                || !Double.isFinite(minAutoConfidence) || minAutoConfidence < 0 || minAutoConfidence > 1)
+            throw new IllegalArgumentException("Invalid refund policy configuration");
+        this.autoRefundLimitUsd = autoRefundLimitUsd; this.fullRefundMaxDays = fullRefundMaxDays;
+        this.fullRefundMaxSessions = fullRefundMaxSessions; this.partialRefundMaxDays = partialRefundMaxDays;
+        this.partialRefundShare = partialRefundShare; this.goodwillLtvUsd = goodwillLtvUsd;
+        this.minAutoConfidence = minAutoConfidence;
+    }
+    public double autoRefundLimitUsd() { return autoRefundLimitUsd; }
+    public Map<String, Object> effectiveSettings(Map<String, Object> seed) {
+        Map<String, Object> result = new LinkedHashMap<>(seed);
+        result.put("auto_refund_limit_usd", autoRefundLimitUsd); result.put("full_refund_max_days", fullRefundMaxDays);
+        result.put("full_refund_max_sessions", fullRefundMaxSessions); result.put("partial_refund_max_days", partialRefundMaxDays);
+        result.put("partial_refund_share", partialRefundShare); result.put("goodwill_ltv_usd", goodwillLtvUsd);
+        result.put("min_auto_confidence", minAutoConfidence);
+        return result;
+    }
 
     static final double W_BASE = 0.10, W_DISPUTE = 0.40, W_SARCASM = 0.25, W_AGGRESSION = 0.20,
             W_MONEY = 0.15, W_PER_CONTACT = 0.10;
@@ -42,6 +68,19 @@ public class ReferencePolicyService {
     public static final int MIN_TENURE_MONTHS = 2, MIN_PAID_RENEWALS = 1, OFFER_COOLDOWN_DAYS = 365;
     public static final int MAX_OFFERS_PER_30D = 50;
     public static final int HOLDOUT_BUCKET = 3;   // customer id % 10 == 3 never gets offers: measures real uplift
+
+    /** Offer parameters: the only way other components read them (frozen contract, config-driven later). */
+    public int retentionDiscountPercent() {
+        return DISCOUNT_PERCENT;
+    }
+
+    public int retentionDiscountMonths() {
+        return DISCOUNT_MONTHS;
+    }
+
+    public int retentionPauseMonths() {
+        return PAUSE_MONTHS;
+    }
 
     public record Risk(double score, String band) {
     }
@@ -70,7 +109,7 @@ public class ReferencePolicyService {
 
     public PolicyDecision decide(ClassificationFeatures f, CustomerContext ctx, double confidence) {
         // Fail closed on anything the LLM could get wrong: unknown intent, NaN or out-of-range confidence.
-        if (f == null || !INTENTS.contains(f.intent()) || !Double.isFinite(confidence) || confidence < 0 || confidence > 1) {
+        if (f == null || f.intent() == null || !INTENTS.contains(f.intent()) || !Double.isFinite(confidence) || confidence < 0 || confidence > 1) {
             return new PolicyDecision(List.of(), "escalate", 0, 0, "low", "P1",
                     new ArrayList<>(List.of("invalid_features_or_confidence")));
         }
@@ -80,7 +119,7 @@ public class ReferencePolicyService {
         LastPayment lp = ctx.lastPayment();
         boolean disputed = "disputed".equals(lp.status());
         List<String> reasons = new ArrayList<>();
-        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx);
+        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx, autoRefundLimitUsd, minAutoConfidence);
 
         if (feat.injection()) {
             reasons.add("prompt_injection: no actions, human review");
@@ -148,15 +187,15 @@ public class ReferencePolicyService {
         } else if (REFUND_INTENTS.contains(intent)) {
             long days = lp.daysAgo();
             int sessions = ctx.sessionsSinceLastCharge();
-            if (days <= FULL_REFUND_MAX_DAYS && sessions <= FULL_REFUND_MAX_SESSIONS) {
+            if (days <= fullRefundMaxDays && sessions <= fullRefundMaxSessions) {
                 acts.add("refund_full");
                 refund = lp.amount();
-            } else if (days <= PARTIAL_REFUND_MAX_DAYS) {
+            } else if (days <= partialRefundMaxDays) {
                 acts.add("refund_partial");
-                refund = floorCents(lp.amount() * PARTIAL_REFUND_SHARE);
+                refund = floorCents(lp.amount() * partialRefundShare);
             } else if (risk.band().equals("high")) {
                 acts.add("refund_partial_goodwill");
-                refund = floorCents(lp.amount() * PARTIAL_REFUND_SHARE);
+                refund = floorCents(lp.amount() * partialRefundShare);
                 mode = "suggest";
                 reasons.add("outside_window_but_high_dispute_risk: goodwill needs a human");
             } else {
@@ -165,7 +204,7 @@ public class ReferencePolicyService {
         } else if (intent.equals("pause")) {
             acts.add("pause");
         } else if (intent.equals("technical_issue")
-                && (ctx.ltvUsd() >= GOODWILL_LTV_USD || !risk.band().equals("low"))) {
+                && (ctx.ltvUsd() >= goodwillLtvUsd || !risk.band().equals("low"))) {
             acts.add("extend_access_7d");
             mode = "suggest";
         }
@@ -190,7 +229,7 @@ public class ReferencePolicyService {
     }
 
     private record Out(ClassificationFeatures f, Risk risk, boolean disputed, double confidence, List<String> reasons,
-                       CustomerContext ctx) {
+                       CustomerContext ctx, double autoRefundLimitUsd, double minAutoConfidence) {
         /** Every money path (incl. duplicates) goes through the same gate. */
         PolicyDecision of(List<String> actions, String mode, double refund) {
             if (refund > 0) {
@@ -200,7 +239,7 @@ public class ReferencePolicyService {
                     actions = actions.stream().filter(a -> !a.startsWith("refund_")).toList();
                     mode = actions.isEmpty() ? "escalate" : "suggest";
                     reasons.add("payment_not_refundable");
-                } else if (refund > AUTO_REFUND_LIMIT_USD) {
+                } else if (refund > autoRefundLimitUsd) {
                     mode = "suggest";
                     reasons.add("above_auto_refund_limit");
                 }
@@ -209,8 +248,8 @@ public class ReferencePolicyService {
                     reasons.add("refund_or_chargeback_history");
                 }
             }
-            if (mode.equals("auto") && confidence < MIN_AUTO_CONFIDENCE) {
-                mode = "suggest";
+            if (!mode.equals("escalate") && confidence < minAutoConfidence) {
+                if (mode.equals("auto")) mode = "suggest";
                 reasons.add("low_confidence");
             }
             List<String> acts = new ArrayList<>(actions);

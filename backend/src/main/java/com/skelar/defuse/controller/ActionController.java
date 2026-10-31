@@ -21,8 +21,8 @@ public class ActionController {
     }
 
     @PostMapping({"/approve", "/execute"})
-    public TicketAnalysis approve(@PathVariable String id, @Valid @RequestBody(required = false) Requests.Approve body) {
-        return pipeline.approve(id, "support-agent", body == null ? null : body.replyText());
+    public TicketAnalysis approve(@PathVariable String id, @Valid @RequestBody Requests.Approve body) {
+        return pipeline.approve(id, "support-agent", body.replyText(), body.analysisId());
     }
 
     @PostMapping("/offer/accept")

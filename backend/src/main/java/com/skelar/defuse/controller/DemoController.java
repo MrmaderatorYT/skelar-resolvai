@@ -16,23 +16,27 @@ public class DemoController {
     private final InMemoryStore store;
     private final AuditService audit;
     private final LlmClassifierService classifier;
+    private final ReferencePolicyService policy;
 
-    public DemoController(InMemoryStore store, AuditService audit, LlmClassifierService classifier) {
+    public DemoController(InMemoryStore store, AuditService audit, LlmClassifierService classifier, ReferencePolicyService policy) {
         this.store = store;
         this.audit = audit;
         this.classifier = classifier;
+        this.policy = policy;
     }
 
     @GetMapping("/health")
     public Map<String, Object> health() {
-        return Map.of("ok", true, "llm_mode", classifier.mode(), "policy", store.policy,
-                "auto_refund_limit_usd", ReferencePolicyService.AUTO_REFUND_LIMIT_USD);
+        return Map.of("ok", true, "llm_mode", classifier.mode(), "policy", policy.effectiveSettings(store.policy),
+                "auto_refund_limit_usd", policy.autoRefundLimitUsd());
     }
 
     @PostMapping("/demo/reset")
     public Map<String, Object> reset() {
-        store.reset();
-        audit.clear();
-        return Map.of("ok", true, "tickets", store.tickets.size());
+        synchronized (store) {
+            store.reset();
+            audit.clear();
+            return Map.of("ok", true, "tickets", store.tickets.size());
+        }
     }
 }

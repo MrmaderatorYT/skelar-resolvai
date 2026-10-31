@@ -23,7 +23,7 @@ export interface Decision {
 }
 
 export interface Analysis {
-  ticket_id: string; features: Features; decision: Decision; reply: string; status: Status;
+  ticket_id: string; analysis_id: string; features: Features; decision: Decision; reply: string; status: Status;
   latency_ms: number; injection_guard: { flagged: boolean; patterns: string[] };
   money: { amount_at_risk: number; fees_at_risk: number; p_dispute: number; expected_fees_avoided: number };
   executed: Record<string, unknown>[];

@@ -102,12 +102,15 @@ public class ReplyWriterService {
             lines.add(String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months at no cost and keep your progress.",
                     ReferencePolicyService.PAUSE_MONTHS) + " Reply PAUSE to do that." + canStillCancel);
         }
-        if (acts.contains("cancel")) lines.add("Your subscription is cancelled and you won't be charged again.");
+        if (acts.contains("cancel")) lines.add(pending && d.reasons().contains("low_confidence")
+                ? "A teammate is reviewing your cancellation request." : "Your subscription is cancelled and you won't be charged again.");
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
             String state = pending ? "is being confirmed by a teammate (within 1 hour)" : "is on its way";
             lines.add(String.format(Locale.US, "A refund of $%.2f %s; card refunds land in 5-10 business days.", d.refundAmount(), state));
         }
-        if (acts.contains("pause")) lines.add("Your subscription is paused for 2 months; nothing will be charged meanwhile.");
+        if (acts.contains("pause")) lines.add(pending
+                ? "A teammate is reviewing your request to pause the subscription."
+                : "Your subscription is paused for 2 months; nothing will be charged meanwhile.");
         if (acts.contains("extend_access_7d")) {
             lines.add("We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
         }

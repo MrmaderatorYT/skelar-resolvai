@@ -29,7 +29,7 @@ public class ActionExecutorService {
     public static List<String> actionsToRunNow(PolicyDecision d) {
         if (d.mode().equals("auto")) return d.actions();
         List<String> now = new ArrayList<>(d.actions().stream().filter(MockBillingService.SAFE_ACTIONS::contains).toList());
-        if (d.mode().equals("suggest") && d.actions().contains("cancel")) now.add("cancel");
+        if (d.mode().equals("suggest") && !d.reasons().contains("low_confidence") && d.actions().contains("cancel")) now.add("cancel");
         return now;
     }
 

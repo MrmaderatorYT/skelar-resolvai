@@ -55,6 +55,7 @@ export default function TicketView({ id, back }: { id: string; back: () => void 
                 </div>
               </>
             )}
+            {a?.status === "needs_approval" && <button disabled={busy} onClick={() => run(() => api.analyze(id, true))} className="w-full rounded-md border border-slate-300 py-2 text-sm disabled:opacity-50">Reanalyze (automatic actions may run)</button>}
             {!a && (
               <button disabled={busy} onClick={() => run(() => api.analyze(id))} className="w-full rounded-md bg-slate-900 text-white py-2 font-semibold disabled:opacity-50">
                 {busy ? "Analyzing…" : "Analyze with Defuse"}
@@ -64,7 +65,7 @@ export default function TicketView({ id, back }: { id: string; back: () => void 
           {a && <ReplyEditor value={reply} onChange={setReply} editable={a.status === "needs_approval"} />}
         </div>
         <div className="space-y-4">
-          {a && <DecisionCard a={a} onApprove={() => run(() => api.approve(id, reply))} onReject={() => run(() => api.reject(id, "agent escalated"))}
+          {a && <DecisionCard a={a} onApprove={() => run(() => api.approve(id, a.analysis_id, reply))} onReject={() => run(() => api.reject(id, "agent escalated"))}
             onAccept={() => run(() => api.acceptOffer(id))} onDecline={() => run(() => api.declineOffer(id))} />}
           <Timeline events={d.audit} />
         </div>

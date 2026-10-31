@@ -7,6 +7,7 @@ import java.util.Map;
 /** Full result of the pipeline for one ticket. Status, reply and executed change on approval. */
 public class TicketAnalysis {
     public String ticketId;
+    public String analysisId;
     public ClassificationFeatures features;
     public InjectionCheck injectionGuard;
     public CustomerContext context;
