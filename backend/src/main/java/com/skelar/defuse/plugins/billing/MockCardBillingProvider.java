@@ -49,8 +49,8 @@ public class MockCardBillingProvider implements BillingProvider {
         // Provider-local operation translation. The core executor has no action switch.
         return switch(command.action()) {
             case "cancel" -> ops.cancel(ctx);
-            case "pause" -> ops.pause(ctx);
-            case "apply_discount" -> ops.applyDiscount(ctx);
+            case "pause" -> ops.pause(ctx, command.ticketId());
+            case "apply_discount" -> ops.applyDiscount(ctx, command.ticketId());
             case "extend_access_7d" -> ops.extendAccess(ctx);
             case "refund_full", "refund_partial", "refund_partial_goodwill", "refund_duplicate" -> {
                 String id=command.action().equals("refund_duplicate") ? ctx.duplicatePaymentId() : ctx.lastPayment().id();

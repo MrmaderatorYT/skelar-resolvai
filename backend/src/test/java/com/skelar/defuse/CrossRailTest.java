@@ -89,12 +89,14 @@ class CrossRailTest {
         assertThat(store.payment("pay_0195_web").status).isEqualTo("disputed");
     }
 
-    @Test void refundOnCrossRailAccountIsHeldForHumanAndStopsWebPlan() {
+    @Test void refundOnCrossRailAccountIsHeldForHumanAndLeavesWebPlanAlone() {
+        // a plain refund never stops the live web renewal; only an explicit cancel does (T45 cancel_refund)
         var f = new ClassificationFeatures("refund", "get back the card charge", false, false, false, false, false, "neutral", "en", 1.0, List.of(), "none");
         var d = policy.decide(f, contexts.build("cus_0195"), 1.0);
         assertThat(d.mode()).isEqualTo("suggest");
-        assertThat(d.actions()).containsExactlyInAnyOrder("cancel", "refund_full", "store_cancel_instructions");
+        assertThat(d.actions()).containsExactly("refund_full");
         assertThat(d.refundAmount()).isEqualTo(49.99);
+        assertThat(d.reasons()).anyMatch(r -> r.startsWith("cancel_not_requested: "));
     }
 
     // ---- Fixture 12 (from the execution/analytics branch) ----

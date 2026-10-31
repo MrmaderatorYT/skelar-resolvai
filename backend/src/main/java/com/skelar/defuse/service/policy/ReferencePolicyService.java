@@ -149,7 +149,6 @@ public class ReferencePolicyService {
         if (gateRank <= policyRank) return base;
         var reasons = new ArrayList<>(base.reasons());
         reasons.add("autonomy_gate_" + gate.level().toLowerCase(java.util.Locale.ROOT));
-        if (confidence < props.gate().minAutoConfidence() && !reasons.contains("low_confidence")) reasons.add("low_confidence");
         return new PolicyDecision(base.actions(), gateRank == 1 ? "suggest" : "escalate", base.refundAmount(), base.riskScore(), base.riskBand(), base.priority(), reasons);
     }
     private PolicyDecision decideBase(ClassificationFeatures f, CustomerContext ctx, double confidence) {
@@ -263,13 +262,16 @@ public class ReferencePolicyService {
         }
         if (ctx.crossRail() != null) {
             boolean webActive = Set.of("active", "paused").contains(ctx.subscriptionStatus());
+            boolean cancelRequested = CANCEL_INTENTS.contains(intent);
             if (MONEY_INTENTS.contains(intent)) {
-                // money on a cross-rail account is never automatic: stop the live web plan, hold the refund for a human
-                if (webActive && !acts.contains("cancel")) acts.add("cancel");
+                // money on a cross-rail account is never automatic: the refund waits for a human, and the live web
+                // renewal is stopped only when the customer actually asked for that
+                if (webActive && cancelRequested && !acts.contains("cancel")) acts.add("cancel");
                 mode = "suggest";
                 reasons.add("cross_rail_reconciliation: verify store and web subscriptions before refund");
+                if (webActive && !cancelRequested) reasons.add("cancel_not_requested: confirm whether to stop the web renewal");
             }
-            if (webActive && (MONEY_INTENTS.contains(intent) || CANCEL_INTENTS.contains(intent))) acts.add("store_cancel_instructions");
+            if (webActive && cancelRequested) acts.add("store_cancel_instructions");
         }
         return out.of(acts, mode, refund);
     }
@@ -317,7 +319,7 @@ public class ReferencePolicyService {
             if (mode.equals("auto") && actions.stream().anyMatch(a -> a.startsWith("refund_"))) {
                 if (!gate.autoRefundEnabled()) {
                     mode = "suggest";
-                    reasons.add("risk_not_calibrated: automatic refunds are disabled by merchant policy");
+                    reasons.add("auto_refund_disabled: automatic refunds are disabled by merchant policy");
                 } else if (!gate.sandbox() && !"VALIDATED".equals(gate.riskStatus())) {
                     mode = "suggest";
                     reasons.add("risk_not_calibrated: risk status " + gate.riskStatus() + " outside the mock sandbox");

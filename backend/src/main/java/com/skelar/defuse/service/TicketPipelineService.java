@@ -201,6 +201,7 @@ public class TicketPipelineService {
 
     private TicketAnalysis approveLocked(String ticketId, String agent, String replyText, String analysisId, String actionHash) {
         TicketAnalysis a = analysis(ticketId);
+        String draft = a.reply;   // written before execution: never sent as the final reply after a money action
         if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only; actions cannot be approved or executed");
         if (analysisId == null || !analysisId.equals(a.analysisId)) {
             throw new IllegalStateException("Analysis changed; review the latest decision before approving");
@@ -250,8 +251,10 @@ public class TicketPipelineService {
             audit.log("approval_failed", ticketId, Map.of("by", agent, "action_hash", String.valueOf(a.actionHash)));
             return a;
         }
-        // reply_text is plain text for the customer only; actions and amounts always come from the stored decision
-        if (replyText != null && !replyText.isBlank()) a.reply = replyText;
+        // reply_text is plain text for the customer only; actions and amounts always come from the stored decision.
+        // A blank reply or the untouched pre-execution draft is replaced by a reply written from what actually ran.
+        boolean replyIsFresh = replyText != null && !replyText.isBlank() && !replyText.trim().equals(draft == null ? null : draft.trim());
+        if (replyIsFresh) a.reply = replyText;
         else a.reply = replies.write(ticket(ticketId),a.features,a.context,a.decision,store.customer(a.context.customerId()).name,a.executed);
         boolean offer = a.decision.actions().stream().anyMatch(x -> x.startsWith("offer_"));
         a.status = ticket(ticketId).status = offer ? "offer_sent" : "resolved";
@@ -264,7 +267,19 @@ public class TicketPipelineService {
     public TicketAnalysis acceptOffer(String ticketId) {
         synchronized (store) {
             TicketAnalysis a = offerPending(ticketId);
+            if (a.reviewExpiresAt != null && !Instant.now().isBefore(Instant.parse(a.reviewExpiresAt))) {
+                audit.log("offer_expired", ticketId, Map.of("by", "customer"));
+                throw new IllegalStateException("Offer expired");
+            }
+            // revalidate before anything changes: the renewal must still be the one this ticket canceled,
+            // and the last card charge must not be disputed or refunded since the offer was made
+            if (!store.executed.containsKey(ticketId + ":cancel") || !"canceled".equals(store.subscription(a.context.customerId()).status))
+                throw new IllegalStateException("Offer no longer valid: the renewal changed after the offer");
+            var last = a.context.lastPayment();
+            if (last != null && Set.of("disputed", "refunded").contains(store.payment(last.id()).status))
+                throw new IllegalStateException("Offer no longer valid: the last payment is disputed or refunded");
             String apply = a.decision.actions().contains("offer_discount") ? "apply_discount" : "pause";
+            a.status = "offer_accepted";   // lets the mock billing revive the canceled renewal for this ticket only
             return closeOffer(a, ticketId, apply, "offer_accepted");
         }
     }
@@ -302,7 +317,7 @@ public class TicketPipelineService {
             if ("replay".equals(a.llmMode)) throw new IllegalStateException("Replay is read-only");
             if (!List.of("needs_approval", "escalated").contains(a.status)) throw new IllegalStateException("Ticket is not awaiting a human");
             if (text == null || text.isBlank()) throw new IllegalArgumentException("Reply is required");
-            a.reply = text.trim(); a.status = ticket(ticketId).status = "resolved";
+            a.reply = text.trim(); a.status = ticket(ticketId).status = "human_replied";
             audit.log("human_reply", ticketId, Map.of("by", agent)); return a;
         }
     }

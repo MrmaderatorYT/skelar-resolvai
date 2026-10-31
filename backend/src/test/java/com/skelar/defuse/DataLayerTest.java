@@ -60,8 +60,9 @@ class DataLayerTest {
         jdbc.update("INSERT INTO stripe_refunds (id,charge,amount,status,created,reason) VALUES (?,?,?,?,?,?)", "T01:refund_full", "placeholder", 1, "succeeded", "seed", "test");
         var a = pipeline.analyze("T01", false);
         assertThat(a.status).isEqualTo("escalated");
-        assertThat(store.payment(a.context.lastPayment().id()).status).isEqualTo("succeeded");
-        assertThat(store.customer("cus_0001").ltvUsd).isEqualTo(amount);
-        assertThat(jdbc.queryForObject("SELECT status FROM stripe_charges WHERE id=?",String.class,a.context.lastPayment().id())).isEqualTo("succeeded");
+        // A failure at local SQL persist after provider execution keeps the provider state (preventing a second refund),
+        // marks sql_write_failed and escalates the ticket for human reconciliation.
+        assertThat(store.payment(a.context.lastPayment().id()).status).isEqualTo("refunded");
+        assertThat(store.executed.get("T01:refund_full")).containsKey("sql_write_failed");
     }
 }

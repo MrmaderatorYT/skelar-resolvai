@@ -144,7 +144,7 @@ class ReferencePolicyServiceTest {
         var ctx = contexts.build(store.tickets.get("T01").customerId);
         PolicyDecision off = policyWithGate("VALIDATED", false, true).decide(f, ctx, 1);
         assertThat(off.mode()).isEqualTo("suggest");
-        assertThat(off.reasons()).anyMatch(r -> r.startsWith("risk_not_calibrated:"));
+        assertThat(off.reasons()).anyMatch(r -> r.startsWith("auto_refund_disabled:"));
     }
 
     @Test

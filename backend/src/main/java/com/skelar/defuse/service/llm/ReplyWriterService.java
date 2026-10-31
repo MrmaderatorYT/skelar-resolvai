@@ -39,6 +39,7 @@ public class ReplyWriterService {
             Pattern.compile("\\bdiscount\\s+(?:has\\s+been\\s+|was\\s+|is\\s+)?applied", FLAGS),
             done -> done.contains("apply_discount"));
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US);
+    private static final DateTimeFormatter DAY_UK = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("uk"));
 
     private final LlmClient client;
     private final ReferencePolicyService policy;
@@ -105,8 +106,21 @@ public class ReplyWriterService {
     }
 
     public String offerOutcome(String name, String action, boolean failed) {
+        return offerOutcome(name, action, failed, "en");
+    }
+
+    public String offerOutcome(String name, String action, boolean failed, String language) {
         String first = name.split(" ")[0];
-        if (failed) return "Hi " + first + ", thanks! A teammate will review your request." + SIGN;
+        if (uk(language)) {
+            if (failed) return "Привіт, " + first + "! Дякуємо. Колега розгляне ваш запит." + SIGN;
+            return "Привіт, " + first + ", " + switch (action) {
+                case "apply_discount" -> String.format(Locale.US, "готово — ваша підписка знову активна, а наступні %d міс. діють зі знижкою %d%%. Раді, що ви з нами!",
+                        policy.retentionDiscountMonths(), policy.retentionDiscountPercent());
+                case "pause" -> String.format(Locale.US, "готово — замість скасування підписку призупинено на %d міс., списань не буде. Ваш прогрес збережено.",
+                        policy.retentionPauseMonths());
+                default -> "добре — ваше продовження залишається скасованим, і списань більше не буде. Нічого більше не потрібно.";
+            } + SIGN;
+        }
         return "Hi " + first + ", " + switch (action) {
             case "apply_discount" -> String.format(Locale.US, "done - your subscription is active again and your next %d months are %d%% off. Glad you're staying!",
                     policy.retentionDiscountMonths(), policy.retentionDiscountPercent());
@@ -117,69 +131,101 @@ public class ReplyWriterService {
     }
 
     public String template(String name, PolicyDecision d) {
-        return template(name, d, null);
+        return template(name, d, null, "en");
     }
 
     public String template(String name, PolicyDecision d, CustomerContext ctx) {
+        return template(name, d, ctx, "en");
+    }
+
+    /** Deterministic reply: the same facts and amounts in every language; Ukrainian is the only translation,
+     *  anything else uses English. */
+    public String template(String name, PolicyDecision d, CustomerContext ctx, String language) {
+        boolean uk = uk(language);
         String first = name.split(" ")[0];
         List<String> acts = d.actions();
-        String earlierRefund = earlierRefund(d, ctx);
+        String earlierRefund = earlierRefund(d, ctx, uk);
         if (d.mode().equals("escalate")) {
-            return "Hi " + first + ", thanks for reaching out. " + (earlierRefund == null ? "" : earlierRefund + " ")
-                    + "A specialist is reviewing your request and will reply within 1 hour." + SIGN;
+            return (uk ? "Привіт, " + first + "! Дякуємо, що звернулися. " : "Hi " + first + ", thanks for reaching out. ")
+                    + (earlierRefund == null ? "" : earlierRefund + " ")
+                    + (uk ? "Фахівець переглядає ваш запит і відповість протягом години." : "A specialist is reviewing your request and will reply within 1 hour.") + SIGN;
         }
         boolean pending = d.mode().equals("suggest");
         boolean offer = acts.contains("offer_discount") || acts.contains("offer_pause");
         List<String> lines = new ArrayList<>();
         if (earlierRefund != null) lines.add(earlierRefund);
         if (acts.contains("cancel")) lines.add(pending && (d.reasons().contains("low_confidence") || d.reasons().stream().anyMatch(r -> r.startsWith("autonomy_gate_")))
-                ? "A teammate is reviewing your cancellation request."
-                : offer ? "Your renewal is already stopped - you won't be charged again." : "Your subscription is cancelled and you won't be charged again.");
+                ? (uk ? "Ваш запит на скасування розглядає фахівець." : "A teammate is reviewing your cancellation request.")
+                : offer ? (uk ? "Ваше продовження вже зупинено — більше списань не буде." : "Your renewal is already stopped - you won't be charged again.")
+                : (uk ? "Вашу підписку скасовано, і списань більше не буде." : "Your subscription is cancelled and you won't be charged again."));
         if (offer && !pending) {
             // one optional win-back with the exact policy terms; the cancel above already happened
             String terms = acts.contains("offer_discount")
-                    ? String.format(Locale.US, "If you'd like to stay, we can restore your subscription at %d%% off for the next %d months%s. Reply YES to accept.",
-                            policy.retentionDiscountPercent(), policy.retentionDiscountMonths(), discountedPrice(ctx))
-                    : String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months instead, at no cost, and keep your progress. Reply PAUSE to accept.",
-                            policy.retentionPauseMonths());
-            lines.add(terms + " No action needed if you don't want it.");
+                    ? (uk ? String.format(Locale.US, "Якщо бажаєте залишитися, ми можемо відновити підписку зі знижкою %d%% на наступні %d міс.%s.",
+                            policy.retentionDiscountPercent(), policy.retentionDiscountMonths(), discountedPrice(ctx, true))
+                          : String.format(Locale.US, "If you'd like to stay, we can restore your subscription at %d%% off for the next %d months%s.",
+                            policy.retentionDiscountPercent(), policy.retentionDiscountMonths(), discountedPrice(ctx, false)))
+                    : (uk ? String.format(Locale.US, "Якщо це лише тимчасово зайняті тижні, ми можемо призупинити підписку на %d міс. без оплати, і ваш прогрес збережеться.",
+                            policy.retentionPauseMonths())
+                          : String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months instead, at no cost, and keep your progress.",
+                            policy.retentionPauseMonths()));
+            lines.add(terms + (uk ? " Скористайтеся кнопками під повідомленням, якщо хочете цю пропозицію. Нічого робити не потрібно, якщо не хочете."
+                    : " You can use the buttons below the message if you want the offer. No action needed if you don't want it."));
         }
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
-            String state = pending ? "is awaiting review by a teammate" : "is on its way";
-            lines.add(String.format(Locale.US, "A refund of $%.2f %s.", d.refundAmount(), state));
+            if (uk) lines.add(String.format(Locale.US, "Повернення $%.2f %s.", d.refundAmount(), pending ? "очікує розгляду фахівцем" : "вже в дорозі"));
+            else lines.add(String.format(Locale.US, "A refund of $%.2f %s.", d.refundAmount(), pending ? "is awaiting review by a teammate" : "is on its way"));
         }
-        if (acts.contains("pause")) lines.add(pending
-                ? "A teammate is reviewing your request to pause the subscription."
-                : "Your subscription is paused for " + policy.retentionPauseMonths() + " months; nothing will be charged meanwhile.");
+        if (acts.contains("pause")) lines.add(uk
+                ? (pending ? "Ваш запит на призупинення підписки розглядає фахівець."
+                        : "Вашу підписку призупинено на " + policy.retentionPauseMonths() + " міс.; списань не буде.")
+                : (pending ? "A teammate is reviewing your request to pause the subscription."
+                        : "Your subscription is paused for " + policy.retentionPauseMonths() + " months; nothing will be charged meanwhile."));
         if (acts.contains("extend_access_7d")) {
-            lines.add("We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
+            lines.add(uk ? "Ми додаємо 7 безкоштовних днів до вашого акаунту" + (pending ? " — фахівець підтверджує це зараз." : ".")
+                    : "We're adding 7 free days to your account" + (pending ? " - a teammate is confirming it now." : "."));
         }
         if (acts.contains("store_refund_instructions")) {
-            lines.add("For App Store purchases, request a refund at reportaproblem.apple.com. "
+            lines.add(uk ? "Для покупок в App Store запит на повернення можна подати на reportaproblem.apple.com. "
+                    + "Для покупок у Google Play — через Google Play або зверніться до служби підтримки застосунку з номером замовлення."
+                    : "For App Store purchases, request a refund at reportaproblem.apple.com. "
                     + "For Google Play purchases, request a refund through Google Play or contact the app's support team with your order ID.");
         }
         if (acts.contains("store_cancel_instructions")) {
-            lines.add("To stop renewal: iPhone Settings > Apple ID > Subscriptions, or Play Store > Payments & subscriptions on Android.");
+            lines.add(uk ? "Щоб зупинити продовження: iPhone: Налаштування > Apple ID > Підписки; Android: Play Store > Платежі та підписки."
+                    : "To stop renewal: iPhone Settings > Apple ID > Subscriptions, or Play Store > Payments & subscriptions on Android.");
         }
-        if (acts.contains("ask_clarification")) lines.add("Could you tell us what exactly isn't working and on which device?");
-        if (lines.isEmpty()) lines.add("Thanks for your message! A teammate will follow up with the details shortly.");
-        return "Hi " + first + ",\n\n" + String.join(" ", lines) + SIGN;
+        if (acts.contains("ask_clarification")) lines.add(uk ? "Розкажіть, будь ласка, що саме не працює і на якому пристрої?"
+                : "Could you tell us what exactly isn't working and on which device?");
+        if (lines.isEmpty()) lines.add(uk ? "Дякуємо за повідомлення! Фахівець незабаром напише вам детальніше."
+                : "Thanks for your message! A teammate will follow up with the details shortly.");
+        return (uk ? "Привіт, " + first + ",\n\n" : "Hi " + first + ",\n\n") + String.join(" ", lines) + SIGN;
+    }
+
+    static boolean uk(String language) {
+        return "uk".equalsIgnoreCase(language);
     }
 
     /** Fixture 5: report the earlier refund from the payment record; never promise a new one. */
-    private static String earlierRefund(PolicyDecision d, CustomerContext ctx) {
+    private static String earlierRefund(PolicyDecision d, CustomerContext ctx, boolean uk) {
         if (ctx == null || ctx.lastPayment() == null || d.reasons().stream().noneMatch(r -> r.startsWith("already_refunded"))) return null;
         var lp = ctx.lastPayment();
+        if (uk) return String.format(Locale.US, "Ваш платіж на $%.2f від %s вже повернуто, тому нового повернення немає."
+                + " Повернення на картку зазвичай з'являється у виписці за 5-10 робочих днів; якщо його досі немає, напишіть нам, і ми надішлемо номер повернення.",
+                lp.amount(), InMemoryStore.NOW.minusDays(lp.daysAgo()).format(DAY_UK));
         return String.format(Locale.US, "Your $%.2f payment from %s has already been refunded, so there is no new refund to make."
                 + " Card refunds usually take 5-10 business days to show on a statement; if you still don't see it, reply and we'll send you the refund reference.",
                 lp.amount(), InMemoryStore.NOW.minusDays(lp.daysAgo()).format(DAY));
     }
 
-    private String discountedPrice(CustomerContext ctx) {
+    private String discountedPrice(CustomerContext ctx, boolean uk) {
         if (ctx == null || ctx.price() <= 0 || ctx.plan() == null) return "";
-        String per = switch (ctx.plan()) { case "monthly" -> "month"; case "quarterly" -> "quarter"; case "annual" -> "year"; default -> null; };
+        String per = uk
+                ? switch (ctx.plan()) { case "monthly" -> "місяць"; case "quarterly" -> "квартал"; case "annual" -> "рік"; default -> null; }
+                : switch (ctx.plan()) { case "monthly" -> "month"; case "quarterly" -> "quarter"; case "annual" -> "year"; default -> null; };
         if (per == null) return "";
         double discounted = Math.round(ctx.price() * (100 - policy.retentionDiscountPercent())) / 100.0;
-        return String.format(Locale.US, " ($%.2f instead of $%.2f per %s; the full price returns after that)", discounted, ctx.price(), per);
+        return uk ? String.format(Locale.US, " ($%.2f замість $%.2f на %s; після цього повертається повна ціна)", discounted, ctx.price(), per)
+                : String.format(Locale.US, " ($%.2f instead of $%.2f per %s; the full price returns after that)", discounted, ctx.price(), per);
     }
 }

@@ -58,7 +58,7 @@ class AuthChatTest {
                 .andExpect(status().isForbidden());
         mvc.perform(post("/api/tickets/" + id + "/human-reply").header("Authorization", admin)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"We will review this for you.\"}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("resolved"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("human_replied"));
         var history = mvc.perform(get("/api/chat").header("Authorization", customer)).andExpect(status().isOk()).andReturn();
         assertThat(mapper.readTree(history.getResponse().getContentAsString()).toString()).contains("We will review this for you.");
         mvc.perform(get("/api/analytics/diagnostics").header("Authorization", admin)).andExpect(status().isOk())

@@ -27,11 +27,19 @@ def test_open_dispute_is_never_refunded():
     assert d["refund_amount"] == 0 and d["actions"] == ["evidence_pack"]
 
 
-def test_cross_rail_refund_is_held_and_stops_web_plan():
+def test_cross_rail_refund_is_held_and_leaves_web_plan_alone():
+    # a plain refund does not ask to stop the live web renewal; the reviewer decides that
     d = run("T45", intent="refund")
     assert d["mode"] == "suggest"
-    assert d["actions"] == ["cancel", "refund_full", "store_cancel_instructions"]
+    assert d["actions"] == ["refund_full"]
     assert d["refund_amount"] == 49.99
+    assert any(r.startswith("cancel_not_requested:") for r in d["reasons"])
+
+
+def test_cross_rail_cancel_refund_still_stops_web_plan():
+    d = run("T45")
+    assert d["actions"] == ["cancel", "refund_full", "store_cancel_instructions"]
+    assert d["mode"] == "suggest" and not any(r.startswith("cancel_not_requested:") for r in d["reasons"])
 
 
 def test_refund_above_limit_needs_human():
@@ -65,7 +73,7 @@ def test_gate_uses_prior_and_confidence_thresholds_not_one_minus_confidence():
 
 def test_low_confidence_is_added_only_from_auto_and_matches_java():
     g, ctx = case("T11")
-    assert decide(g, ctx, .5)["reasons"] == ["above_auto_refund_limit", "autonomy_gate_human", "low_confidence"]
+    assert decide(g, ctx, .5)["reasons"] == ["above_auto_refund_limit", "autonomy_gate_human"]
     assert "low_confidence" not in decide(g, ctx, .9)["reasons"]
 
 
@@ -91,7 +99,8 @@ def test_sandbox_off_holds_uncalibrated_refunds(monkeypatch):
 def test_auto_refund_disabled_holds_refunds(monkeypatch):
     monkeypatch.setitem(reference_policy.GATE, "auto_refund_enabled", False)
     d = decide(*case("T32"))
-    assert d["mode"] == "suggest" and any(r.startswith("risk_not_calibrated:") for r in d["reasons"])
+    assert d["mode"] == "suggest" and any(r.startswith("auto_refund_disabled:") for r in d["reasons"])
+    assert not any(r.startswith("risk_not_calibrated:") for r in d["reasons"])
 
 
 def test_unknown_processor_is_never_inferred_from_device():

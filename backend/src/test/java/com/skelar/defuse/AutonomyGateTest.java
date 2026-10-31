@@ -59,7 +59,7 @@ class AutonomyGateTest {
     }
     @Test void lowConfidenceReasonOnlyComesFromAutoOrTheGateLikePython() {   // parity with test_policy.py
         var t = store.tickets.get("T11"); var ctx = contexts.build(t.customerId); var f = LlmClassifierService.fromGold(t);
-        assertThat(policy.decide(f, ctx, .5).reasons()).containsExactly("above_auto_refund_limit", "autonomy_gate_human", "low_confidence");
+        assertThat(policy.decide(f, ctx, .5).reasons()).containsExactly("above_auto_refund_limit", "autonomy_gate_human");
         assertThat(policy.decide(f, ctx, .9).reasons()).doesNotContain("low_confidence");
     }
     @Test void ambiguousInformationOnlyDoesNotCreateFinancialAutonomy() {

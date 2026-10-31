@@ -55,9 +55,8 @@ public class MockBillingOperations {
         return Map.of("subscription_id", s.id, "status", "canceled");
     }
 
-    public Map<String, Object> pause(CustomerContext ctx) {
-        Subscription s = store.subscription(ctx.customerId());
-        if (s.status.equals("canceled") && !restoreForWinBack(s)) throw new BillingException("subscription " + s.id + " is canceled");
+    public Map<String, Object> pause(CustomerContext ctx, String ticketId) {
+        Subscription s = reviveIfAccepted(ctx, ticketId);
         s.status = "paused";
         s.pauseUntil = InMemoryStore.NOW.plusMonths(policy.retentionPauseMonths()).toString();
         return Map.of("subscription_id", s.id, "status", "paused", "until", s.pauseUntil);
@@ -73,22 +72,25 @@ public class MockBillingOperations {
                 : Map.of("offer", "pause", "months", policy.retentionPauseMonths());
     }
 
-    public Map<String, Object> applyDiscount(CustomerContext ctx) {
-        Subscription s = store.subscription(ctx.customerId());
-        if (s.status.equals("canceled") && restoreForWinBack(s)) s.status = "active";
+    public Map<String, Object> applyDiscount(CustomerContext ctx, String ticketId) {
+        Subscription s = reviveIfAccepted(ctx, ticketId);
         if (!s.status.equals("active")) throw new BillingException("subscription " + s.id + " is " + s.status);
         s.discountPercent = policy.retentionDiscountPercent();
         s.discountUntil = InMemoryStore.NOW.plusMonths(policy.retentionDiscountMonths()).toString();
         return Map.of("subscription_id", s.id, "discount_percent", s.discountPercent, "until", s.discountUntil);
     }
 
-    /** Cancel-first retention: a subscription canceled by a ticket whose win-back offer is still open may be
-     *  restored when the customer accepts that offer. Any other canceled subscription stays canceled. */
-    private boolean restoreForWinBack(Subscription s) {
-        boolean openOffer = store.analyses.values().stream().anyMatch(a -> "offer_sent".equals(a.status) && a.context != null
-                && s.customerId.equals(a.context.customerId()) && store.executed.containsKey(a.ticketId + ":cancel"));
-        if (openOffer) s.canceledAt = null;
-        return openOffer;
+    /** A canceled renewal comes back only through the customer's acceptance of the win-back offer that the same
+     *  ticket opened (status offer_accepted, set by TicketPipelineService). Any other pause or discount throws. */
+    private Subscription reviveIfAccepted(CustomerContext ctx, String ticketId) {
+        Subscription s = store.subscription(ctx.customerId());
+        if (!s.status.equals("canceled")) return s;
+        var a = store.analyses.get(ticketId);
+        if (a == null || !"offer_accepted".equals(a.status) || !store.executed.containsKey(ticketId + ":cancel"))
+            throw new BillingException("subscription " + s.id + " is canceled");
+        s.status = "active";
+        s.canceledAt = null;
+        return s;
     }
 
     public Map<String, Object> extendAccess(CustomerContext ctx) {

@@ -117,7 +117,7 @@ class PipelineTest {
         assertThat(a.decision.actions()).containsExactly("cancel", "offer_discount");
         assertThat(a.status).isEqualTo("offer_sent");
         assertThat(store.subscription(cid("T39")).status).isEqualTo("canceled");
-        assertThat(a.reply).contains("30%").contains("Reply YES").contains("already stopped");
+        assertThat(a.reply).contains("30%").contains("already stopped");
         assertThat(store.customer(cid("T39")).offers12m).isEqualTo(1);
         pipeline.acceptOffer("T39");
         assertThat(store.subscription(cid("T39")).status).isEqualTo("active");

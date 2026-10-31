@@ -64,7 +64,8 @@ class ReviewRegressionTest {
     @Test void lowConfidenceCannotAutoCancelWhenRefundAlreadyRequiresReview() {
         var f = new ClassificationFeatures("cancel_refund", "", false, false, false, false, false, "neutral", "en", .2, List.of(), "none");
         var d = policy.decide(f, contexts.build(store.tickets.get("T11").customerId), .2);
-        assertThat(d.reasons()).contains("low_confidence");
+        assertThat(d.reasons()).containsExactly("above_auto_refund_limit", "autonomy_gate_human");   // base was suggest: no low_confidence
+        assertThat(d.mode()).isEqualTo("escalate");
         assertThat(ActionExecutorService.actionsToRunNow(d)).doesNotContain("cancel");
     }
     @Test void configurablePolicyUsesProvidedRefundLimit() {

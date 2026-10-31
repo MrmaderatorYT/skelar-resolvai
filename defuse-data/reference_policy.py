@@ -237,7 +237,7 @@ def decide(f, ctx, confidence=1.0):
         if mode == "auto" and any(a.startswith("refund_") for a in actions):
             if not GATE["auto_refund_enabled"]:
                 mode = "suggest"
-                reasons.append("risk_not_calibrated: automatic refunds are disabled by merchant policy")
+                reasons.append("auto_refund_disabled: automatic refunds are disabled by merchant policy")
             elif not GATE["sandbox"] and GATE["risk_status"] != "VALIDATED":
                 mode = "suggest"
                 reasons.append(f"risk_not_calibrated: risk status {GATE['risk_status']} outside the mock sandbox")
@@ -333,13 +333,17 @@ def decide(f, ctx, confidence=1.0):
 
     if ctx.get("cross_rail"):
         web_active = ctx["subscription_status"] in ("active", "paused")
+        cancel_requested = intent in CANCEL_INTENTS
         if intent in MONEY_INTENTS:
-            # money on a cross-rail account is never automatic: stop the live web plan, hold the refund for a human
-            if web_active and "cancel" not in acts:
+            # money on a cross-rail account is never automatic: the refund waits for a human, and the live web
+            # renewal is stopped only when the customer actually asked for that
+            if web_active and cancel_requested and "cancel" not in acts:
                 acts.append("cancel")
             mode = "suggest"
             reasons.append("cross_rail_reconciliation: verify store and web subscriptions before refund")
-        if web_active and (intent in MONEY_INTENTS or intent in CANCEL_INTENTS):
+            if web_active and not cancel_requested:
+                reasons.append("cancel_not_requested: confirm whether to stop the web renewal")
+        if web_active and cancel_requested:
             acts.append("store_cancel_instructions")
     return out(acts, mode, refund)
 
@@ -391,6 +395,4 @@ def decide(f, ctx, confidence=1.0):
     if gate_rank > rank[base["mode"]]:
         base["mode"] = "suggest" if gate_rank == 1 else "escalate"
         base["reasons"].append("autonomy_gate_" + level.lower())
-        if confidence < GATE["min_auto_confidence"] and "low_confidence" not in base["reasons"]:
-            base["reasons"].append("low_confidence")
     return base
