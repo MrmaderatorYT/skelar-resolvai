@@ -8,7 +8,7 @@ defuse:
       full-max-sessions: 2           # "barely used" proxy (H)
       partial-max-days: 30           # Calm 30-day web refunds, Liven 30-day guarantee (A/C)
       plan-period-days: {monthly: 30, quarterly: 91, annual: 365}   # partial = pro-rata unused days, CRD 14(3) + CJEU C-641/19 (A)
-      auto-limit-usd: 60             # annual plans always need a human (H)
+      auto-limit-usd: 50             # spec E4 illustrative cap; quarterly ($49.99) fits, annual ($89.99) needs a human (H)
       goodwill-ltv-usd: 100          # (H)
       min-auto-confidence: 0.85      # below it nothing runs automatically (H)
     retention:
@@ -27,7 +27,13 @@ defuse:
       auto-impact-max-usd: 50
       assist-impact-max-usd: 500
       auto-expected-loss-max-usd: 1.50
+      # p_err = this hand-set per-intent prior only; never 1 - model confidence (spec E1)
       priors: {question: 0.01, billing_question: 0.02, cancel: 0.01, cancel_refund: 0.02, refund: 0.02, duplicate_charge: 0.02, pause: 0.02, technical_issue: 0.05, account_access: 0.10, account_security: 0.10, unclear: 0.50}
+      min-auto-confidence: 0.97      # abstention threshold on the model's self-score, not a probability: below it at most ASSIST (H)
+      min-assist-confidence: 0.85    # below it HUMAN (H)
+      risk-status: UNVALIDATED       # no externally measured error bound yet (spec E1); VALIDATED only after a held-out calibration
+      auto-refund-enabled: true      # false: every refund waits for a human
+      sandbox: true                  # mock billing only; set false with any real provider, then UNVALIDATED refunds go to REVIEW
     risk:
       base: 0.10
       dispute: 0.40

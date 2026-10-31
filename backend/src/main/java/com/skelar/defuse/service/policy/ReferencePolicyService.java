@@ -1,5 +1,6 @@
 package com.skelar.defuse.service.policy;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.skelar.defuse.model.dto.ClassificationFeatures;
 import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.LastPayment;
@@ -50,7 +51,7 @@ public class ReferencePolicyService {
     public static final Set<String> INTENTS = Set.of("cancel", "refund", "cancel_refund", "duplicate_charge",
             "pause", "technical_issue", "account_access", "account_security", "question", "billing_question", "unclear");
 
-    // retention: one save offer per ticket, only for the right customer; everyone else gets an honest cancel
+    // retention: every cancel runs first; the right customer also gets one optional win-back offer
     /** @deprecated read offer parameters through the getters below; these mirror defuse-policy.yml defaults
      *  (PolicyConfigTest keeps them equal) until executor/reply code switches to the getters. */
     @Deprecated
@@ -102,22 +103,28 @@ public class ReferencePolicyService {
         return Set.of("question", "billing_question", "unclear").contains(f.intent()) ? "P4" : "P3";
     }
 
-    public record Autonomy(double pErr, double impactUsd, double expectedLossUsd, String level, String source) {}
+    /** pErr is the hand-set per-intent prior, expectedLossUsd a heuristic; neither is a calibrated measurement.
+     *  riskStatus / pBadUpper95 / nRelevant record that no external evaluation cohort backs them yet (spec E1). */
+    public record Autonomy(double pErr, double impactUsd, double expectedLossUsd, String level, String source,
+                           String riskStatus, @JsonProperty("p_bad_upper_95") Double pBadUpper95, int nRelevant) {}
+
+    private Autonomy autonomy(double pErr, double impact, double expectedLoss, String level, String source) {
+        return new Autonomy(pErr, impact, expectedLoss, level, source, props.gate().riskStatus(), null, 0);
+    }
 
     public Autonomy assess(ClassificationFeatures f, CustomerContext ctx, PolicyDecision decision, double confidence) {
         if (f == null || f.intent() == null || !Double.isFinite(confidence) || confidence < 0 || confidence > 1)
-            return new Autonomy(1, 0, 0, "HUMAN", "invalid_features");
+            return autonomy(1, 0, 0, "HUMAN", "invalid_features");
         var g = props.gate();
-        double prior = g.priors().getOrDefault(f.intent(), 1.0);
-        double pErr = Math.rint(Math.max(prior, 1 - confidence) * 1_000_000_000_000d) / 1_000_000_000_000d;
+        double pErr = g.priors().getOrDefault(f.intent(), 1.0);   // never 1 - confidence: a self-score is not a probability
         int days = refundCfg.periodDays(ctx.plan());
         double impact = decision.refundAmount();
         if (decision.actions().contains("offer_discount") || decision.actions().contains("apply_discount")) {
-            if (days <= 0) return new Autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
+            if (days <= 0) return autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
             impact += ctx.price() * 30.0 / days * retentionCfg.discountPercent() / 100.0 * retentionCfg.discountMonths();
         }
         if (decision.actions().contains("extend_access_7d")) {
-            if (days <= 0) return new Autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
+            if (days <= 0) return autonomy(pErr, 0, 0, "HUMAN", "unknown_plan_period");
             impact += ctx.price() * 7.0 / days;
         }
         double expectedLoss = pErr * impact;
@@ -125,10 +132,14 @@ public class ReferencePolicyService {
         String level;
         if (f.injection() || "disputed".equals(ctx.lastPayment().status()) || Set.of("account_access", "account_security").contains(f.intent())) level = "HUMAN";
         else if (replyOnly) level = "AUTO";
-        else if (pErr <= g.autoErrorMax() && impact <= g.autoImpactMaxUsd() && expectedLoss <= g.autoExpectedLossMaxUsd()) level = "AUTO";
-        else if (pErr <= g.assistErrorMax() && impact <= g.assistImpactMaxUsd()) level = "ASSIST";
-        else level = "HUMAN";
-        return new Autonomy(pErr, impact, expectedLoss, level, "heuristic_prior");
+        else if (confidence < g.minAssistConfidence()) level = "HUMAN";
+        else {
+            if (pErr <= g.autoErrorMax() && impact <= g.autoImpactMaxUsd() && expectedLoss <= g.autoExpectedLossMaxUsd()) level = "AUTO";
+            else if (pErr <= g.assistErrorMax() && impact <= g.assistImpactMaxUsd()) level = "ASSIST";
+            else level = "HUMAN";
+            if (level.equals("AUTO") && confidence < g.minAutoConfidence()) level = "ASSIST";   // abstention, separate from the risk prior
+        }
+        return autonomy(pErr, impact, expectedLoss, level, "heuristic_prior");
     }
     public PolicyDecision decide(ClassificationFeatures f, CustomerContext ctx, double confidence) {
         PolicyDecision base = decideBase(f, ctx, confidence);
@@ -138,6 +149,7 @@ public class ReferencePolicyService {
         if (gateRank <= policyRank) return base;
         var reasons = new ArrayList<>(base.reasons());
         reasons.add("autonomy_gate_" + gate.level().toLowerCase(java.util.Locale.ROOT));
+        if (confidence < props.gate().minAutoConfidence() && !reasons.contains("low_confidence")) reasons.add("low_confidence");
         return new PolicyDecision(base.actions(), gateRank == 1 ? "suggest" : "escalate", base.refundAmount(), base.riskScore(), base.riskBand(), base.priority(), reasons);
     }
     private PolicyDecision decideBase(ClassificationFeatures f, CustomerContext ctx, double confidence) {
@@ -152,7 +164,7 @@ public class ReferencePolicyService {
         LastPayment lp = ctx.lastPayment();
         boolean disputed = "disputed".equals(lp.status());
         List<String> reasons = new ArrayList<>();
-        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx, refundCfg.autoLimitUsd(), refundCfg.minAutoConfidence());
+        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx, refundCfg.autoLimitUsd(), refundCfg.minAutoConfidence(), props.gate());
 
         if (feat.injection()) {
             reasons.add("prompt_injection: no actions, human review");
@@ -170,14 +182,9 @@ public class ReferencePolicyService {
             return out.of(List.of("ask_clarification"), "auto", 0);
         }
 
-        String processor = ctx.billingProcessor() != null ? ctx.billingProcessor()
-                : switch (ctx.platform()) {
-                    case "web" -> "card";
-                    case "ios" -> "app_store";
-                    case "android" -> "google_play";
-                    default -> "unknown";
-                };
-        if (!Set.of("card", "app_store", "google_play").contains(processor)) {
+        // The rail comes from the billing record only, never the device: Apple Pay on a web card is not App Store (spec F2).
+        String processor = ctx.billingProcessor();
+        if (processor == null || !Set.of("card", "app_store", "google_play").contains(processor)) {
             reasons.add("unknown_billing_processor");
             return out.of(List.of(), "escalate", 0);
         }
@@ -199,8 +206,9 @@ public class ReferencePolicyService {
         if (intent.equals("cancel") && ctx.crossRail() == null && Set.of("active", "paused").contains(ctx.subscriptionStatus())) {
             String[] offer = retentionOffer(feat, ctx);
             if (offer[0] != null) {
-                reasons.add("retention_offer: one offer; the customer can still cancel at any time");
-                return out.of(List.of(offer[0]), "auto", 0);
+                // cancel first: an offer never replaces an explicit cancel; it is one optional win-back
+                reasons.add("retention_offer: renewal canceled now; one optional win-back offer");
+                return out.of(List.of("cancel", offer[0]), "auto", 0);
             }
             if (offer[1] != null) reasons.add("retention_not_eligible: " + offer[1]);
         }
@@ -284,11 +292,13 @@ public class ReferencePolicyService {
     }
 
     private record Out(ClassificationFeatures f, Risk risk, boolean disputed, double confidence, List<String> reasons,
-                       CustomerContext ctx, double autoRefundLimitUsd, double minAutoConfidence) {
+                       CustomerContext ctx, double autoRefundLimitUsd, double minAutoConfidence, PolicyProperties.Gate gate) {
         /** Every money path (incl. duplicates) goes through the same gate. */
         PolicyDecision of(List<String> actions, String mode, double refund) {
+            LastPayment lp = ctx.lastPayment();
+            if ("refunded".equals(lp.status()) && MONEY_INTENTS.contains(f.intent()) && !f.injection())
+                reasons.add("already_refunded: payment " + lp.id() + " was refunded earlier; no second refund");
             if (refund > 0) {
-                LastPayment lp = ctx.lastPayment();
                 if (!"succeeded".equals(lp.status()) || lp.daysAgo() < 0) {
                     refund = 0;
                     actions = actions.stream().filter(a -> !a.startsWith("refund_")).toList();
@@ -303,8 +313,18 @@ public class ReferencePolicyService {
                     reasons.add("refund_or_chargeback_history");
                 }
             }
-            if (!mode.equals("escalate") && confidence < minAutoConfidence) {
-                if (mode.equals("auto")) mode = "suggest";
+            // No uncalibrated refund runs on its own against a real provider (spec E4, acceptance L).
+            if (mode.equals("auto") && actions.stream().anyMatch(a -> a.startsWith("refund_"))) {
+                if (!gate.autoRefundEnabled()) {
+                    mode = "suggest";
+                    reasons.add("risk_not_calibrated: automatic refunds are disabled by merchant policy");
+                } else if (!gate.sandbox() && !"VALIDATED".equals(gate.riskStatus())) {
+                    mode = "suggest";
+                    reasons.add("risk_not_calibrated: risk status " + gate.riskStatus() + " outside the mock sandbox");
+                }
+            }
+            if (mode.equals("auto") && confidence < minAutoConfidence) {   // only from auto, as in reference_policy.py
+                mode = "suggest";
                 reasons.add("low_confidence");
             }
             List<String> acts = new ArrayList<>(actions);

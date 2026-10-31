@@ -1121,6 +1121,7 @@
       "injection": false,
       "risk_band": "low",
       "actions": [
+        "cancel",
         "offer_discount"
       ],
       "mode": "auto",
@@ -1211,6 +1212,7 @@
       "injection": false,
       "risk_band": "low",
       "actions": [
+        "cancel",
         "offer_pause"
       ],
       "mode": "auto",

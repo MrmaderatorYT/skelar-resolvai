@@ -57,7 +57,7 @@ public class MockBillingOperations {
 
     public Map<String, Object> pause(CustomerContext ctx) {
         Subscription s = store.subscription(ctx.customerId());
-        if (s.status.equals("canceled")) throw new BillingException("subscription " + s.id + " is canceled");
+        if (s.status.equals("canceled") && !restoreForWinBack(s)) throw new BillingException("subscription " + s.id + " is canceled");
         s.status = "paused";
         s.pauseUntil = InMemoryStore.NOW.plusMonths(policy.retentionPauseMonths()).toString();
         return Map.of("subscription_id", s.id, "status", "paused", "until", s.pauseUntil);
@@ -75,10 +75,20 @@ public class MockBillingOperations {
 
     public Map<String, Object> applyDiscount(CustomerContext ctx) {
         Subscription s = store.subscription(ctx.customerId());
+        if (s.status.equals("canceled") && restoreForWinBack(s)) s.status = "active";
         if (!s.status.equals("active")) throw new BillingException("subscription " + s.id + " is " + s.status);
         s.discountPercent = policy.retentionDiscountPercent();
         s.discountUntil = InMemoryStore.NOW.plusMonths(policy.retentionDiscountMonths()).toString();
         return Map.of("subscription_id", s.id, "discount_percent", s.discountPercent, "until", s.discountUntil);
+    }
+
+    /** Cancel-first retention: a subscription canceled by a ticket whose win-back offer is still open may be
+     *  restored when the customer accepts that offer. Any other canceled subscription stays canceled. */
+    private boolean restoreForWinBack(Subscription s) {
+        boolean openOffer = store.analyses.values().stream().anyMatch(a -> "offer_sent".equals(a.status) && a.context != null
+                && s.customerId.equals(a.context.customerId()) && store.executed.containsKey(a.ticketId + ":cancel"));
+        if (openOffer) s.canceledAt = null;
+        return openOffer;
     }
 
     public Map<String, Object> extendAccess(CustomerContext ctx) {

@@ -252,11 +252,11 @@ SCENARIOS = [
          text="What is this $0.99 charge on my statement?",
          gold=gold("billing_question", [], "auto", 0.0, "low", "P4", "Understand the trial charge",
                    ["billing_question"])),
-    # ---- retention: one offer for the right customer, honest cancel for everyone else ----
+    # ---- retention: cancel first for everyone; one optional win-back offer for the right customer ----
     dict(id="T39", name="Anna Kovalenko", country="UA", platform="web", plan="monthly", days=6,
          sessions=5, prior=6, channel="chat", acquisition="meta_ads", quiz_goal="sleep",
          text="Honestly it's a bit too expensive for me right now. Please cancel my subscription.",
-         gold=gold("cancel", ["offer_discount"], "auto", 0.0, "low", "P3",
+         gold=gold("cancel", ["cancel", "offer_discount"], "auto", 0.0, "low", "P3",
                    "Keep the app at a lower price if possible; otherwise cancel",
                    ["retention", "offer_eligible", "flagship_demo"], cancel_reason="too_expensive")),
     dict(id="T40", name="Marcus Hale", country="US", platform="web", plan="monthly", days=9,
@@ -276,7 +276,7 @@ SCENARIOS = [
     dict(id="T42", name="Sofia Rossi", country="ES", platform="web", plan="monthly", days=12,
          sessions=14, prior=7, channel="chat", acquisition="organic", quiz_goal="focus",
          text="I'm travelling for work for the next two months and won't have time for the app. Can you cancel it?",
-         gold=gold("cancel", ["offer_pause"], "auto", 0.0, "low", "P3",
+         gold=gold("cancel", ["cancel", "offer_pause"], "auto", 0.0, "low", "P3",
                    "Stop paying while travelling; a pause fits better than losing her progress",
                    ["retention", "offer_eligible", "pause_offer"], cancel_reason="no_time")),
     dict(id="T43", name="Daniel Novak", country="PL", platform="web", plan="quarterly", days=20,

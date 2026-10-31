@@ -35,6 +35,17 @@ class PolicyConfigTest {
         assertThat(props.retention()).isEqualTo(PolicyProperties.defaults().retention());
         assertThat(props.risk()).isEqualTo(PolicyProperties.defaults().risk());
         assertThat(props.money()).isEqualTo(PolicyProperties.defaults().money());
+        assertThat(props.gate()).isEqualTo(PolicyProperties.defaults().gate());
+    }
+
+    @Test
+    void autoRefundLimitIsFiftyAndGateStartsUnvalidatedInSandbox() {   // spec E4 / fixture 11
+        assertThat(props.refund().autoLimitUsd()).isEqualTo(50.0);
+        assertThat(props.gate().riskStatus()).isEqualTo("UNVALIDATED");
+        assertThat(props.gate().sandbox()).isTrue();
+        assertThat(props.gate().autoRefundEnabled()).isTrue();
+        assertThat(props.gate().minAutoConfidence()).isEqualTo(.97);
+        assertThat(props.gate().minAssistConfidence()).isEqualTo(.85);
     }
 
     @Test
@@ -101,6 +112,12 @@ class PolicyConfigTest {
                 .withPropertyValues("defuse.policy.sources.money-dispute-fee=")
                 .run(ctx -> assertThat(ctx).hasFailed());
         new ApplicationContextRunner().withInitializer(new ConfigDataApplicationContextInitializer()).withUserConfiguration(Bind.class)
+                .withPropertyValues("defuse.policy.gate.risk-status=CALIBRATED_BY_VIBES")
+                .run(ctx -> assertThat(ctx).hasFailed());
+        new ApplicationContextRunner().withInitializer(new ConfigDataApplicationContextInitializer()).withUserConfiguration(Bind.class)
+                .withPropertyValues("defuse.policy.gate.min-assist-confidence=0.99")
+                .run(ctx -> assertThat(ctx).hasFailed());
+        new ApplicationContextRunner().withInitializer(new ConfigDataApplicationContextInitializer()).withUserConfiguration(Bind.class)
                 .run(ctx -> assertThat(ctx).hasNotFailed());
         assertThatThrownBy(() -> new PolicyProperties.Risk(.1, .4, .25, .2, .15, .1, 3, .3, .5))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -123,7 +140,7 @@ class PolicyConfigTest {
         store.reset();
         var t = store.tickets.get("T04");
         var base = PolicyProperties.defaults();
-        var noMonthly = new PolicyProperties(new PolicyProperties.Refund(14, 2, 30, java.util.Map.of("annual", 365), 60, 100, .85),
+        var noMonthly = new PolicyProperties(new PolicyProperties.Refund(14, 2, 30, java.util.Map.of("annual", 365), 50, 100, .85),
                 base.retention(), base.risk(), base.money(), base.gate(), base.sources());
         var d = new ReferencePolicyService(noMonthly).decide(
                 com.skelar.defuse.service.llm.LlmClassifierService.fromGold(t), contexts.build(t.customerId), 1);

@@ -1,5 +1,5 @@
 {
-  "auto_refund_limit_usd": 60.0,
+  "auto_refund_limit_usd": 50.0,
   "full_refund_max_days": 14,
   "full_refund_max_sessions": 2,
   "partial_refund_max_days": 30,

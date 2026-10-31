@@ -72,8 +72,9 @@ public class ChatController {
         TicketAnalysis a = store.analyses.get(t.id);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", t.id); result.put("text", t.text); result.put("status", t.status);
-        result.put("reply", a == null ? null : a.reply); result.put("mode", a == null ? null : a.decision.mode());
+        result.put("reply", a == null ? null : a.reply); result.put("mode", a == null || a.decision == null ? null : a.decision.mode());
         result.put("scripted_demo", "gold".equals(settings.mode()) && t.gold != null);
+        // cancel-first retention: the renewal is already stopped; this flag only means the one win-back offer is still open
         result.put("offer_pending", a != null && "offer_sent".equals(a.status));
         return result;
     }

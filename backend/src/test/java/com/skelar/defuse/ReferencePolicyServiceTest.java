@@ -97,6 +97,83 @@ class ReferencePolicyServiceTest {
                 c.tenureMonths(), c.paidRenewals(), c.offers12m(), c.identityOffers12m(), c.retentionOffers30d(), c.inHoldout());
     }
 
+    private static com.skelar.defuse.model.dto.CustomerContext onPlatform(com.skelar.defuse.model.dto.CustomerContext c, String platform) {
+        return new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), platform, c.billingProcessor(), c.ltvUsd(),
+                c.contactsLast30d(), c.refundsLast180d(), c.chargebacksLifetime(), c.subscriptionStatus(), c.plan(), c.price(),
+                c.lastPayment(), c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned(), c.acquisitionChannel(),
+                c.tenureMonths(), c.paidRenewals(), c.offers12m(), c.identityOffers12m(), c.retentionOffers30d(), c.inHoldout(), c.crossRail());
+    }
+
+    private ReferencePolicyService policyWithGate(String riskStatus, boolean autoRefunds, boolean sandbox) {
+        var base = com.skelar.defuse.config.policy.PolicyProperties.defaults();
+        var g = base.gate();
+        var gate = new com.skelar.defuse.config.policy.PolicyProperties.Gate(g.autoErrorMax(), g.assistErrorMax(), g.autoImpactMaxUsd(),
+                g.assistImpactMaxUsd(), g.autoExpectedLossMaxUsd(), g.priors(), g.minAutoConfidence(), g.minAssistConfidence(),
+                riskStatus, autoRefunds, sandbox);
+        return new ReferencePolicyService(new com.skelar.defuse.config.policy.PolicyProperties(base.refund(), base.retention(),
+                base.risk(), base.money(), gate, base.sources()));
+    }
+
+    @Test
+    void autoRefundLimitIsFiftyDollarsInclusive() {   // $50.00 runs on its own, $50.01 waits for a human
+        var f = LlmClassifierService.fromGold(store.tickets.get("T07"));
+        PolicyDecision at = policy.decide(f, ctxWith("T07", c -> copy(c, "card", 50.00, "succeeded", c.lastPayment().daysAgo(), 0, 0)), 1);
+        assertThat(at.mode()).isEqualTo("auto");
+        assertThat(at.refundAmount()).isEqualTo(50.00);
+        PolicyDecision over = policy.decide(f, ctxWith("T07", c -> copy(c, "card", 50.01, "succeeded", c.lastPayment().daysAgo(), 0, 0)), 1);
+        assertThat(over.mode()).isEqualTo("suggest");
+        assertThat(over.reasons()).contains("above_auto_refund_limit");
+    }
+
+    @Test
+    void uncalibratedRefundIsHeldOutsideTheSandbox() {   // spec E4: UNVALIDATED refunds run on their own only in the mock sandbox
+        var f = LlmClassifierService.fromGold(store.tickets.get("T01"));
+        var ctx = contexts.build(store.tickets.get("T01").customerId);
+        assertThat(policy.decide(f, ctx, 1).mode()).isEqualTo("auto");
+        PolicyDecision held = policyWithGate("UNVALIDATED", true, false).decide(f, ctx, 1);
+        assertThat(held.mode()).isEqualTo("suggest");
+        assertThat(held.actions()).containsExactlyInAnyOrder("cancel", "refund_full");
+        assertThat(held.reasons()).anyMatch(r -> r.startsWith("risk_not_calibrated:"));
+        assertThat(policyWithGate("VALIDATED", true, false).decide(f, ctx, 1).mode()).isEqualTo("auto");
+        assertThat(policyWithGate("UNVALIDATED", true, true).decide(f, ctx, 1).mode()).isEqualTo("auto");
+    }
+
+    @Test
+    void autoRefundSwitchOffHoldsEveryRefund() {
+        var f = LlmClassifierService.fromGold(store.tickets.get("T01"));
+        var ctx = contexts.build(store.tickets.get("T01").customerId);
+        PolicyDecision off = policyWithGate("VALIDATED", false, true).decide(f, ctx, 1);
+        assertThat(off.mode()).isEqualTo("suggest");
+        assertThat(off.reasons()).anyMatch(r -> r.startsWith("risk_not_calibrated:"));
+    }
+
+    @Test
+    void unknownBillingRailEscalatesAndIsNeverInferredFromTheDevice() {   // null processor escalates; Apple Pay on a web card is card
+        var f = LlmClassifierService.fromGold(store.tickets.get("T01"));
+        PolicyDecision none = policy.decide(f, ctxWith("T01", c -> copy(c, null, 49.99, "succeeded", c.lastPayment().daysAgo(), 0, 0)), 1);
+        assertThat(none.mode()).isEqualTo("escalate");
+        assertThat(none.actions()).isEmpty();
+        assertThat(none.reasons()).contains("unknown_billing_processor");
+        PolicyDecision iosCard = policy.decide(f, ctxWith("T01", c -> copy(onPlatform(c, "ios"), "card", 49.99, "succeeded", c.lastPayment().daysAgo(), 0, 0)), 1);
+        assertThat(iosCard.actions()).contains("refund_full").noneMatch(a -> a.equals("store_refund_instructions"));
+    }
+
+    @Test
+    void alreadyRefundedPaymentIsNeverRefundedTwice() {
+        var f = LlmClassifierService.fromGold(store.tickets.get("T01"));
+        PolicyDecision d = policy.decide(f, ctxWith("T01", c -> copy(c, "card", 49.99, "refunded", c.lastPayment().daysAgo(), 0, 0)), 1);
+        assertThat(d.refundAmount()).isZero();
+        assertThat(d.actions()).noneMatch(a -> a.startsWith("refund_"));
+        assertThat(d.reasons()).anyMatch(r -> r.startsWith("already_refunded:"));
+    }
+
+    @Test
+    void secondAccountOnTheSameCardInheritsTheCooldownOfCus0040() {   // identity cluster by card fingerprint
+        assertThat(store.customer("cus_0041").cardFingerprint).isEqualTo(store.customer("cus_0040").cardFingerprint);
+        assertThat(contexts.build("cus_0041").identityOffers12m()).isEqualTo(1);
+        assertThat(contexts.build("cus_0040").identityOffers12m()).isZero();
+    }
+
     @Test
     void duplicateRefundGoesThroughLimitAndHistoryGates() {   // F1, F2
         var f = LlmClassifierService.fromGold(store.tickets.get("T32"));
@@ -130,7 +207,7 @@ class ReferencePolicyServiceTest {
     void retentionOfferOnlyForEligibleCustomers() {
         var f = LlmClassifierService.fromGold(store.tickets.get("T39"));
         var base = contexts.build(store.tickets.get("T39").customerId);
-        assertThat(policy.decide(f, base, 1).actions()).containsExactly("offer_discount");
+        assertThat(policy.decide(f, base, 1).actions()).containsExactly("cancel", "offer_discount");   // cancel first, then one win-back
         java.util.function.Function<com.skelar.defuse.model.dto.CustomerContext, String> why = c -> policy.retentionOffer(f, c)[1];
         var c = base;
         assertThat(why.apply(new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), c.platform(), c.billingProcessor(), c.ltvUsd(),

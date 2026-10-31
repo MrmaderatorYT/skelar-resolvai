@@ -155,7 +155,7 @@ public class TicketPipelineService {
         return a;
     }
 
-    /** Customer accepted the save offer: apply the discount or the pause. */
+    /** Customer took the win-back offer: the renewal this ticket canceled comes back discounted, or paused instead. */
     public TicketAnalysis acceptOffer(String ticketId) {
         synchronized (store) {
             TicketAnalysis a = offerPending(ticketId);
@@ -164,9 +164,13 @@ public class TicketPipelineService {
         }
     }
 
-    /** Customer said no (or repeated "cancel"): cancel right away, no second offer. */
+    /** Customer said no: the cancel already ran at analysis, so nothing else executes; the ticket just closes. */
     public TicketAnalysis declineOffer(String ticketId) {
-        synchronized (store) { return closeOffer(offerPending(ticketId), ticketId, "cancel", "offer_declined"); }
+        synchronized (store) {
+            TicketAnalysis a = offerPending(ticketId);
+            // an older offer without the cancel-first step still owes the customer the cancel they asked for
+            return closeOffer(a, ticketId, store.executed.containsKey(ticketId + ":cancel") ? null : "cancel", "offer_declined");
+        }
     }
 
     private TicketAnalysis offerPending(String ticketId) {
@@ -177,12 +181,13 @@ public class TicketPipelineService {
     }
 
     private TicketAnalysis closeOffer(TicketAnalysis a, String ticketId, String action, String event) {
-        List<Map<String, Object>> results = executor.execute(ticketId, List.of(action), a.decision, a.context, "customer");
+        List<Map<String, Object>> results = action == null ? List.of()
+                : executor.execute(ticketId, List.of(action), a.decision, a.context, "customer");
         a.executed.addAll(results);
         boolean failed = results.stream().anyMatch(r -> r.containsKey("error"));
         a.status = ticket(ticketId).status = failed ? "escalated" : "resolved";
-        a.reply = replies.offerOutcome(store.customer(a.context.customerId()).name, action, failed);
-        audit.log(event, ticketId, Map.of("by", "customer", "action", action));
+        a.reply = replies.offerOutcome(store.customer(a.context.customerId()).name, action == null ? "cancel" : action, failed);
+        audit.log(event, ticketId, Map.of("by", "customer", "action", action == null ? "none" : action));
         return a;
     }
 

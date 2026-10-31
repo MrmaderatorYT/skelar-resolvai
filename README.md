@@ -68,7 +68,7 @@ All data is synthetic (made-up app "Calmly"). Baseline metrics come from a synth
 
 ### Policy configuration
 
-`backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 45-case reference ($60, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
+`backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 45-case reference ($50, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
 
 Prompt-injection matches are escalated without sending the ticket to Claude. Low-confidence cancellation waits for approval. Approval includes the reviewed analysis ID and checks the current billing context against that snapshot; a changed context returns HTTP 409 and requires a fresh analysis and review. This remains an in-memory demo without authenticated production billing.
 

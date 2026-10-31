@@ -112,22 +112,39 @@ class PipelineTest {
     }
 
     @Test
-    void eligibleCustomerGetsOneOfferAndAcceptingAppliesDiscount() {
+    void cancelRunsFirstAndAcceptingRestoresTheRenewalDiscounted() {   // spec retention: cancel first (T39)
         TicketAnalysis a = pipeline.analyze("T39", false);
+        assertThat(a.decision.actions()).containsExactly("cancel", "offer_discount");
         assertThat(a.status).isEqualTo("offer_sent");
-        assertThat(a.reply).contains("30%").contains("CANCEL");
+        assertThat(store.subscription(cid("T39")).status).isEqualTo("canceled");
+        assertThat(a.reply).contains("30%").contains("Reply YES").contains("already stopped");
         assertThat(store.customer(cid("T39")).offers12m).isEqualTo(1);
         pipeline.acceptOffer("T39");
-        assertThat(store.subscription(cid("T39")).discountPercent).isEqualTo(30);
         assertThat(store.subscription(cid("T39")).status).isEqualTo("active");
+        assertThat(store.subscription(cid("T39")).canceledAt).isNull();
+        assertThat(store.subscription(cid("T39")).discountPercent).isEqualTo(30);
         assertThat(store.analyses.get("T39").status).isEqualTo("resolved");
+        assertThatThrownBy(() -> pipeline.acceptOffer("T39")).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void decliningTheOfferCancelsImmediatelyAndNoSecondOffer() {
-        pipeline.analyze("T42", false);
-        pipeline.declineOffer("T42");
+    void acceptingThePauseRestoresTheCanceledRenewalAsPaused() {   // T42 is a no_time customer: pause is the offer
+        TicketAnalysis a = pipeline.analyze("T42", false);
+        assertThat(a.decision.actions()).containsExactly("cancel", "offer_pause");
         assertThat(store.subscription(cid("T42")).status).isEqualTo("canceled");
+        pipeline.acceptOffer("T42");
+        assertThat(store.subscription(cid("T42")).status).isEqualTo("paused");
+        assertThat(store.analyses.get("T42").status).isEqualTo("resolved");
+    }
+
+    @Test
+    void decliningTheOfferKeepsTheCancelAndClosesTheTicket() {
+        pipeline.analyze("T42", false);
+        var closed = pipeline.declineOffer("T42");
+        assertThat(closed.status).isEqualTo("resolved");
+        assertThat(closed.reply).contains("stays canceled");
+        assertThat(store.subscription(cid("T42")).status).isEqualTo("canceled");
+        assertThatThrownBy(() -> pipeline.acceptOffer("T42")).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> pipeline.declineOffer("T42")).isInstanceOf(IllegalStateException.class);
         var again = store.addTicket(cid("T42"), "please cancel", "chat");
         store.tickets.get(again.id).gold = store.tickets.get("T42").gold;   // same reason, now inside the cooldown

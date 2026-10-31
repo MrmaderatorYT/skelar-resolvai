@@ -13,7 +13,7 @@ NOW = datetime(2026, 10, 31, 12, 0, tzinfo=timezone.utc)
 DATA = Path(os.environ.get("DEFUSE_DATA_DIR", Path(__file__).parent / "data"))
 
 POLICY = {
-    "auto_refund_limit_usd": 60.0,
+    "auto_refund_limit_usd": 50.0,
     "full_refund_max_days": 14,
     "full_refund_max_sessions": 2,
     "partial_refund_max_days": 30,  # partial refund = pro-rata unused days (CRD 14(3), CJEU C-641/19)
@@ -31,7 +31,7 @@ POLICY = {
     },
     "risk_bands": {"high": 0.50, "medium": 0.30},
     "retention": {
-        # one save offer per ticket, only for the right customer; everyone else gets an honest cancel
+        # every cancel runs first; the right customer also gets one optional win-back offer
         "offers": {"too_expensive": "offer_discount", "no_time": "offer_pause", "not_using": "offer_pause"},
         "discount_percent": 30,
         "discount_months": 3,
@@ -219,6 +219,8 @@ def decide(f, ctx, confidence=1.0):
     reasons = []
 
     def out(actions, mode, refund=0.0):
+        if lp["status"] == "refunded" and intent in MONEY_INTENTS and not f["injection"]:
+            reasons.append(f"already_refunded: payment {lp['id']} was refunded earlier; no second refund")
         if refund > 0:
             if lp["status"] != "succeeded" or lp["days_ago"] < 0:
                 refund = 0.0
@@ -231,6 +233,14 @@ def decide(f, ctx, confidence=1.0):
             if refund and (ctx["refunds_last_180d"] or ctx["chargebacks_lifetime"]):
                 mode = "suggest"
                 reasons.append("refund_or_chargeback_history")
+        # no uncalibrated refund runs on its own against a real provider (spec E4)
+        if mode == "auto" and any(a.startswith("refund_") for a in actions):
+            if not GATE["auto_refund_enabled"]:
+                mode = "suggest"
+                reasons.append("risk_not_calibrated: automatic refunds are disabled by merchant policy")
+            elif not GATE["sandbox"] and GATE["risk_status"] != "VALIDATED":
+                mode = "suggest"
+                reasons.append(f"risk_not_calibrated: risk status {GATE['risk_status']} outside the mock sandbox")
         if mode == "auto" and confidence < POLICY["min_auto_confidence"]:
             mode = "suggest"
             reasons.append("low_confidence")
@@ -252,9 +262,8 @@ def decide(f, ctx, confidence=1.0):
     if intent == "unclear":
         return out(["ask_clarification"], "auto")
 
-    processor = ctx.get("billing_processor") or {
-        "web": "card", "ios": "app_store", "android": "google_play"
-    }.get(ctx["platform"])
+    # the rail comes from the billing record only, never the device: Apple Pay on a web card is not App Store
+    processor = ctx.get("billing_processor")
     if processor not in ("card", "app_store", "google_play"):
         reasons.append("unknown_billing_processor")
         return out([], "escalate")
@@ -275,8 +284,9 @@ def decide(f, ctx, confidence=1.0):
     if intent == "cancel" and not ctx.get("cross_rail") and ctx["subscription_status"] in ("active", "paused"):
         offer, why_not = retention_offer(f, ctx)
         if offer:
-            reasons.append("retention_offer: one offer; the customer can still cancel at any time")
-            return out([offer], "auto")
+            # cancel first: an offer never replaces an explicit cancel; it is one optional win-back
+            reasons.append("retention_offer: renewal canceled now; one optional win-back offer")
+            return out(["cancel", offer], "auto")
         if why_not:
             reasons.append(f"retention_not_eligible: {why_not}")
 
@@ -340,6 +350,11 @@ GATE = {
     "priors": {"question": .01, "billing_question": .02, "cancel": .01, "cancel_refund": .02,
                "refund": .02, "duplicate_charge": .02, "pause": .02, "technical_issue": .05,
                "account_access": .10, "account_security": .10, "unclear": .50},
+    # abstention thresholds on the model's self-score, not probabilities
+    "min_auto_confidence": .97, "min_assist_confidence": .85,
+    "risk_status": "UNVALIDATED",   # no externally measured error bound yet (spec E1)
+    "auto_refund_enabled": True,
+    "sandbox": True,                # mock billing only; False with any real provider
 }
 _reference_decide = decide
 
@@ -348,7 +363,7 @@ def decide(f, ctx, confidence=1.0):
     if not isinstance(f, dict) or f.get("intent") not in INTENTS or type(confidence) not in (float, int) or not math.isfinite(confidence) or not 0 <= confidence <= 1:
         return base
     intent = f["intent"]
-    p_err = round(max(GATE["priors"].get(intent, 1.0), 1 - confidence), 12)
+    p_err = GATE["priors"].get(intent, 1.0)  # the hand-set prior only, never 1 - confidence
     impact = base["refund_amount"]
     period = ctx.get("period_days") or 0
     if "offer_discount" in base["actions"] or "apply_discount" in base["actions"]:
@@ -365,12 +380,17 @@ def decide(f, ctx, confidence=1.0):
         level = "HUMAN"
     elif level is None:
         if base["actions"] and all(a in ("reply_only", "ask_clarification") for a in base["actions"]): level = "AUTO"
-        elif p_err <= GATE["auto_error_max"] and impact <= GATE["auto_impact_max_usd"] and expected_loss <= GATE["auto_expected_loss_max_usd"]: level = "AUTO"
-        elif p_err <= GATE["assist_error_max"] and impact <= GATE["assist_impact_max_usd"]: level = "ASSIST"
-        else: level = "HUMAN"
+        elif confidence < GATE["min_assist_confidence"]: level = "HUMAN"
+        else:
+            if p_err <= GATE["auto_error_max"] and impact <= GATE["auto_impact_max_usd"] and expected_loss <= GATE["auto_expected_loss_max_usd"]: level = "AUTO"
+            elif p_err <= GATE["assist_error_max"] and impact <= GATE["assist_impact_max_usd"]: level = "ASSIST"
+            else: level = "HUMAN"
+            if level == "AUTO" and confidence < GATE["min_auto_confidence"]: level = "ASSIST"
     rank = {"auto": 0, "suggest": 1, "escalate": 2}
     gate_rank = {"AUTO": 0, "ASSIST": 1, "HUMAN": 2}[level]
     if gate_rank > rank[base["mode"]]:
         base["mode"] = "suggest" if gate_rank == 1 else "escalate"
         base["reasons"].append("autonomy_gate_" + level.lower())
+        if confidence < GATE["min_auto_confidence"] and "low_confidence" not in base["reasons"]:
+            base["reasons"].append("low_confidence")
     return base

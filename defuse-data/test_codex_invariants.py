@@ -166,7 +166,7 @@ def test_12_gold_auto_refund_guards():
     for t in EVAL:
         g, ctx = t["gold"], policy.build_context(t["customer_id"], DATA)
         if g["mode"] == "auto" and g["refund_amount"] > 0:
-            if g["refund_amount"] > 60 or ctx["refunds_last_180d"] or ctx["chargebacks_lifetime"] or ctx["last_payment"]["status"] != "succeeded":
+            if g["refund_amount"] > 50 or ctx["refunds_last_180d"] or ctx["chargebacks_lifetime"] or ctx["last_payment"]["status"] != "succeeded":
                 bad.append(t["id"])
     assert not bad, bad
 
