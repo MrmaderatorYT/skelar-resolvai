@@ -30,7 +30,8 @@
 | Доказова база | **Opus** | `docs/evidence/**`, `docs/policy/**`, `docs/features/{retention,analytics,action-engine}/**` |
 | Policy UI | **Opus** | новий `controller/PolicyController.java`, `frontend/src/pages/{Policy,Dashboard}.tsx`, `frontend/src/App.tsx` |
 | Пітч | **Opus** | `.task/pitch/**` |
-| LLM на Gemma | **Codex** | `service/llm/**`, `build.gradle`, секція `defuse.llm.*` в `application.yml`, `service/analytics/EvalService.java`, `LiveEvalTest.java` |
+| Зміст промптів: визначення ознак і few-shot | **Opus** | `docs/evidence/LABELING.md`, `backend/src/main/resources/prompts/classifier-fewshot.json` |
+| LLM на Gemma (формат промпту, виклики, парсинг) | **Codex** | `service/llm/**`, `build.gradle`, секція `defuse.llm.*` в `application.yml`, `service/analytics/EvalService.java`, `LiveEvalTest.java` |
 | Захист | **Codex** | `service/guard/**`, red-team набір у `src/test/resources/redteam/**`, `docs/security.md` |
 | Плагіни (SPI) | **Codex** | нові `spi/**`, `registry/**`, `plugins/**`; `service/executor/**`, `store/**`, `service/TicketPipelineService.java`, `model/dto/{Requests,TicketAnalysis}.java`, секції `defuse.datasources.*` / `defuse.billing.*` в `application.yml` |
 | Docs фіч | **Codex** | `docs/features/triage/**`, новий `docs/features/plugins/**` |
@@ -102,12 +103,28 @@
 - **`demo-script.md`:** 3 хв. T01 → T05 → T12 (Approve) → T30 → T37 → T39 (пропозиція) → T40/T41 (зловживання) → нове повідомлення наживо → дашборд → eval.
 - **`qa.md`:** відповіді на «чим ви кращі за Fin?», «навіщо платити за швидше скасування?», «чому Gemma?», «де докази?».
 
+### O7. Зміст промптів AI (~15 хв, віддати Codex до 13:45)
+- **`docs/evidence/LABELING.md` — визначення ознак із джерелами:** сарказм (похвала зі зворотним змістом), прихована та відкрита агресія, dispute signal, справжня мета, `cancel_reason`. Опора: дослідження про сарказм і sentiment у підтримці, OWASP LLM01 для injection. Ті самі визначення — інструкція для розмітки eval.
+- **`prompts/classifier-fewshot.json`:** 8 синтетичних прикладів, жодного з eval, усі 5 мов. Покривають: сарказм ↔ щира похвала з емодзі, приховану погрозу, `cancel_reason`, ситуацію «питає як скасувати, а хоче гроші».
+- **Codex** вбудовує це в Gemma-промпт і пише тест «few-shot ≠ eval». Сам зміст визначень Codex не змінює: якщо Gemma погано їх розуміє — запит у HANDOFF.
+
+### Мапа «наш внесок» → крок плану
+| Блок | Що робимо в цьому раунді | Крок |
+|---|---|---|
+| Дані для демо | Перегенерація під нові правила, профілі клієнтів за бенчмарками | O3 |
+| Правила policy | Доказова база + `defuse-policy.yml` + оновлені значення | O1, O2, O3 |
+| Правила знижок і пауз | Глибина, тривалість, eligibility, анти-абуз — з джерелами | O1, O3 |
+| Тестовий набір | Нові eval-тікети на змінені межі, паритет Python ↔ Java | O3 |
+| Промпти AI | Визначення ознак і few-shot (зміст), Codex — формат під Gemma | O7 |
+| Формули грошей | Комісії, VAMP за регіоном, витрати на знижки, save rate проти holdout | O4 |
+
 ### Definition of done для Opus
 - [ ] Кожне число в policy має рядок у `RULES.md` з типом і силою.
 - [ ] Gold-check 100%, JUnit зелений, паритет Python ↔ Java.
 - [ ] Невалідний `defuse-policy.yml` → застосунок не стартує (є тест).
 - [ ] Вкладка Policy працює; path traversal заблоковано (є тест).
 - [ ] Слайди не містять жодного числа без джерела.
+- [ ] `LABELING.md` і `classifier-fewshot.json` запушені в `feat-opus` до 13:45.
 - [ ] `HANDOFF-opus.md`: що зроблено, що змінено в правилах і чому, запити до Codex.
 
 ## 5. Що Opus перевіряє в рев'ю `feat-codex`
