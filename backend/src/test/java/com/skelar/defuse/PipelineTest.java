@@ -115,10 +115,10 @@ class PipelineTest {
     void eligibleCustomerGetsOneOfferAndAcceptingAppliesDiscount() {
         TicketAnalysis a = pipeline.analyze("T39", false);
         assertThat(a.status).isEqualTo("offer_sent");
-        assertThat(a.reply).contains("25%").contains("CANCEL");
+        assertThat(a.reply).contains("30%").contains("CANCEL");
         assertThat(store.customer(cid("T39")).offers12m).isEqualTo(1);
         pipeline.acceptOffer("T39");
-        assertThat(store.subscription(cid("T39")).discountPercent).isEqualTo(25);
+        assertThat(store.subscription(cid("T39")).discountPercent).isEqualTo(30);
         assertThat(store.subscription(cid("T39")).status).isEqualTo("active");
         assertThat(store.analyses.get("T39").status).isEqualTo("resolved");
     }

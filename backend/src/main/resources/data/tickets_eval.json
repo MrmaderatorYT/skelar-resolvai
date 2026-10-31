@@ -112,7 +112,7 @@
         "refund_partial"
       ],
       "mode": "auto",
-      "refund_amount": 14.99,
+      "refund_amount": 9.99,
       "priority": "P1",
       "true_goal": "Cancel and get as much of the renewal back as possible",
       "tags": [
@@ -292,7 +292,7 @@
         "refund_partial_goodwill"
       ],
       "mode": "suggest",
-      "refund_amount": 24.99,
+      "refund_amount": 28.01,
       "priority": "P1",
       "true_goal": "Avoid paying for a forgotten renewal",
       "tags": [
@@ -1140,7 +1140,7 @@
     "channel": "chat",
     "language": "en",
     "created_at": "2026-10-31T11:38:00+00:00",
-    "text": "Cancel please, it's too expensive. Last time you gave me 50% off, happy to take another one 😉",
+    "text": "Cancel please, it's too expensive. You gave me 30% off two months ago, happy to take another one 😉",
     "gold": {
       "intent": "cancel",
       "cancel_reason": "too_expensive",

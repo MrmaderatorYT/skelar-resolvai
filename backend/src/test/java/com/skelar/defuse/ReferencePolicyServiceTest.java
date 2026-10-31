@@ -140,7 +140,7 @@ class ReferencePolicyServiceTest {
         assertThat(why.apply(new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), c.platform(), c.billingProcessor(), c.ltvUsd(),
                 c.contactsLast30d(), c.refundsLast180d(), c.chargebacksLifetime(), c.subscriptionStatus(), c.plan(), c.price(),
                 c.lastPayment(), c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned(), c.acquisitionChannel(),
-                c.tenureMonths(), c.paidRenewals(), 0, 0, ReferencePolicyService.MAX_OFFERS_PER_30D, false))).isEqualTo("monthly_offer_budget");
+                c.tenureMonths(), c.paidRenewals(), 0, 0, policy.properties().retention().maxOffersPer30d(), false))).isEqualTo("monthly_offer_budget");
         // a cancel_refund request never gets an offer: money questions go the refund path
         var refund = new ClassificationFeatures("cancel_refund", "", false, false, false, false, false, "neutral", "en", 1.0,
                 java.util.List.of(), "too_expensive");

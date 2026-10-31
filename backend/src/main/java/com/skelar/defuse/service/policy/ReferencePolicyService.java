@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
+import com.skelar.defuse.config.policy.PolicyProperties;
 
 /**
  * Deterministic policy, a 1:1 port of defuse-data/reference_policy.py.
@@ -18,42 +18,31 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @Service
 public class ReferencePolicyService {
-    private final double autoRefundLimitUsd;
-    private final int fullRefundMaxDays, fullRefundMaxSessions, partialRefundMaxDays;
-    private final double partialRefundShare, goodwillLtvUsd, minAutoConfidence;
+    private final PolicyProperties props;
+    private final PolicyProperties.Refund refundCfg;
+    private final PolicyProperties.Retention retentionCfg;
+    private final PolicyProperties.Risk riskCfg;
 
-    public ReferencePolicyService(@Value("${defuse.policy.auto-refund-limit-usd:60}") double autoRefundLimitUsd,
-            @Value("${defuse.policy.full-refund-max-days:14}") int fullRefundMaxDays,
-            @Value("${defuse.policy.full-refund-max-sessions:2}") int fullRefundMaxSessions,
-            @Value("${defuse.policy.partial-refund-max-days:30}") int partialRefundMaxDays,
-            @Value("${defuse.policy.partial-refund-share:0.5}") double partialRefundShare,
-            @Value("${defuse.policy.goodwill-ltv-usd:100}") double goodwillLtvUsd,
-            @Value("${defuse.policy.min-auto-confidence:0.85}") double minAutoConfidence) {
-        if (!Double.isFinite(autoRefundLimitUsd) || autoRefundLimitUsd < 0 || fullRefundMaxDays < 0
-                || fullRefundMaxSessions < 0 || partialRefundMaxDays < fullRefundMaxDays
-                || !Double.isFinite(partialRefundShare) || partialRefundShare < 0 || partialRefundShare > 1
-                || !Double.isFinite(goodwillLtvUsd) || goodwillLtvUsd < 0
-                || !Double.isFinite(minAutoConfidence) || minAutoConfidence < 0 || minAutoConfidence > 1)
-            throw new IllegalArgumentException("Invalid refund policy configuration");
-        this.autoRefundLimitUsd = autoRefundLimitUsd; this.fullRefundMaxDays = fullRefundMaxDays;
-        this.fullRefundMaxSessions = fullRefundMaxSessions; this.partialRefundMaxDays = partialRefundMaxDays;
-        this.partialRefundShare = partialRefundShare; this.goodwillLtvUsd = goodwillLtvUsd;
-        this.minAutoConfidence = minAutoConfidence;
+    public ReferencePolicyService(PolicyProperties props) {
+        this.props = props;
+        this.refundCfg = props.refund();
+        this.retentionCfg = props.retention();
+        this.riskCfg = props.risk();
     }
-    public double autoRefundLimitUsd() { return autoRefundLimitUsd; }
+
+    public PolicyProperties properties() {
+        return props;
+    }
+
+    public double autoRefundLimitUsd() {
+        return refundCfg.autoLimitUsd();
+    }
+
     public Map<String, Object> effectiveSettings(Map<String, Object> seed) {
         Map<String, Object> result = new LinkedHashMap<>(seed);
-        result.put("auto_refund_limit_usd", autoRefundLimitUsd); result.put("full_refund_max_days", fullRefundMaxDays);
-        result.put("full_refund_max_sessions", fullRefundMaxSessions); result.put("partial_refund_max_days", partialRefundMaxDays);
-        result.put("partial_refund_share", partialRefundShare); result.put("goodwill_ltv_usd", goodwillLtvUsd);
-        result.put("min_auto_confidence", minAutoConfidence);
+        props.rules().forEach(r -> result.put((String) r.get("key"), r.get("value")));
         return result;
     }
-
-    static final double W_BASE = 0.10, W_DISPUTE = 0.40, W_SARCASM = 0.25, W_AGGRESSION = 0.20,
-            W_MONEY = 0.15, W_PER_CONTACT = 0.10;
-    static final int MAX_CONTACTS = 3;
-    static final double BAND_HIGH = 0.50, BAND_MEDIUM = 0.30;
 
     public static final Set<String> REFUND_INTENTS = Set.of("refund", "cancel_refund");
     public static final Set<String> CANCEL_INTENTS = Set.of("cancel", "cancel_refund");
@@ -62,43 +51,48 @@ public class ReferencePolicyService {
             "pause", "technical_issue", "account_access", "account_security", "question", "billing_question", "unclear");
 
     // retention: one save offer per ticket, only for the right customer; everyone else gets an honest cancel
-    public static final Map<String, String> RETENTION_OFFERS =
-            Map.of("too_expensive", "offer_discount", "no_time", "offer_pause", "not_using", "offer_pause");
-    public static final int DISCOUNT_PERCENT = 25, DISCOUNT_MONTHS = 2, PAUSE_MONTHS = 2;
-    public static final int MIN_TENURE_MONTHS = 2, MIN_PAID_RENEWALS = 1, OFFER_COOLDOWN_DAYS = 365;
-    public static final int MAX_OFFERS_PER_30D = 50;
-    public static final int HOLDOUT_BUCKET = 3;   // customer id % 10 == 3 never gets offers: measures real uplift
+    /** @deprecated read offer parameters through the getters below; these mirror defuse-policy.yml defaults
+     *  (PolicyConfigTest keeps them equal) until executor/reply code switches to the getters. */
+    @Deprecated
+    public static final int DISCOUNT_PERCENT = 30, DISCOUNT_MONTHS = 3, PAUSE_MONTHS = 2;
 
     /** Offer parameters: the only way other components read them (frozen contract, config-driven later). */
     public int retentionDiscountPercent() {
-        return DISCOUNT_PERCENT;
+        return retentionCfg.discountPercent();
     }
 
     public int retentionDiscountMonths() {
-        return DISCOUNT_MONTHS;
+        return retentionCfg.discountMonths();
     }
 
     public int retentionPauseMonths() {
-        return PAUSE_MONTHS;
+        return retentionCfg.pauseMonths();
     }
 
     public record Risk(double score, String band) {
     }
 
     public Risk riskScore(ClassificationFeatures f, int contactsLast30d) {
-        double s = W_BASE;
-        if (f.disputeSignal()) s += W_DISPUTE;
-        if (f.sarcasm()) s += W_SARCASM;
-        if (f.hiddenAggression() || f.explicitAggression()) s += W_AGGRESSION;
-        if (MONEY_INTENTS.contains(f.intent())) s += W_MONEY;
-        s += Math.min(contactsLast30d, MAX_CONTACTS) * W_PER_CONTACT;
+        PolicyProperties.Risk w = riskCfg;
+        double s = w.base();
+        if (f.disputeSignal()) s += w.dispute();
+        if (f.sarcasm()) s += w.sarcasm();
+        if (f.hiddenAggression() || f.explicitAggression()) s += w.aggression();
+        if (MONEY_INTENTS.contains(f.intent())) s += w.money();
+        s += Math.min(contactsLast30d, w.maxContacts()) * w.perContact();
         s = Math.round(Math.min(s, 1.0) * 100.0) / 100.0;
-        String band = s >= BAND_HIGH ? "high" : s >= BAND_MEDIUM ? "medium" : "low";
+        String band = s >= w.bandHigh() ? "high" : s >= w.bandMedium() ? "medium" : "low";
         return new Risk(s, band);
     }
 
     static double floorCents(double x) {
         return Math.floor(x * 100 + 1e-6) / 100;
+    }
+
+    /** Refund for the unused part of the paid period (CRD art. 14(3), CJEU C-641/19), floored to cents. */
+    static double proRata(double amount, long daysAgo, int periodDays) {
+        long unused = Math.max(periodDays - Math.max(daysAgo, 0), 0);
+        return floorCents(amount * unused / periodDays);
     }
 
     static String priority(ClassificationFeatures f, String band, boolean disputed) {
@@ -119,7 +113,7 @@ public class ReferencePolicyService {
         LastPayment lp = ctx.lastPayment();
         boolean disputed = "disputed".equals(lp.status());
         List<String> reasons = new ArrayList<>();
-        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx, autoRefundLimitUsd, minAutoConfidence);
+        Out out = new Out(feat, risk, disputed, confidence, reasons, ctx, refundCfg.autoLimitUsd(), refundCfg.minAutoConfidence());
 
         if (feat.injection()) {
             reasons.add("prompt_injection: no actions, human review");
@@ -187,15 +181,15 @@ public class ReferencePolicyService {
         } else if (REFUND_INTENTS.contains(intent)) {
             long days = lp.daysAgo();
             int sessions = ctx.sessionsSinceLastCharge();
-            if (days <= fullRefundMaxDays && sessions <= fullRefundMaxSessions) {
+            if (days <= refundCfg.fullMaxDays() && sessions <= refundCfg.fullMaxSessions()) {
                 acts.add("refund_full");
                 refund = lp.amount();
-            } else if (days <= partialRefundMaxDays) {
+            } else if (days <= refundCfg.partialMaxDays()) {
                 acts.add("refund_partial");
-                refund = floorCents(lp.amount() * partialRefundShare);
+                refund = proRata(lp.amount(), days, refundCfg.periodDays(ctx.plan()));
             } else if (risk.band().equals("high")) {
                 acts.add("refund_partial_goodwill");
-                refund = floorCents(lp.amount() * partialRefundShare);
+                refund = proRata(lp.amount(), days, refundCfg.periodDays(ctx.plan()));
                 mode = "suggest";
                 reasons.add("outside_window_but_high_dispute_risk: goodwill needs a human");
             } else {
@@ -204,7 +198,7 @@ public class ReferencePolicyService {
         } else if (intent.equals("pause")) {
             acts.add("pause");
         } else if (intent.equals("technical_issue")
-                && (ctx.ltvUsd() >= goodwillLtvUsd || !risk.band().equals("low"))) {
+                && (ctx.ltvUsd() >= refundCfg.goodwillLtvUsd() || !risk.band().equals("low"))) {
             acts.add("extend_access_7d");
             mode = "suggest";
         }
@@ -214,16 +208,16 @@ public class ReferencePolicyService {
     /** {offerAction, null} if a save offer is allowed; {null, whyNot} if not; {null, null} if the
      *  cancel reason is not one we make offers for. Deterministic: the LLM only names the reason. */
     public String[] retentionOffer(ClassificationFeatures f, CustomerContext ctx) {
-        String offer = f.cancelReason() == null ? null : RETENTION_OFFERS.get(f.cancelReason());
+        String offer = f.cancelReason() == null ? null : retentionCfg.offers().get(f.cancelReason());
         if (offer == null) return new String[] {null, null};
         String why = null;
         if (f.disputeSignal() || f.hiddenAggression() || f.explicitAggression()) why = "dispute_or_aggression";
         else if (ctx.contactsLast30d() > 0) why = "repeat_contact";
-        else if (ctx.tenureMonths() < MIN_TENURE_MONTHS || ctx.paidRenewals() < MIN_PAID_RENEWALS) why = "tenure";
+        else if (ctx.tenureMonths() < retentionCfg.minTenureMonths() || ctx.paidRenewals() < retentionCfg.minPaidRenewals()) why = "tenure";
         else if (ctx.offers12m() > 0) why = "offer_cooldown";
         else if (ctx.identityOffers12m() > 0) why = "identity_cluster_offer";
         else if (ctx.refundsLast180d() > 0 || ctx.chargebacksLifetime() > 0) why = "refund_or_chargeback_history";
-        else if (ctx.retentionOffers30d() >= MAX_OFFERS_PER_30D) why = "monthly_offer_budget";
+        else if (ctx.retentionOffers30d() >= retentionCfg.maxOffersPer30d()) why = "monthly_offer_budget";
         else if (ctx.inHoldout()) why = "retention_holdout";
         return why == null ? new String[] {offer, null} : new String[] {null, why};
     }

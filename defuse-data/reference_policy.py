@@ -16,8 +16,8 @@ POLICY = {
     "auto_refund_limit_usd": 60.0,
     "full_refund_max_days": 14,
     "full_refund_max_sessions": 2,
-    "partial_refund_max_days": 30,
-    "partial_refund_share": 0.5,
+    "partial_refund_max_days": 30,  # partial refund = pro-rata unused days (CRD 14(3), CJEU C-641/19)
+    "plan_period_days": {"monthly": 30, "quarterly": 91, "annual": 365},
     "goodwill_ltv_usd": 100.0,
     "min_auto_confidence": 0.85,
     "risk_weights": {
@@ -33,14 +33,20 @@ POLICY = {
     "retention": {
         # one save offer per ticket, only for the right customer; everyone else gets an honest cancel
         "offers": {"too_expensive": "offer_discount", "no_time": "offer_pause", "not_using": "offer_pause"},
-        "discount_percent": 25,
-        "discount_months": 2,
+        "discount_percent": 30,
+        "discount_months": 3,
         "pause_months": 2,
         "min_tenure_months": 2,
         "min_paid_renewals": 1,
-        "cooldown_days": 365,
+        "cooldown_days": 90,
         "max_offers_per_30d": 50,
         "holdout_bucket": 3,  # customers whose id % 10 == 3 never get offers: measures real uplift
+    },
+    "money": {
+        "dispute_fee_usd": 15.0,                # Stripe US dispute fee
+        "scheme_fee_per_dispute_usd": 0.0,      # set from the acquirer contract; not published by Visa
+        "merchant_region": "EU",
+        "vamp_threshold_by_region": {"US": 0.015, "CA": 0.015, "EU": 0.015, "AP": 0.015, "CEMEA": 0.022},
     },
 }
 
@@ -98,6 +104,7 @@ def build_context(customer_id, data=None):
         "chargebacks_lifetime": sum(1 for p in pays if p["status"] == "charged_back"),
         "subscription_status": sub["status"],
         "plan": sub["plan"],
+        "period_days": POLICY["plan_period_days"].get(sub["plan"], 30),
         "price": sub["price"],
         "last_payment": {"id": last["id"], "amount": last["amount"], "status": last["status"],
                          "days_ago": _days_ago(last["created_at"])},
@@ -160,6 +167,12 @@ def risk_score(f, ctx):
 
 def _floor_cents(x):
     return math.floor(x * 100 + 1e-6) / 100
+
+
+def _pro_rata(amount, days_ago, period_days):
+    """Refund for the unused part of the paid period, floored to cents."""
+    unused = max(period_days - max(days_ago, 0), 0)
+    return _floor_cents(amount * unused / period_days)
 
 
 def priority(f, band, disputed):
@@ -259,16 +272,15 @@ def decide(f, ctx, confidence=1.0):
         refund = lp["amount"]
     elif intent in REFUND_INTENTS:
         days, sessions = lp["days_ago"], ctx["sessions_since_last_charge"]
-        share = POLICY["partial_refund_share"]
         if days <= POLICY["full_refund_max_days"] and sessions <= POLICY["full_refund_max_sessions"]:
             acts.append("refund_full")
             refund = lp["amount"]
         elif days <= POLICY["partial_refund_max_days"]:
             acts.append("refund_partial")
-            refund = _floor_cents(lp["amount"] * share)
+            refund = _pro_rata(lp["amount"], days, ctx.get("period_days", 30))
         elif band == "high":
             acts.append("refund_partial_goodwill")
-            refund = _floor_cents(lp["amount"] * share)
+            refund = _pro_rata(lp["amount"], days, ctx.get("period_days", 30))
             mode = "suggest"
             reasons.append("outside_window_but_high_dispute_risk: goodwill needs a human")
         else:

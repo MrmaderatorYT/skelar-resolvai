@@ -1,5 +1,6 @@
 package com.skelar.defuse.service.analytics;
 
+import com.skelar.defuse.config.policy.PolicyProperties;
 import com.skelar.defuse.model.domain.HistoryTicket;
 import com.skelar.defuse.model.dto.ClassificationFeatures;
 import com.skelar.defuse.model.dto.CustomerContext;
@@ -10,21 +11,21 @@ import com.skelar.defuse.store.InMemoryStore;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /** Money at risk per ticket, priced with dispute rates from the (synthetic) history baseline. */
 @Service
 public class MoneyService {
     private final InMemoryStore store;
-    private final double chargebackFee;
-    private final double vampFee;
+    private final PolicyProperties.Money money;
 
-    public MoneyService(InMemoryStore store, @Value("${defuse.chargeback-fee-usd}") double chargebackFee,
-                        @Value("${defuse.vamp-fee-usd}") double vampFee) {
+    public MoneyService(InMemoryStore store, PolicyProperties props) {
         this.store = store;
-        this.chargebackFee = chargebackFee;
-        this.vampFee = vampFee;
+        this.money = props.money();
+    }
+
+    public PolicyProperties.Money settings() {
+        return money;
     }
 
     public Map<String, Double> pDisputeByBand() {
@@ -41,7 +42,7 @@ public class MoneyService {
         boolean atRisk = ReferencePolicyService.MONEY_INTENTS.contains(f.intent()) && ctx.platform().equals("web")
                 && ctx.lastPayment().status().equals("succeeded");
         double amount = atRisk ? ctx.lastPayment().amount() : 0;
-        double fees = atRisk ? chargebackFee + vampFee : 0;
+        double fees = atRisk ? money.feesPerDispute() : 0;
         double p = pDisputeByBand().get(d.riskBand());
         return new MoneyAtRisk(amount, fees, p, Math.round(p * fees * 100.0) / 100.0);
     }

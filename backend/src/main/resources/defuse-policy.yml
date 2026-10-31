@@ -1,0 +1,57 @@
+# Every policy number Defuse uses. Evidence for each value: docs/evidence/RULES.md
+# (strength A = law/network rules/official policy, B = report, C = vendor data, H = our heuristic).
+# Invalid values or a missing source make the application refuse to start.
+defuse:
+  policy:
+    refund:
+      full-max-days: 14              # EU CRD art. 9 withdrawal period (A)
+      full-max-sessions: 2           # "barely used" proxy (H)
+      partial-max-days: 30           # Calm 30-day web refunds, Liven 30-day guarantee (A/C)
+      plan-period-days: {monthly: 30, quarterly: 91, annual: 365}   # partial = pro-rata unused days, CRD 14(3) + CJEU C-641/19 (A)
+      auto-limit-usd: 60             # annual plans always need a human (H)
+      goodwill-ltv-usd: 100          # (H)
+      min-auto-confidence: 0.85      # below it nothing runs automatically (H)
+    retention:
+      offers: {too_expensive: offer_discount, no_time: offer_pause, not_using: offer_pause}   # pause > discount, Churnkey (C)
+      discount-percent: 30           # Churnkey: 30% is the minimum for meaningful acceptance (C)
+      discount-months: 3             # Churnkey: 30% for 3 months (C)
+      pause-months: 2                # Churnkey: 2-3 lengths by usage cycle (C)
+      min-tenure-months: 2           # (H)
+      min-paid-renewals: 1           # (H)
+      cooldown-days: 90              # Churnkey 3-month discount cooldown (C)
+      max-offers-per-30d: 50         # budget cap (H)
+      holdout-bucket: 3              # id % 10 == 3 never gets offers; -1 disables (H)
+    risk:
+      base: 0.10
+      dispute: 0.40
+      sarcasm: 0.25
+      aggression: 0.20
+      money: 0.15
+      per-contact: 0.10
+      max-contacts: 3
+      band-high: 0.50
+      band-medium: 0.30
+    money:
+      dispute-fee-usd: 15            # Stripe US dispute fee (B)
+      scheme-fee-per-dispute-usd: 0  # from your acquirer contract; Visa does not publish one (-)
+      merchant-region: EU
+      vamp-threshold-by-region: {US: 0.015, CA: 0.015, EU: 0.015, AP: 0.015, CEMEA: 0.022}   # Visa VAMP fact sheet (A)
+    sources:
+      refund-full-max-days: "RULES.md#refund (A: Directive 2011/83/EU art. 9)"
+      refund-full-max-sessions: "RULES.md#refund (H)"
+      refund-partial: "RULES.md#refund (A: CRD art. 14(3), CJEU C-641/19)"
+      refund-partial-max-days: "RULES.md#refund (A: Calm refund policy; C: Liven)"
+      refund-auto-limit-usd: "RULES.md#refund (H)"
+      refund-goodwill-ltv-usd: "RULES.md#refund (H)"
+      refund-min-auto-confidence: "RULES.md#risk (H)"
+      retention-discount: "RULES.md#retention (C: Churnkey discounts guide)"
+      retention-pause: "RULES.md#retention (C: Churnkey pause study)"
+      retention-offers: "RULES.md#retention (C: Churnkey 54% resume vs 22%)"
+      retention-cooldown-days: "RULES.md#retention (C: Churnkey cooldown)"
+      retention-min-tenure: "RULES.md#retention (H; B: RevenueCat SOSA 2026)"
+      retention-max-offers-per-30d: "RULES.md#retention (H)"
+      retention-holdout: "RULES.md#retention (H)"
+      risk-weights: "RULES.md#risk (H; definitions in LABELING.md)"
+      money-dispute-fee: "RULES.md#money (B: Stripe dispute fee)"
+      money-scheme-fee: "RULES.md#money (contract value)"
+      money-vamp-threshold: "RULES.md#money (A: Visa VAMP fact sheet)"

@@ -3,7 +3,11 @@
   "full_refund_max_days": 14,
   "full_refund_max_sessions": 2,
   "partial_refund_max_days": 30,
-  "partial_refund_share": 0.5,
+  "plan_period_days": {
+    "monthly": 30,
+    "quarterly": 91,
+    "annual": 365
+  },
   "goodwill_ltv_usd": 100.0,
   "min_auto_confidence": 0.85,
   "risk_weights": {
@@ -25,13 +29,25 @@
       "no_time": "offer_pause",
       "not_using": "offer_pause"
     },
-    "discount_percent": 25,
-    "discount_months": 2,
+    "discount_percent": 30,
+    "discount_months": 3,
     "pause_months": 2,
     "min_tenure_months": 2,
     "min_paid_renewals": 1,
-    "cooldown_days": 365,
+    "cooldown_days": 90,
     "max_offers_per_30d": 50,
     "holdout_bucket": 3
+  },
+  "money": {
+    "dispute_fee_usd": 15.0,
+    "scheme_fee_per_dispute_usd": 0.0,
+    "merchant_region": "EU",
+    "vamp_threshold_by_region": {
+      "US": 0.015,
+      "CA": 0.015,
+      "EU": 0.015,
+      "AP": 0.015,
+      "CEMEA": 0.022
+    }
   }
 }

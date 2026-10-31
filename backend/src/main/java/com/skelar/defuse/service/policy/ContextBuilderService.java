@@ -6,6 +6,7 @@ import com.skelar.defuse.model.domain.Subscription;
 import com.skelar.defuse.model.domain.Usage;
 import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.LastPayment;
+import com.skelar.defuse.config.policy.PolicyProperties;
 import com.skelar.defuse.store.InMemoryStore;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class ContextBuilderService {
     private final InMemoryStore store;
+    private final PolicyProperties props;
 
-    public ContextBuilderService(InMemoryStore store) {
+    public ContextBuilderService(InMemoryStore store, PolicyProperties props) {
         this.store = store;
+        this.props = props;
     }
 
     /** Whole days between iso and NOW, floored like Python's timedelta.days. */
@@ -44,11 +47,11 @@ public class ContextBuilderService {
         int paidRenewals = (int) pays.stream().filter(p -> p.type.equals("renewal") && p.status.equals("succeeded")).count();
         int identityOffers = store.customers.stream()
                 .filter(o -> c.cardFingerprint != null && !o.id.equals(customerId) && c.cardFingerprint.equals(o.cardFingerprint))
-                .mapToInt(ContextBuilderService::recentOffers).sum();
+                .mapToInt(this::recentOffers).sum();
         int offers30d = (int) store.customers.stream()
                 .filter(o -> o.lastOfferAt != null && daysAgo(o.lastOfferAt) <= 30).count();
         boolean holdout = Integer.parseInt(customerId.substring(customerId.lastIndexOf('_') + 1)) % 10
-                == ReferencePolicyService.HOLDOUT_BUCKET;
+                == props.retention().holdoutBucket();
         return new CustomerContext(
                 customerId, c.platform, sub.processor, c.ltvUsd, c.contactsLast30d, refunds180, chargebacks,
                 sub.status, sub.plan, sub.price,
@@ -60,7 +63,7 @@ public class ContextBuilderService {
     }
 
     /** Offers made to this customer within the cooldown window. */
-    static int recentOffers(Customer c) {
-        return c.lastOfferAt != null && daysAgo(c.lastOfferAt) <= ReferencePolicyService.OFFER_COOLDOWN_DAYS ? c.offers12m : 0;
+    int recentOffers(Customer c) {
+        return c.lastOfferAt != null && daysAgo(c.lastOfferAt) <= props.retention().cooldownDays() ? c.offers12m : 0;
     }
 }
