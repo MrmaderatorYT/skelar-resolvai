@@ -82,3 +82,7 @@ References: OWASP LLM01/LLM05/LLM06 2025 in docs/security.md; Spring configurati
 - Clean Opus checks: **86 Java tests**, **38 Python tests**, **44/44 gold**, frontend production build passed. Temporary merged copy: **127 Java tests**, all green, after resolving only application.yml and applying the own EvalService compatibility fix. Temp merge was not committed or pushed to feat/main/feat-opus.
 - Integrator: preserve `spring.config.import: classpath:defuse-policy.yml` from Opus and Codex's llm/datasources/billing sections. Address review critical items before demo. Existing requests for UI provenance and README/architecture ownership still apply.
 - GitHub Actions provides validation artifacts. The user plans deployment through Actions, but no hosting target/runtime credentials were given, so this branch does not pretend to configure an unspecified deployment.
+
+## Second Opus review
+
+Reviewed current integrated `feat@96a704d` (code fixes in `90935f6`), not the unchanged `feat-opus` pointer. Results: `.task/reviews/RECHECK-of-opus-by-codex.md`; 128 Java / 38 Python / 44 gold / frontend build pass. Important remaining flow: unknown-plan refund loses the refund action and standard Approve closes the ticket resolved without an amount decision. Analytics also still assumes a 30-day period for unknown plans. Other remaining items: shared YAML, evidence badges, README Gemma startup and Google Play slide/routing consistency. The report includes actual Spring harness results and proposed changes; no Opus source was edited.
