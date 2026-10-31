@@ -7,7 +7,7 @@ Subscription apps lose money when a billing ticket ("charged after my trial 🙂
 1. understands the **real goal** and catches **sarcasm, hidden aggression and dispute signals** (Claude Haiku 5.5, typed structured output);
 2. pulls billing facts (Customer 360) and scores **chargeback risk**;
 3. `ReferencePolicyService` picks the action — cancel, refund, pause, store instructions, evidence pack — and the mode: **auto / 1-click approval / escalate**;
-4. for cancel requests with a fixable reason, **one retention offer** (25% off or a pause) — only for eligible customers: tenure, no offer in 12 months, no linked-account offer, no refund/chargeback history, no dispute threat, monthly budget, 10% holdout;
+4. for cancel requests with a fixable reason, **one retention offer** (30% off for 3 months or a 2-month pause) — only for eligible customers: tenure, no offer in 90 days, no linked-account offer, no refund/chargeback history, no dispute threat, monthly budget, 10% holdout;
 5. `ActionExecutorService` executes it (idempotent, payment-state checks, audit), then the reply is written from the actual result (Claude Sonnet 5.5);
 6. the dashboard shows chargeback exposure, refund spend, expected fees avoided, and the root causes product should fix.
 
