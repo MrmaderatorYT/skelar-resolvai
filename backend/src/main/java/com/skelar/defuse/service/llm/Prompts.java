@@ -6,7 +6,7 @@ final class Prompts {
             "sarcasm":{"type":"boolean"},"hidden_aggression":{"type":"boolean"},"explicit_aggression":{"type":"boolean"},
             "dispute_signal":{"type":"boolean"},"injection":{"type":"boolean"},"sentiment":{"type":"string"},
             "language":{"type":"string"},"confidence":{"type":"number"},"evidence":{"type":"array","items":{"type":"object",
-            "properties":{"quote":{"type":"string"},"signal":{"type":"string"}},"required":["quote","signal"]}},
+            "properties":{"quote":{"type":"string"},"signal":{"type":"string","enum":["sarcasm","hidden_aggression","explicit_aggression","dispute_signal","injection","goal"]}},"required":["quote","signal"]}},
             "cancel_reason":{"type":"string"}},"required":["intent","true_goal","sarcasm","hidden_aggression",
             "explicit_aggression","dispute_signal","injection","sentiment","language","confidence","evidence","cancel_reason"]}
             """;
@@ -47,7 +47,7 @@ final class Prompts {
             disputeSignal: any hint of going to a bank/card issuer, chargeback, payment platform complaint,
             public review, lawyer or regulator - explicit or veiled.
             sentiment: the literal surface tone, ignoring sarcasm.
-            evidence: exact quotes from the ticket that justify each true flag and the goal.
+            evidence: exact quotes from the ticket. Each evidence signal MUST be exactly one of sarcasm, hidden_aggression, explicit_aggression, dispute_signal, injection, goal. Never put an explanation in signal; use goal for the customer goal.
             confidence: how sure you are of the intent.
             cancelReason (only for cancel requests, else none): too_expensive, no_time (busy, travelling),
             not_using, cant_find_cancel, technical, other, none. Do not guess a reason that is not in the text.
