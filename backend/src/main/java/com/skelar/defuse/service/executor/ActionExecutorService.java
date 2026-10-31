@@ -39,8 +39,12 @@ public class ActionExecutorService {
         return now;
     }
 
-    public synchronized List<Map<String, Object>> execute(String ticketId, List<String> actions, PolicyDecision d,
-                                                          CustomerContext ctx, String by) {
+    public List<Map<String, Object>> execute(String ticketId, List<String> actions, PolicyDecision d,
+                                              CustomerContext ctx, String by) {
+        synchronized (store) { return executeLocked(ticketId, actions, d, ctx, by); }
+    }
+    private List<Map<String, Object>> executeLocked(String ticketId, List<String> actions, PolicyDecision d,
+                                                    CustomerContext ctx, String by) {
         List<Map<String, Object>> results = new ArrayList<>();
         for (String action : actions) {
             String key = ticketId + ":" + action;
@@ -49,7 +53,9 @@ public class ActionExecutorService {
                 continue;
             }
             Map<String, Object> result;
+            InMemoryStore.MutationSnapshot snapshot = null;
             try {
+                snapshot = store.snapshot(ctx.customerId());
                 var handler = handlers.forAction(action);
                 String processor = ctx.billingProcessor();
                 if (MockBillingService.MONEY_ACTIONS.contains(action)) {
@@ -63,7 +69,9 @@ public class ActionExecutorService {
                         || (required != null && !provider.capabilities().contains(required)))
                     throw new BillingException("Provider " + processor + " lacks capability for " + action);
                 result = handler.run(new ActionContext(ticketId,ctx,d,provider));
+                store.persistAction(ticketId, action, ctx, d.refundAmount());
             } catch (RuntimeException e) {
+                if (snapshot != null) snapshot.restore();
                 if (store.tickets.containsKey(ticketId)) store.tickets.get(ticketId).status = "escalated";
                 if (store.analyses.containsKey(ticketId)) store.analyses.get(ticketId).status = "escalated";
                 String error = e instanceof BillingException && e.getMessage()!=null ? e.getMessage() : "Plugin failed: " + e.getClass().getSimpleName();

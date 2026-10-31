@@ -1,6 +1,14 @@
 server:
   port: 8000
 spring:
+  datasource:
+    url: jdbc:h2:mem:defuse;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ${DEFUSE_H2_PASSWORD:}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql,classpath:db/views.sql
   config:
     import: classpath:defuse-policy.yml
   jackson:

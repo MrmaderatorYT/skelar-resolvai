@@ -1,0 +1,7 @@
+# Local development only: the H2 console has no login of its own. Never enable it on a shared or deployed host.
+spring:
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: false

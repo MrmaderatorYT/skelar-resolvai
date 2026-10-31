@@ -1,6 +1,7 @@
 package com.skelar.defuse.store;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.skelar.defuse.data.DemoDatabase;
 import com.skelar.defuse.model.domain.Customer;
 import com.skelar.defuse.model.domain.HistoryTicket;
 import com.skelar.defuse.model.domain.Payment;
@@ -27,6 +28,7 @@ public class InMemoryStore {
     public static final String NOW_ISO = NOW.toString();
 
     private final DataLoader loader;
+    private final DemoDatabase database;
 
     public List<Customer> customers;
     public List<Subscription> subscriptions;
@@ -40,20 +42,27 @@ public class InMemoryStore {
     public Map<String, Map<String, Object>> evidence;
     private int newTicketSeq;
 
-    public InMemoryStore(DataLoader loader) {
-        this.loader = loader;
-        reset();
+    public InMemoryStore(DataLoader loader, DemoDatabase database) {
+        this.loader = loader; this.database = database;
+        database.initialize();
+        load();
     }
 
+    /** Explicit demo reset: erases and reseeds the database, then reloads the mock ledger from it. */
     public synchronized void reset() {
-        customers = loader.load("customers", new TypeReference<>() { });
-        subscriptions = loader.load("subscriptions", new TypeReference<>() { });
-        payments = loader.load("payments", new TypeReference<>() { });
-        usage = loader.load("usage", new TypeReference<>() { });
+        database.reset();
+        load();
+    }
+
+    private void load() {
+        customers = database.customers();
+        subscriptions = database.subscriptions();
+        payments = database.payments();
+        usage = database.usage();
         history = loader.load("tickets_history", new TypeReference<>() { });
         policy = loader.load("policy", new TypeReference<>() { });
         tickets = new LinkedHashMap<>();
-        for (Ticket t : loader.load("tickets_eval", new TypeReference<List<Ticket>>() { })) {
+        for (Ticket t : database.tickets()) {
             t.status = "open";
             tickets.put(t.id, t);
         }
@@ -104,7 +113,36 @@ public class InMemoryStore {
         t.language = c.language;
         t.createdAt = NOW_ISO;
         t.text = text;
+        database.insertTicket(t);
         tickets.put(t.id, t);
         return t;
     }
+    /** Snapshot mutable objects so a failed SQL write cannot leave the mock ledger half-mutated. */
+    public synchronized MutationSnapshot snapshot(String customerId) {
+        var rows = new java.util.IdentityHashMap<Object, Map<java.lang.reflect.Field, Object>>();
+        var objects = new ArrayList<Object>(); objects.add(customer(customerId));
+        subscriptions.stream().filter(s -> customerId.equals(s.customerId)).forEach(objects::add);
+        payments.stream().filter(p -> customerId.equals(p.customerId)).forEach(objects::add);
+        try {
+            for (Object object : objects) {
+                Map<java.lang.reflect.Field, Object> fields = new java.util.LinkedHashMap<>();
+                for (var field : object.getClass().getFields()) fields.put(field, field.get(object));
+                rows.put(object, fields);
+            }
+        } catch (IllegalAccessException e) { throw new IllegalStateException("Cannot snapshot mock state", e); }
+        return new MutationSnapshot(rows);
+    }
+    public record MutationSnapshot(Map<Object, Map<java.lang.reflect.Field, Object>> rows) {
+        public void restore() {
+            try { for (var row : rows.entrySet()) for (var field : row.getValue().entrySet()) field.getKey().set(row.getKey(), field.getValue()); }
+            catch (IllegalAccessException e) { throw new IllegalStateException("Cannot restore mock state", e); }
+        }
+    }
+    public synchronized void persistAction(String ticketId, String action, com.skelar.defuse.model.dto.CustomerContext ctx, double refundAmount) {
+        if (!java.util.Set.of("cancel", "pause", "apply_discount", "extend_access_7d", "offer_discount", "offer_pause", "refund_full", "refund_partial", "refund_partial_goodwill", "refund_duplicate").contains(action)) return;
+        String paymentId = action.equals("refund_duplicate") ? ctx.duplicatePaymentId() : ctx.lastPayment().id();
+        database.persistAction(ticketId, action, customer(ctx.customerId()), subscription(ctx.customerId()),
+                action.startsWith("refund_") && paymentId != null ? payment(paymentId) : null, refundAmount);
+    }
+
 }

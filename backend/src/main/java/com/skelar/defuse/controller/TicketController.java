@@ -79,7 +79,9 @@ public class TicketController {
     /** Queue: priority, then risk score (desc), then age. */
     @GetMapping("/tickets")
     public List<Map<String, Object>> list(@RequestParam(required = false) String status) {
-        return store.tickets.values().stream()
+        List<Ticket> snapshot;
+        synchronized (store) { snapshot = List.copyOf(store.tickets.values()); }
+        return snapshot.stream()
                 .filter(t -> status == null || status.equals(t.status))
                 .map(this::row)
                 .sorted(Comparator.<Map<String, Object>>comparingInt(r -> r.get("priority") == null ? 9 : PRIO.get((String) r.get("priority")))
@@ -90,6 +92,11 @@ public class TicketController {
 
     @GetMapping("/tickets/{id}")
     public Map<String, Object> get(@PathVariable String id) {
+        synchronized (store) { return detail(id); }
+    }
+
+    /** Reads money state under the store lock, so a refund rolled back by a failed SQL write is never shown. */
+    private Map<String, Object> detail(String id) {
         Ticket t = ticket(id);
         String cid = t.customerId;
         Map<String, Object> customer = new LinkedHashMap<>();

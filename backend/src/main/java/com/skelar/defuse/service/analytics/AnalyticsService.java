@@ -28,13 +28,16 @@ public class AnalyticsService {
     private final InMemoryStore store;
     private final AuditService audit;
     private final MoneyService money;
+    private final com.skelar.defuse.data.AnalyticsRepository repository;
 
     private final int retentionPercent;
     private final int retentionMonths;
     private final Map<String, Integer> periodDays;
 
     public AnalyticsService(InMemoryStore store, AuditService audit, MoneyService money,
-                            com.skelar.defuse.service.policy.ReferencePolicyService policy) {
+                            com.skelar.defuse.service.policy.ReferencePolicyService policy,
+                            com.skelar.defuse.data.AnalyticsRepository repository) {
+        this.repository = repository;
         this.retentionPercent = policy.retentionDiscountPercent();
         this.retentionMonths = policy.retentionDiscountMonths();
         this.periodDays = policy.properties().refund().planPeriodDays();
@@ -139,20 +142,13 @@ public class AnalyticsService {
             }
             Map<String, Long> reasons = store.analyses.values().stream().flatMap(a -> a.decision.reasons().stream())
                     .collect(Collectors.groupingBy(x -> x, TreeMap::new, Collectors.counting()));
-            Map<String, Long> segments = new TreeMap<>();
-            for (var h : store.history) {
-                try {
-                    var customer = store.customer(h.customerId); var subscription = store.subscription(h.customerId);
-                    String channel = customer.acquisitionChannel == null ? "unknown" : customer.acquisitionChannel;
-                    String processor = subscription.processor == null ? "unknown" : subscription.processor;
-                    String cause = h.rootCause == null ? "unknown" : h.rootCause;
-                    segments.merge(channel + " | " + cause + " | " + processor, 1L, Long::sum);
-                } catch (java.util.NoSuchElementException ignored) { /* Missing join is not attributed to a segment. */ }
-            }
-            var topSegments = segments.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed().thenComparing(Map.Entry::getKey))
-                    .limit(20).map(e -> Map.of("segment", e.getKey(), "count", e.getValue())).toList();
+            var segments = repository.segments();
+            var topSegments = segments.stream().limit(20).map(row -> Map.of(
+                    "segment", row.get("acquisition_channel") + " | " + row.get("root_cause") + " | " + row.get("payment_rail"),
+                    "count", row.get("tickets"))).toList();
             return Map.of("resolved", Map.of("auto", automatic, "assisted", assisted, "human", humanOnly),
-                    "reasons", reasons, "synthetic_segments", topSegments, "root_causes", rootCauses().stream().limit(5).toList());
+                    "reasons", reasons, "synthetic_segments", topSegments, "sql_segments", segments,
+                    "rail_mix", repository.railMix(), "multi_rail_customers", repository.multiRailCustomers(), "root_causes", rootCauses().stream().limit(5).toList());
         }
     }
 

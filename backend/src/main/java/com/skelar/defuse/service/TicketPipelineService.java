@@ -88,10 +88,12 @@ public class TicketPipelineService {
         a.money = money.atRisk(f, d, ctx);
         a.status = t.status = d.mode().equals("auto") && d.actions().stream().anyMatch(x -> x.startsWith("offer_"))
                 ? "offer_sent" : STATUS.get(d.mode());
-        store.analyses.put(ticketId, a);
+        var previous = store.analyses.put(ticketId, a);
         audit.log("analyzed", ticketId, Map.of("intent", f.intent(), "risk", d.riskBand(), "mode", d.mode(),
                 "actions", d.actions(), "reasons", d.reasons()));
-        a.executed.addAll(executor.execute(ticketId, ActionExecutorService.actionsToRunNow(d), d, ctx, "defuse-auto"));
+        if (previous != null) a.executed.addAll(previous.executed);   // a re-analysis keeps the results of money already moved
+        a.executed.addAll(executor.execute(ticketId, ActionExecutorService.actionsToRunNow(d), d, ctx, "defuse-auto")
+                .stream().filter(r -> !r.containsKey("skipped")).toList());
         if (a.executed.stream().anyMatch(r -> r.containsKey("error"))) {   // never claim what billing refused
             d.reasons().add("execution_failed: human review");
             PolicyDecision escalated = new PolicyDecision(d.actions(), "escalate", d.refundAmount(), d.riskScore(),
@@ -155,14 +157,16 @@ public class TicketPipelineService {
 
     /** Customer accepted the save offer: apply the discount or the pause. */
     public TicketAnalysis acceptOffer(String ticketId) {
-        TicketAnalysis a = offerPending(ticketId);
-        String apply = a.decision.actions().contains("offer_discount") ? "apply_discount" : "pause";
-        return closeOffer(a, ticketId, apply, "offer_accepted");
+        synchronized (store) {
+            TicketAnalysis a = offerPending(ticketId);
+            String apply = a.decision.actions().contains("offer_discount") ? "apply_discount" : "pause";
+            return closeOffer(a, ticketId, apply, "offer_accepted");
+        }
     }
 
     /** Customer said no (or repeated "cancel"): cancel right away, no second offer. */
     public TicketAnalysis declineOffer(String ticketId) {
-        return closeOffer(offerPending(ticketId), ticketId, "cancel", "offer_declined");
+        synchronized (store) { return closeOffer(offerPending(ticketId), ticketId, "cancel", "offer_declined"); }
     }
 
     private TicketAnalysis offerPending(String ticketId) {

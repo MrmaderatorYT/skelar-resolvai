@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: ${DEFUSE_DB_URL}
+    username: ${DEFUSE_DB_USER}
+    password: ${DEFUSE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
