@@ -15,19 +15,26 @@ Subscription apps lose money when a billing ticket ("charged after my trial 🙂
 
 ## Run
 
+Детальна інструкція із запуску з тестовим ключем та демо-користувачами знаходиться у [RUN_WITH_KEY.md](RUN_WITH_KEY.md).
+
 ```bash
-# backend — http://localhost:8000
-cd backend
-./gradlew bootRun                                   # gold mode: replays eval labels, no API key
-DEFUSE_LLM_MODE=live ANTHROPIC_API_KEY=... ./gradlew bootRun   # real Claude
+# 1. Запуск з тестовим API-ключем (LIVE mode):
+export GEMINI_API_KEY="your-api-key"
+export DEFUSE_LLM_MODE="live"
+export DEFUSE_ADMIN_PASSWORD="admin"
+export DEFUSE_CUSTOMER_PASSWORD="user"
 
-# frontend — http://localhost:5173 (proxies /api to :8000)
-cd frontend && npm install && npm run dev
+cd backend && ./gradlew bootRun                      # backend на http://localhost:8000
 
-# tests (no API calls): JUnit suite, incl. all 45 gold policy decisions
-cd backend && ./gradlew test
-# live eval gate: 0 unsafe auto-refunds, 0 missed injections
-ANTHROPIC_API_KEY=... ./gradlew liveEval
+# 2. Або офлайн-запуск без ключа (GOLD mode, без викликів мережі):
+DEFUSE_ADMIN_PASSWORD=admin DEFUSE_CUSTOMER_PASSWORD=user ./gradlew bootRun
+
+# 3. Запуск фронтенду:
+cd frontend && npm install && npm run dev           # frontend на http://localhost:5173 (проксі на :8000)
+
+# Тести:
+cd backend && ./gradlew test                         # 198 JUnit тестів
+cd backend && ./gradlew liveEval                     # Live Eval з перевіркою 0 unsafe refunds
 ```
 
 ## API
