@@ -10,11 +10,12 @@ public final class Requests {
     public record NewTicket(@NotBlank String customerId, @NotBlank @Size(max = 5000) String text, String channel) {
     }
 
-    public record Approve(@NotBlank String analysisId, @Size(max = 2000) String replyText) {
+    /** actionHash, when sent, must equal the hash the reviewer saw; the server recomputes it from fresh state. */
+    public record Approve(@NotBlank String analysisId, @Size(max = 2000) String replyText, @Size(max = 128) String actionHash) {
     }
 
     public record HumanReply(@NotBlank @Size(max = 2000) String text) {}
 
-    public record Reject(@Size(max = 500) String reason) {
+    public record Reject(@NotBlank @Size(max = 500) String reason) {
     }
 }

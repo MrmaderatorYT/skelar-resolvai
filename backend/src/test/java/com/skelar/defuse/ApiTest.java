@@ -38,7 +38,12 @@ class ApiTest {
                 .andExpect(jsonPath("$.features.true_goal").exists())
                 .andExpect(jsonPath("$.decision.refund_amount").value(49.99))
                 .andExpect(jsonPath("$.context.refunds_last_180d").value(0))
-                .andExpect(jsonPath("$.money.p_dispute").exists());
+                .andExpect(jsonPath("$.money.p_dispute").exists())
+                .andExpect(jsonPath("$.money.dispute_fee_scenario").isNumber())
+                .andExpect(jsonPath("$.money", not(hasKey("expected_fees_avoided"))))
+                .andExpect(jsonPath("$.action_hash").isString())
+                .andExpect(jsonPath("$.policy_version").isString())
+                .andExpect(jsonPath("$.review_expires_at").isString());
     }
 
     @Test
@@ -54,7 +59,14 @@ class ApiTest {
                 .andExpect(jsonPath("$[44].priority").value("P4"));
         mvc.perform(get("/api/analytics/summary"))
                 .andExpect(jsonPath("$.analyzed").value(45))
-                .andExpect(jsonPath("$.injections_blocked").value(3));
+                .andExpect(jsonPath("$.injections_blocked").value(3))
+                .andExpect(jsonPath("$.dispute_fee_scenario_usd").isNumber())
+                .andExpect(jsonPath("$.dispute_scenario_count").isNumber())
+                .andExpect(jsonPath("$", not(hasKey("expected_fees_avoided_usd"))));
+        mvc.perform(get("/api/analytics/diagnostics"))
+                .andExpect(jsonPath("$.routes.auto").isNumber()).andExpect(jsonPath("$.routes.review").isNumber())
+                .andExpect(jsonPath("$.routes.investigate").isNumber()).andExpect(jsonPath("$.review_reasons").isMap())
+                .andExpect(jsonPath("$.blocked_money_actions").isNumber()).andExpect(jsonPath("$.risk_status").value("UNVALIDATED"));
     }
 
     @Test

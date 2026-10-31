@@ -45,7 +45,7 @@ public class AnalyticsController {
         return eval.report();
     }
 
-    /** Runs the live classifier over the 38 eval tickets (~38 Claude Haiku calls). */
+    /** Runs the live classifier over the 45 gold eval tickets (~45 Gemma calls). */
     @PostMapping("/eval/run")
     public EvalService.Result runEval() {
         return eval.runLive();

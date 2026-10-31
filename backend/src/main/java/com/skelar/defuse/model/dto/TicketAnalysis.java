@@ -22,5 +22,9 @@ public class TicketAnalysis {
     public String llmProvider;
     public String llmModel;
     public String recordedAt;
+    // Review binding (spec G): approval is valid only for this exact action and source state, until expiry.
+    public String actionHash;
+    public String reviewExpiresAt;
+    public String policyVersion;
     public List<Map<String, Object>> executed = new ArrayList<>();
 }
