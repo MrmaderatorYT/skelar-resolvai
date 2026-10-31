@@ -49,7 +49,7 @@ class PluginIntegrationTest {
     @Test void readonlySourceSnapshotsCannotMutateStore() {
         var source=connectors.get("customers",CustomerSource.class);var snapshot=source.find("cus_0001").orElseThrow();
         snapshot.ltvUsd=9999;assertThat(store.customer("cus_0001").ltvUsd).isNotEqualTo(9999);
-        assertThat(connectors.get("tickets",TicketSource.class).open()).hasSize(44);
+        assertThat(connectors.get("tickets",TicketSource.class).open()).hasSize(45);
     }
     @Test void pluginFailureWithoutMessageEscalatesRatherThanCrashing() {
         var handler=new ActionHandler() {

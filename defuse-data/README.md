@@ -4,7 +4,7 @@
 
 ```bash
 python3 generate_seed.py          # пише data/*.json
-python3 evaluate.py --gold-check  # еталон узгоджений з policy (38/38)
+python3 evaluate.py --gold-check  # еталон узгоджений з policy (45/45)
 python3 baseline_keywords.py && python3 evaluate.py data/predictions_baseline.json
 pip install pytest && pytest -q   # гейт безпеки
 ```
@@ -13,11 +13,11 @@ pip install pytest && pytest -q   # гейт безпеки
 
 | Файл | Що це | Рядків |
 |---|---|---|
-| `customers.json` | id, name, email (@example.com), country, language, platform `web/ios/android`, ltv_usd, contacts_last_30d | 188 |
-| `subscriptions.json` | plan `monthly 29.99 / quarterly 49.99 / annual 89.99`, status `active/canceled/paused`, processor | 188 |
-| `payments.json` | trial 0.99 → renewals; status `succeeded/refunded/charged_back/disputed`; processor `card/app_store/google_play` | 629 |
-| `usage.json` | sessions_since_last_charge, last_active_at, streak_days, **cancel_flow_abandoned** (юзер почав скасування й не дійшов до кінця — це доказ) | 188 |
-| `tickets_eval.json` | **38 розмічених тікетів** для демо й тестів (перші 38 клієнтів) | 38 |
+| `customers.json` | id, name, email (@example.com), country, language, platform `web/ios/android`, ltv_usd, contacts_last_30d | 195 |
+| `subscriptions.json` | plan `monthly 29.99 / quarterly 49.99 / annual 89.99`, status `active/canceled/paused`, processor | 196 |
+| `payments.json` | trial 0.99 → renewals; status `succeeded/refunded/charged_back/disputed`; processor `card/app_store/google_play` | 662 |
+| `usage.json` | sessions_since_last_charge, last_active_at, streak_days, **cancel_flow_abandoned** (юзер почав скасування й не дійшов до кінця — це доказ) | 195 |
+| `tickets_eval.json` | **45 розмічених тікетів** для демо й тестів (T01–T44 → cus_0001–cus_0044, T45 → cus_0195) | 45 |
 | `tickets_history.json` | 600 закритих тікетів за 30 днів, «як зараз» (усе обробляли люди): root_cause, ризик, час відповіді, refund, CSAT, chargeback_filed_after. Для дашборда й аналітика | 600 |
 | `policy.json` | пороги policy (ліміт авто-refund $60, вікна 14/30 днів, ваги ризику) | — |
 
@@ -47,7 +47,7 @@ pip install pytest && pytest -q   # гейт безпеки
 
 **Mode:** `auto` (AI виконує сам) · `suggest` (агент підтверджує в 1 клік) · `escalate` (людина, без дій).
 
-## Що покриває eval-набір (38 тікетів, 5 мов: EN / UA / DE / ES / PL)
+## Що покриває eval-набір (45 тікетів, 5 мов: EN / UA / DE / ES / PL)
 
 | Що тестуємо | Тікети |
 |---|---|
@@ -97,6 +97,6 @@ pip install pytest && pytest -q   # гейт безпеки
 - **7 із 9 саркастичних тікетів прочитано як позитивні**
 - сарказм і прихована агресія: recall 0%
 - **3 із 3 injection пропущено → 2 небезпечні авто-refund-и**
-- точність дій 61%
+- точність дій 62%
 
 Ціль для Defuse: 0 небезпечних refund-ів, 0 пропущених injection, recall сарказму ≥ 80%.

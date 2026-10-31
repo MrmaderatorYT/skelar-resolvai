@@ -26,6 +26,13 @@ def test_open_dispute_is_never_refunded():
     assert d["refund_amount"] == 0 and d["actions"] == ["evidence_pack"]
 
 
+def test_cross_rail_refund_is_held_and_stops_web_plan():
+    d = run("T45", intent="refund")
+    assert d["mode"] == "suggest"
+    assert d["actions"] == ["cancel", "refund_full", "store_cancel_instructions"]
+    assert d["refund_amount"] == 49.99
+
+
 def test_refund_above_limit_needs_human():
     assert run("T11")["mode"] == "suggest"
 

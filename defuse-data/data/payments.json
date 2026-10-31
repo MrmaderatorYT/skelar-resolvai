@@ -6598,5 +6598,27 @@
     "status": "succeeded",
     "processor": "card",
     "created_at": "2026-09-28T11:30:00+00:00"
+  },
+  {
+    "id": "pay_0195_store",
+    "customer_id": "cus_0195",
+    "subscription_id": "sub_0195_store",
+    "amount": 9.99,
+    "currency": "USD",
+    "type": "renewal",
+    "status": "succeeded",
+    "processor": "app_store",
+    "created_at": "2026-10-06T12:00:00+00:00"
+  },
+  {
+    "id": "pay_0195_web",
+    "customer_id": "cus_0195",
+    "subscription_id": "sub_0195_web",
+    "amount": 49.99,
+    "currency": "USD",
+    "type": "renewal",
+    "status": "succeeded",
+    "processor": "card",
+    "created_at": "2026-10-29T12:00:00+00:00"
   }
 ]

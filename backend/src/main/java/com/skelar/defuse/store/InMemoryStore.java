@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.NoSuchElementException;
 import org.springframework.stereotype.Component;
 
 /** In-memory store seeded from data/*.json. Mock billing mutates it; reset() reloads the seed. */
@@ -68,7 +69,16 @@ public class InMemoryStore {
     }
 
     public Subscription subscription(String customerId) {
-        return subscriptions.stream().filter(s -> s.customerId.equals(customerId)).findFirst().orElseThrow();
+        List<Subscription> owned = subscriptions.stream().filter(s -> s.customerId.equals(customerId)).toList();
+        if (owned.size() == 1) return owned.get(0);
+        if (owned.isEmpty()) throw new NoSuchElementException("no_subscription: customer " + customerId);
+        List<Subscription> cards = owned.stream().filter(s -> "card".equals(s.processor)).toList();
+        List<Subscription> stores = owned.stream().filter(s -> "app_store".equals(s.processor) && "canceled".equals(s.status)).toList();
+        var links = customer(customerId).linkedSubscriptions;
+        if (cards.size() == 1 && stores.size() == 1 && owned.size() == 2 && links != null && links.size() == 2
+                && links.contains(cards.get(0).id) && links.contains(stores.get(0).id)
+                && payments.stream().anyMatch(p -> customerId.equals(p.customerId) && cards.get(0).id.equals(p.subscriptionId) && "card".equals(p.processor))) return cards.get(0);
+        throw new IllegalStateException("ambiguous_subscriptions: human review required");
     }
 
     public Usage usage(String customerId) {

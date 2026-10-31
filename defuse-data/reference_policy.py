@@ -77,14 +77,29 @@ def build_context(customer_id, data=None):
     """What the agent's read-only tools return for one customer."""
     data = load_all() if data is None else data
     cust = next(c for c in data["customers"] if c["id"] == customer_id)
-    sub = next(s for s in data["subscriptions"] if s["customer_id"] == customer_id)
+    subs = [s for s in data["subscriptions"] if s["customer_id"] == customer_id]
+    if len(subs) == 1:
+        sub, store_sub = subs[0], None
+    else:
+        cards = [s for s in subs if s["processor"] == "card"]
+        stores = [s for s in subs if s["processor"] == "app_store" and s["status"] == "canceled"]
+        links = cust.get("linked_subscriptions") or []
+        if len(subs) != 2 or len(cards) != 1 or len(stores) != 1 or len(links) != 2 or set(links) != {cards[0]["id"], stores[0]["id"]}:
+            raise ValueError("ambiguous_subscriptions: human review required")
+        sub, store_sub = cards[0], stores[0]
     usage = next(u for u in data["usage"] if u["customer_id"] == customer_id)
     pays = sorted((p for p in data["payments"] if p["customer_id"] == customer_id),
                   key=lambda p: p["created_at"])
     if not pays:
         raise ValueError("no_payments: human review required")
-    last = pays[-1]
-    same_day = [p for p in pays if p["status"] == "succeeded" and p["amount"] == last["amount"]
+    if store_sub is None:
+        last = pays[-1]
+    else:
+        card_pays = [p for p in pays if p.get("subscription_id") == sub["id"] and p["processor"] == "card"]
+        if not card_pays: raise ValueError("unverified_card_payment: human review required")
+        last = card_pays[-1]
+    same_day = [p for p in pays if (store_sub is None or (p.get("subscription_id") == sub["id"] and p["processor"] == "card"))
+                and p["status"] == "succeeded" and p["amount"] == last["amount"]
                 and p["created_at"][:10] == last["created_at"][:10]]
     ret = POLICY["retention"]
 
@@ -122,6 +137,8 @@ def build_context(customer_id, data=None):
         "retention_offers_30d": sum(1 for c in data["customers"] if c.get("last_offer_at")
                                     and _days_ago(c["last_offer_at"]) <= 30),
         "in_holdout": int(customer_id.split("_")[-1]) % 10 == ret["holdout_bucket"],
+        "cross_rail": None if store_sub is None else {"store_subscription_id": store_sub["id"], "store_status": store_sub["status"],
+            "card_subscription_id": sub["id"], "card_status": sub["status"], "card_payment_id": last["id"]},
     }
 
 
@@ -254,7 +271,8 @@ def decide(f, ctx, confidence=1.0):
             reasons.append("store_billing: only Apple/Google can refund or cancel")
             return out(acts, "auto")
 
-    if intent == "cancel" and ctx["subscription_status"] in ("active", "paused"):
+    # a cross-rail account is reconciled, not saved: no discount on a plan the customer already left in the store
+    if intent == "cancel" and not ctx.get("cross_rail") and ctx["subscription_status"] in ("active", "paused"):
         offer, why_not = retention_offer(f, ctx)
         if offer:
             reasons.append("retention_offer: one offer; the customer can still cancel at any time")
@@ -303,6 +321,16 @@ def decide(f, ctx, confidence=1.0):
         acts.append("extend_access_7d")
         mode = "suggest"
 
+    if ctx.get("cross_rail"):
+        web_active = ctx["subscription_status"] in ("active", "paused")
+        if intent in MONEY_INTENTS:
+            # money on a cross-rail account is never automatic: stop the live web plan, hold the refund for a human
+            if web_active and "cancel" not in acts:
+                acts.append("cancel")
+            mode = "suggest"
+            reasons.append("cross_rail_reconciliation: verify store and web subscriptions before refund")
+        if web_active and (intent in MONEY_INTENTS or intent in CANCEL_INTENTS):
+            acts.append("store_cancel_instructions")
     return out(acts, mode, refund)
 
 # Heuristic autonomy priors. Keep in sync with defuse-policy.yml until Python reads YAML.

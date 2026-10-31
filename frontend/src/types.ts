@@ -30,7 +30,7 @@ export interface Analysis {
   executed: Record<string, unknown>[];
 }
 
-export interface Payment { id: string; amount: number; type: string; status: string; processor: string; created_at: string }
+export interface Payment { id: string; amount: number; type: string; status: string; processor: string; created_at: string; subscription_id?: string | null }
 
 export interface TicketDetail {
   ticket: { id: string; text: string; channel: string; language: string; created_at: string; status: Status; customer_id: string };
@@ -38,10 +38,12 @@ export interface TicketDetail {
     id: string; name: string; country: string; platform: string; ltv_usd: number; contacts_last_30d: number;
     acquisition_channel: string | null; funnel: string | null; quiz_goal: string | null; offers_12m: number;
     subscription: { plan: string; price: number; status: string; current_period_end: string; discount_percent: number | null; pause_until: string | null };
+    linked_subscriptions?: { id: string; plan: string; status: string; processor: string }[];
     usage: { sessions_since_last_charge: number; cancel_flow_abandoned: number; streak_days: number };
     payments: Payment[];
     context: { last_payment: { amount: number; status: string; days_ago: number }; refunds_last_180d: number; chargebacks_lifetime: number;
-      tenure_months: number; paid_renewals: number; offers_12m: number; identity_offers_12m: number; in_holdout: boolean; billing_processor: string };
+      tenure_months: number; paid_renewals: number; offers_12m: number; identity_offers_12m: number; in_holdout: boolean; billing_processor: string;
+      cross_rail?: { store_subscription_id: string; store_status: string; card_subscription_id: string; card_status: string; card_payment_id: string } | null };
   };
   analysis: Analysis | null;
   audit: { at: string; event: string; action?: string; by?: string; reasons?: string[]; error?: string; amount?: number }[];

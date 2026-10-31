@@ -13,7 +13,7 @@ Backend (Spring Boot 3, Java 17+)   com.skelar.defuse
     5. ActionExecutorService       MockBillingService, idempotent per ticket:action, payment-state checks, audit
     6. ReplyWriterService          Claude Sonnet 5.5, written AFTER execution from actual results
   InMemoryStore    seeded from resources/data/*.json, POST /api/demo/reset
-  Analytics        session KPIs vs synthetic human-only baseline; EvalService (38 labelled tickets)
+  Analytics        session KPIs vs synthetic human-only baseline; EvalService (45 labelled tickets)
 ```
 
 **Rule: the LLM understands and writes; only code moves money.**

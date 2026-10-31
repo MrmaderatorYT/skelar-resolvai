@@ -106,6 +106,7 @@ public class TicketController {
         customer.put("quiz_goal", c.quizGoal);
         customer.put("offers_12m", c.offers12m);
         customer.put("subscription", store.subscription(cid));
+        customer.put("linked_subscriptions", store.subscriptions.stream().filter(s -> cid.equals(s.customerId)).toList());
         customer.put("usage", store.usage(cid));
         customer.put("payments", store.payments(cid));
         customer.put("context", contexts.build(cid));

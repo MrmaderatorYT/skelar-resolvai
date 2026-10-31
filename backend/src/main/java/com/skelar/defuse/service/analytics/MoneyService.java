@@ -39,7 +39,7 @@ public class MoneyService {
     }
 
     public MoneyAtRisk atRisk(ClassificationFeatures f, PolicyDecision d, CustomerContext ctx) {
-        boolean atRisk = ReferencePolicyService.MONEY_INTENTS.contains(f.intent()) && ctx.platform().equals("web")
+        boolean atRisk = ReferencePolicyService.MONEY_INTENTS.contains(f.intent()) && "card".equals(ctx.billingProcessor())
                 && ctx.lastPayment().status().equals("succeeded");
         double amount = atRisk ? ctx.lastPayment().amount() : 0;
         double fees = atRisk ? money.feesPerDispute() : 0;

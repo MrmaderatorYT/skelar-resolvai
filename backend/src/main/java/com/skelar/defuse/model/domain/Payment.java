@@ -3,6 +3,7 @@ package com.skelar.defuse.model.domain;
 public class Payment {
     public String id;
     public String customerId;
+    public String subscriptionId; // explicit link required when multiple billing rails exist
     public double amount;
     public String currency;
     public String type;              // trial | renewal

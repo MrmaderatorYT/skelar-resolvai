@@ -2132,5 +2132,27 @@
     "processor": "card",
     "current_period_end": "2027-09-28T12:00:00+00:00",
     "canceled_at": "2026-09-29T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0195_store",
+    "customer_id": "cus_0195",
+    "plan": "monthly",
+    "price": 9.99,
+    "currency": "USD",
+    "status": "canceled",
+    "processor": "app_store",
+    "current_period_end": "2026-11-05T12:00:00+00:00",
+    "canceled_at": "2026-10-21T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0195_web",
+    "customer_id": "cus_0195",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2027-01-28T12:00:00+00:00",
+    "canceled_at": null
   }
 ]

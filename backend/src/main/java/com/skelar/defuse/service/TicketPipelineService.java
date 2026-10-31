@@ -120,12 +120,18 @@ public class TicketPipelineService {
         CustomerContext current = contexts.build(ticket(ticketId).customerId);
         boolean alreadyCancelled = store.executed.containsKey(ticketId + ":cancel");
         if (alreadyCancelled && "canceled".equals(current.subscriptionStatus())) {
+            var cross = current.crossRail();
+            var reviewed = a.context.crossRail();
+            if (cross != null && reviewed != null && cross.cardSubscriptionId().equals(reviewed.cardSubscriptionId())
+                    && cross.storeSubscriptionId().equals(reviewed.storeSubscriptionId()) && cross.storeStatus().equals(reviewed.storeStatus())
+                    && cross.cardPaymentId().equals(reviewed.cardPaymentId()) && "canceled".equals(cross.cardStatus()))
+                cross = new CustomerContext.CrossRail(cross.storeSubscriptionId(), cross.storeStatus(), cross.cardSubscriptionId(), reviewed.cardStatus(), cross.cardPaymentId());
             current = new CustomerContext(current.customerId(), current.platform(), current.billingProcessor(), current.ltvUsd(),
                     current.contactsLast30d(), current.refundsLast180d(), current.chargebacksLifetime(), a.context.subscriptionStatus(),
                     current.plan(), current.price(), current.lastPayment(), current.duplicatePaymentId(),
                     current.sessionsSinceLastCharge(), current.cancelFlowAbandoned(), current.acquisitionChannel(),
                     current.tenureMonths(), current.paidRenewals(), current.offers12m(), current.identityOffers12m(),
-                    current.retentionOffers30d(), current.inHoldout());
+                    current.retentionOffers30d(), current.inHoldout(), cross);
         }
         if (!a.context.equals(current)) {
             audit.log("approval_stale", ticketId, Map.of("by", agent));

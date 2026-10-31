@@ -195,7 +195,8 @@ public class ReferencePolicyService {
             }
         }
 
-        if (intent.equals("cancel") && Set.of("active", "paused").contains(ctx.subscriptionStatus())) {
+        // a cross-rail account is reconciled, not saved: no discount on a plan the customer already left in the store
+        if (intent.equals("cancel") && ctx.crossRail() == null && Set.of("active", "paused").contains(ctx.subscriptionStatus())) {
             String[] offer = retentionOffer(feat, ctx);
             if (offer[0] != null) {
                 reasons.add("retention_offer: one offer; the customer can still cancel at any time");
@@ -251,6 +252,16 @@ public class ReferencePolicyService {
             acts.removeIf(a -> a.startsWith("refund_"));
             refund = 0;
             reasons.add("nothing_left_to_refund: paid period already used");
+        }
+        if (ctx.crossRail() != null) {
+            boolean webActive = Set.of("active", "paused").contains(ctx.subscriptionStatus());
+            if (MONEY_INTENTS.contains(intent)) {
+                // money on a cross-rail account is never automatic: stop the live web plan, hold the refund for a human
+                if (webActive && !acts.contains("cancel")) acts.add("cancel");
+                mode = "suggest";
+                reasons.add("cross_rail_reconciliation: verify store and web subscriptions before refund");
+            }
+            if (webActive && (MONEY_INTENTS.contains(intent) || CANCEL_INTENTS.contains(intent))) acts.add("store_cancel_instructions");
         }
         return out.of(acts, mode, refund);
     }

@@ -31,7 +31,7 @@ class ReferencePolicyServiceTest {
     }
 
     static Stream<String> ticketIds() {
-        return Stream.iterate(1, i -> i <= 44, i -> i + 1).map(i -> "T%02d".formatted(i));
+        return Stream.iterate(1, i -> i <= 45, i -> i + 1).map(i -> "T%02d".formatted(i));
     }
 
     private PolicyDecision decide(String id, double confidence) {

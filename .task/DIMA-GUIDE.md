@@ -1,6 +1,6 @@
 # Дімо, ось усе, що треба знати про Defuse (стан на 14:06)
 
-> Гілка **`feat`** (`90935f6`) — актуальна інтегрована версія: моя робота + Codex + твої 2 коміти з `main`. **128 тестів зелені.** `main` ми не чіпали — мерджиш ти.
+> Гілка **`feat`** (`90935f6`) — актуальна інтегрована версія: моя робота + Codex + твої 2 коміти з `main`. **140 тестів зелені.** `main` ми не чіпали — мерджиш ти.
 
 ---
 
@@ -36,7 +36,7 @@
 ## 4. Як запустити
 ```bash
 git fetch origin && git checkout feat
-cd backend && ./gradlew test          # 128 тестів, без мережі (JDK 17+; у мене JDK 21)
+cd backend && ./gradlew test          # 140 тестів, без мережі (JDK 17+; у мене JDK 21)
 ./gradlew bootRun                     # :8000, режим gold (без ключа)
 cd ../frontend && npm i && npm run dev   # :5173, проксі /api → :8000
 ```
@@ -63,10 +63,10 @@ backend/src/main/java/com/skelar/defuse/
   store/InMemoryStore              seed з resources/data/*.json, reset одним кліком
 backend/src/main/resources/
   defuse-policy.yml        усі правила + джерело для кожного
-  data/*.json              синтетичний Calmly: 194 клієнти, 44 eval-тікети, 600 історичних
+  data/*.json              синтетичний Calmly: 195 клієнтів, 45 eval-тікетів, 600 історичних
   prompts/classifier-fewshot.json   8 прикладів, жодного з eval
 frontend/src/pages/        Queue, TicketView, Dashboard, Eval, Policy
-defuse-data/               Python-еталон policy + генератор даних (джерело правди для 44 рішень)
+defuse-data/               Python-еталон policy + генератор даних (джерело правди для 45 рішень)
 docs/evidence/RULES.md     кожне число policy: джерело, сила доказу A / B / C / H
 docs/features/*/           10 файлів на фічу у форматі SKELAR
 .task/                     бриф, ресерч, рев'ю Codex, плани, пітч (.task/pitch/)
@@ -113,7 +113,7 @@ HUMAN   інакше + injection / диспут / безпека акаунта 
 reply_only / ask_clarification → завжди AUTO
 Підсумковий режим = найсуворіший із (policy, gate).
 ```
-- **Пороги** — у `defuse-policy.yml` → `gate:` (3%, 15%, $50, $1.50) + пріори по intent: question .01, billing_question .02, cancel .01, cancel_refund .02, refund .02, duplicate_charge .02, pause .02, technical_issue .05, account_* .10, unclear .50. **З цими пріорами 44 gold-рішення не змінюються** — перевір `PolicyConfigTest` і `ReferencePolicyServiceTest`.
+- **Пороги** — у `defuse-policy.yml` → `gate:` (3%, 15%, $50, $1.50) + пріори по intent: question .01, billing_question .02, cancel .01, cancel_refund .02, refund .02, duplicate_charge .02, pause .02, technical_issue .05, account_* .10, unclear .50. **З цими пріорами 45 gold-рішень не змінюються** — перевір `PolicyConfigTest` і `ReferencePolicyServiceTest`.
 - **Python-еталон** (`defuse-data/reference_policy.py`) має отримати ту саму логіку, інакше паритет упаде.
 - **В UI:** три смужки (p_err, impact, E) і бейдж AUTO / ASSIST / HUMAN на картці тікета й в Inbox.
 
@@ -126,11 +126,13 @@ reply_only / ask_clarification → завжди AUTO
 ### P3. Клієнтська БД (бриф для Codex: `.task/plan/CODEX-BRIEF-2.md`)
 H2 у Postgres-режимі зі схемою як у Stripe / App Store / Google Play / RevenueCat / Zendesk / AppsFlyer; ETL з seed; store читає з SQL-view; дії пишуться назад. **Якщо Codex не встигне — не блокує демо:** на слайді лише «data layer повторює схеми клієнтських систем» і показуємо `defuse-policy.yml` + конектори.
 
-### P4. Кейс «дві підписки» (найсильніший за ресерчем)
+### P4. Кейс «дві підписки» (найсильніший за ресерчем) — T45 і cross-rail reconciliation є в гілці `feat/phase2-p4`
 Клієнт із App Store-підпискою (скасована) + web-підпискою (активна) пише: «Я скасував в iPhone, а ви знову списали, піду в банк». Агент знаходить обидві → скасовує web → готує людині refund останнього web-платежу. Потребує:
 - поля `linked_subscriptions` у клієнта;
 - правила в policy (якщо є активна підписка на іншому rail → `store_cancel_instructions` + cancel web);
-- нового eval-тікета T45 з gold.
+- нового eval-тікета T45 з gold (зроблено: cus_0195, gold узгоджено з policy 45/45).
+
+**Статус:** T45 і cross-rail reconciliation є в гілці `feat/phase2-p4`, але зміни ще в stage, не закомічені. Це не production identity reconciliation.
 
 Робити лише після P0–P2.
 

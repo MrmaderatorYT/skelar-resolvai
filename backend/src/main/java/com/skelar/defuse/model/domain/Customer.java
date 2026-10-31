@@ -9,6 +9,7 @@ public class Customer {
     public String country;
     public String language;
     public String platform;          // web | ios | android
+    public java.util.List<String> linkedSubscriptions; // explicitly reconciled subscription IDs
     public String signupAt;
     public double ltvUsd;
     @JsonProperty("contacts_last_30d")

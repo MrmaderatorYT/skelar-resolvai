@@ -36,10 +36,22 @@ public class ContextBuilderService {
         Usage u = store.usage(customerId);
         List<Payment> pays = store.payments(customerId);
         if (pays.isEmpty()) throw new IllegalStateException("no_payments: human review required");
+        List<Subscription> owned = store.subscriptions.stream().filter(s -> customerId.equals(s.customerId)).toList();
+        CustomerContext.CrossRail crossRail = null;
         Payment last = pays.get(pays.size() - 1);
+        if (owned.size() > 1) {
+            Subscription storeSub = owned.stream().filter(s -> "app_store".equals(s.processor) && "canceled".equals(s.status)).findFirst().orElseThrow();
+            List<Payment> cardPayments = pays.stream().filter(p -> sub.id.equals(p.subscriptionId) && "card".equals(p.processor)).toList();
+            if (cardPayments.isEmpty()) throw new IllegalStateException("unverified_card_payment: human review required");
+            last = cardPayments.get(cardPayments.size() - 1);
+            crossRail = new CustomerContext.CrossRail(storeSub.id, storeSub.status, sub.id, sub.status, last.id);
+        }
+        final Payment latest = last;
+        final boolean linked = crossRail != null;
         List<Payment> sameDay = pays.stream()
-                .filter(p -> p.status.equals("succeeded") && p.amount == last.amount
-                        && p.createdAt.substring(0, 10).equals(last.createdAt.substring(0, 10)))
+                .filter(p -> (!linked || (sub.id.equals(p.subscriptionId) && "card".equals(p.processor)))
+                        && p.status.equals("succeeded") && p.amount == latest.amount
+                        && p.createdAt.substring(0, 10).equals(latest.createdAt.substring(0, 10)))
                 .toList();
         int refunds180 = (int) pays.stream()
                 .filter(p -> p.status.equals("refunded") && daysAgo(p.createdAt) <= 180).count();
@@ -59,7 +71,7 @@ public class ContextBuilderService {
                 sameDay.size() > 1 ? sameDay.get(sameDay.size() - 1).id : null,
                 u.sessionsSinceLastCharge, u.cancelFlowAbandoned,
                 c.acquisitionChannel, Math.floorDiv(daysAgo(c.signupAt), 30), paidRenewals, recentOffers(c),
-                identityOffers, offers30d, holdout);
+                identityOffers, offers30d, holdout, crossRail);
     }
 
     /** Offers made to this customer within the cooldown window. */

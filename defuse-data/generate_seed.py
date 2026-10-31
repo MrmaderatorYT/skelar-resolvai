@@ -436,6 +436,27 @@ def history_tickets(rng, customers, data):
     return sorted(out, key=lambda t: t["created_at"])
 
 
+def add_cross_rail_fixture(data, tickets):
+    """A verified synthetic identity with cancelled App Store and active card subscriptions."""
+    cid, store_id, card_id = "cus_0195", "sub_0195_store", "sub_0195_web"
+    data["customers"].append({"id": cid, "name": "Taylor Reid", "email": "customer0195@example.com", "country": "US",
+        "language": "en", "platform": "ios", "signup_at": iso(30), "ltv_usd": 59.98, "contacts_last_30d": 0,
+        "acquisition_channel": "app_store_search", "funnel": "ios_paywall", "quiz_goal": None,
+        "card_fingerprint": "fp_0195", "offers_12m": 0, "last_offer_at": None,
+        "linked_subscriptions": [store_id, card_id]})
+    data["subscriptions"].extend([
+        {"id": store_id, "customer_id": cid, "plan": "monthly", "price": 9.99, "currency": "USD", "status": "canceled", "processor": "app_store", "current_period_end": iso(-5), "canceled_at": iso(10)},
+        {"id": card_id, "customer_id": cid, "plan": "quarterly", "price": 49.99, "currency": "USD", "status": "active", "processor": "card", "current_period_end": iso(-89), "canceled_at": None}])
+    data["payments"].extend([
+        {"id": "pay_0195_store", "customer_id": cid, "subscription_id": store_id, "amount": 9.99, "currency": "USD", "type": "renewal", "status": "succeeded", "processor": "app_store", "created_at": iso(25)},
+        {"id": "pay_0195_web", "customer_id": cid, "subscription_id": card_id, "amount": 49.99, "currency": "USD", "type": "renewal", "status": "succeeded", "processor": "card", "created_at": iso(2)}])
+    data["usage"].append({"customer_id": cid, "sessions_since_last_charge": 0, "last_active_at": iso(4), "streak_days": 0, "cancel_flow_abandoned": 0})
+    tickets.append({"id": "T45", "customer_id": cid, "channel": "chat", "language": "en", "created_at": iso(0, minutes=5),
+        "text": "I canceled on my iPhone but you charged me again. Cancel the web subscription and refund the charge or I will contact my bank.",
+        "gold": gold("cancel_refund", ["cancel", "refund_full", "store_cancel_instructions"], "suggest", 49.99, "high", "P1",
+                     "Cancel the active web subscription and review the web charge", ["cross_rail", "dispute_signal"], dispute_signal=True)})
+
+
 def main():
     rng = random.Random(42)
     prng = random.Random(7)  # retention profile fields only
@@ -463,6 +484,7 @@ def main():
         make_customer(i, sc, rng, data, prng)
         background.append(data["customers"][-1])
 
+    add_cross_rail_fixture(data, tickets)
     DATA.mkdir(exist_ok=True)
     files = {**data, "tickets_eval": tickets,
              "tickets_history": history_tickets(rng, background, data), "policy": POLICY}

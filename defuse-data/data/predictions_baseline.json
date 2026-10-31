@@ -438,5 +438,15 @@
     "explicit_aggression": true,
     "dispute_signal": true,
     "injection": false
+  },
+  {
+    "ticket_id": "T45",
+    "intent": "refund",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": true,
+    "injection": false
   }
 ]

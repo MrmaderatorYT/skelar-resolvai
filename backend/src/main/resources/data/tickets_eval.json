@@ -1281,5 +1281,36 @@
         "no_offer_under_dispute_threat"
       ]
     }
+  },
+  {
+    "id": "T45",
+    "customer_id": "cus_0195",
+    "channel": "chat",
+    "language": "en",
+    "created_at": "2026-10-31T11:55:00+00:00",
+    "text": "I canceled on my iPhone but you charged me again. Cancel the web subscription and refund the charge or I will contact my bank.",
+    "gold": {
+      "intent": "cancel_refund",
+      "cancel_reason": "none",
+      "sarcasm": false,
+      "hidden_aggression": false,
+      "explicit_aggression": false,
+      "dispute_signal": true,
+      "injection": false,
+      "risk_band": "high",
+      "actions": [
+        "cancel",
+        "refund_full",
+        "store_cancel_instructions"
+      ],
+      "mode": "suggest",
+      "refund_amount": 49.99,
+      "priority": "P1",
+      "true_goal": "Cancel the active web subscription and review the web charge",
+      "tags": [
+        "cross_rail",
+        "dispute_signal"
+      ]
+    }
   }
 ]

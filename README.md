@@ -24,7 +24,7 @@ DEFUSE_LLM_MODE=live ANTHROPIC_API_KEY=... ./gradlew bootRun   # real Claude
 # frontend — http://localhost:5173 (proxies /api to :8000)
 cd frontend && npm install && npm run dev
 
-# tests (no API calls): JUnit suite, incl. all 44 gold policy decisions
+# tests (no API calls): JUnit suite, incl. all 45 gold policy decisions
 cd backend && ./gradlew test
 # live eval gate: 0 unsafe auto-refunds, 0 missed injections
 ANTHROPIC_API_KEY=... ./gradlew liveEval
@@ -43,10 +43,10 @@ ANTHROPIC_API_KEY=... ./gradlew liveEval
 | POST | `/api/tickets/{id}/offer/accept` · `/offer/decline` | customer answer to the retention offer |
 | POST | `/api/tickets` (`/tickets/simulate`) | live ticket for the demo |
 | GET | `/api/analytics/summary` · `/root-causes` · `/dashboard` · `/eval` | KPIs, root causes, eval report |
-| POST | `/api/analytics/eval/run` | live classifier on the 44 labelled tickets |
+| POST | `/api/analytics/eval/run` | live classifier on the 45 labelled tickets |
 | POST | `/api/demo/reset` | reload seed data |
 
-## Eval (44 labelled tickets, EN/UA/DE/ES/PL)
+## Eval (45 labelled tickets, EN/UA/DE/ES/PL)
 
 | Metric | Keyword bot | Defuse (live) |
 |---|---|---|
@@ -54,21 +54,21 @@ ANTHROPIC_API_KEY=... ./gradlew liveEval
 | Sarcasm recall | 0% | |
 | Missed injections | 3/3 | |
 | Unsafe auto-refunds | 2 | **0 (gate)** |
-| Correct actions | 61% | |
+| Correct actions | 62% | |
 
 ## Repo
 
 - `backend/` — Spring Boot (`com.skelar.defuse`): `controller/`, `service/{guard,llm,policy,executor,audit,analytics}`, `store/`, `model/`; seed data in `src/main/resources/data/`
 - `frontend/` — React: Queue, TicketView, Dashboard, Eval
-- `defuse-data/` — Python reference: seed generator (`generate_seed.py`), `reference_policy.py` (source of truth for the 38 gold decisions), `evaluate.py`, keyword baseline, Codex invariant tests
-- `docs/` — architecture, security, demo script, `features/<feature>/` (10 files each, SKELAR format)
+- `defuse-data/` — Python reference: seed generator (`generate_seed.py`), `reference_policy.py` (source of truth for the 45 gold decisions), `evaluate.py`, keyword baseline, Codex invariant tests
+- `docs/` — architecture, security, demo script, `features/<feature>/` (10 files each, SKELAR format; `action-engine/` also has `cross-rail.md`)
 - `.task/` — brief, ТЗ, Codex review
 
 All data is synthetic (made-up app "Calmly"). Baseline metrics come from a synthetic human-only month and are labelled as such. Money: a refund is a cost, not a saving — we report gross exposure, refund spend and expected fees avoided separately; fee values are estimates, not Visa-published constants.
 
 ### Policy configuration
 
-`backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 38-case reference ($60, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
+`backend/src/main/resources/application.yml` contains the configurable refund limits, windows, share, goodwill threshold and minimum confidence under `defuse.policy`. Defaults match the curated 45-case reference ($60, 14 days, two sessions); changing them intentionally changes policy outcomes and can make the reference-label test fail. Invalid ranges fail startup. The health endpoint reports the effective values.
 
 Prompt-injection matches are escalated without sending the ticket to Claude. Low-confidence cancellation waits for approval. Approval includes the reviewed analysis ID and checks the current billing context against that snapshot; a changed context returns HTTP 409 and requires a fresh analysis and review. This remains an in-memory demo without authenticated production billing.
 

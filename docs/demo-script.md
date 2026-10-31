@@ -2,7 +2,7 @@
 
 Start: `./gradlew bootRun` (backend/), `npm run dev` (frontend/), Queue page, click **Reset demo**.
 
-1. **0:00** Queue: 38 open tickets in 5 languages. "This is a support agent's morning."
+1. **0:00** Queue: 45 open tickets in 5 languages. "This is a support agent's morning."
 2. **0:15** **Analyze all** → re-sorted by priority, risk badges and signal chips appear.
 3. **0:35** **T01** — sarcasm ("Truly a masterclass in customer care 👏"): literal tone positive, Defuse flags sarcasm, real goal, high risk, abandoned cancel flow → AUTO cancel + $49.99 refund + reply. Shows chargeback exposure and expected fees avoided (a refund is a cost, not a saving).
 4. **1:05** **T05** — polite hidden threat about the bank → high risk → auto.

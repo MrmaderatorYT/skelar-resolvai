@@ -17,7 +17,7 @@ export default function EvalReport() {
   );
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Eval: 38 labelled tickets, 5 languages</h1>
+      <h1 className="text-xl font-bold">Eval: 45 labelled tickets, 5 languages</h1>
       <p className="text-xs text-slate-500">Generated {r.generated_at}</p>
       <div className="flex gap-4 flex-col lg:flex-row">
         {block("Defuse", "defuse")}

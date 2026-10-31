@@ -55,8 +55,14 @@ def test_01_keys_and_references():
     for rows in (EVAL, HISTORY):
         assert {r["customer_id"] for r in rows} <= ids
         assert len({r["id"] for r in rows}) == len(rows)
-    for name in ("subscriptions", "usage"):
-        assert Counter(r["customer_id"] for r in DATA[name]) == Counter({cid: 1 for cid in ids})
+    assert Counter(r["customer_id"] for r in DATA["usage"]) == Counter({cid: 1 for cid in ids})
+    for customer in DATA["customers"]:
+        subs = [s for s in DATA["subscriptions"] if s["customer_id"] == customer["id"]]
+        if customer.get("linked_subscriptions"):
+            assert len(subs) == len(customer["linked_subscriptions"]) == 2
+            assert {s["id"] for s in subs} == set(customer["linked_subscriptions"])
+        else:
+            assert len(subs) == 1
 
 
 def test_02_ltv_reconciles():
@@ -77,6 +83,11 @@ def test_04_payment_sequence():
     bad = []
     for s in DATA["subscriptions"]:
         ps = payments(s["customer_id"])
+        linked = next(c for c in DATA["customers"] if c["id"] == s["customer_id"]).get("linked_subscriptions")
+        if linked:
+            rail = [p for p in ps if p.get("subscription_id") == s["id"]]
+            assert rail and all(p["processor"] == s["processor"] for p in rail)
+            continue
         assert ps[0]["type"] == "trial" and cents(ps[0]["amount"]) == Decimal("0.99")
         assert len([p for p in ps if p["type"] == "trial"]) == 1
         assert (dt(ps[1]["created_at"]) - dt(ps[0]["created_at"])).total_seconds() == 7 * 86400
@@ -91,7 +102,11 @@ def test_04_payment_sequence():
 
 def test_05_subscription_dates():
     assert not [s["id"] for s in DATA["subscriptions"] if s["status"] == "active" and dt(s["current_period_end"]) <= policy.NOW]
-    assert not [s["id"] for s in DATA["subscriptions"] if s["status"] == "canceled" and (not s["canceled_at"] or dt(s["canceled_at"]) <= dt(payments(s["customer_id"])[-1]["created_at"]))]
+    for s in DATA["subscriptions"]:
+        if s["status"] != "canceled": continue
+        ps = payments(s["customer_id"])
+        if any(p.get("subscription_id") == s["id"] for p in ps): ps = [p for p in ps if p.get("subscription_id") == s["id"]]
+        assert s["canceled_at"] and dt(s["canceled_at"]) > dt(ps[-1]["created_at"]), s["id"]
 
 
 def test_06_usage_dates():
@@ -101,7 +116,14 @@ def test_06_usage_dates():
 
 def test_07_processor_alignment():
     cs = {c["id"]: c for c in DATA["customers"]}
-    assert not [r.get("id") for name in ("subscriptions", "payments") for r in DATA[name] if r["processor"] != PROCESSOR[cs[r["customer_id"]]["platform"]]]
+    subs = {s["id"]: s for s in DATA["subscriptions"]}
+    for name in ("subscriptions", "payments"):
+        for row in DATA[name]:
+            c = cs[row["customer_id"]]
+            if c.get("linked_subscriptions"):
+                sub_id = row["id"] if name == "subscriptions" else row.get("subscription_id")
+                assert sub_id in c["linked_subscriptions"] and subs[sub_id]["processor"] == row["processor"]
+            else: assert row["processor"] == PROCESSOR[c["platform"]]
 
 
 def test_08_synthetic_identity():

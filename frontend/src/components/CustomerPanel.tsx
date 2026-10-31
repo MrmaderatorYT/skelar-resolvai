@@ -20,6 +20,7 @@ export default function CustomerPanel({ c }: { c: TicketDetail["customer"] }) {
         c.context.offers_12m + c.context.identity_offers_12m > 0)}
       {c.context.in_holdout && row("Retention holdout", "yes — no offers", true)}
       {row("Billing", c.context.billing_processor)}
+      {(c.linked_subscriptions?.length ?? 0) > 1 && <><h4 className="text-xs uppercase text-slate-400 mt-3 mb-1">Linked subscriptions</h4>{c.linked_subscriptions?.map(s => <div key={s.id} className="text-xs text-slate-600 py-1">{s.processor} · {s.plan} · {s.status} <span className="text-slate-400">({s.id})</span></div>)}</>}
       {row("LTV", usd(c.ltv_usd))}
       {row("Last charge", `${usd(lp.amount)} · ${lp.days_ago}d ago · ${lp.status}`)}
       {row("Sessions since charge", c.usage.sessions_since_last_charge)}
