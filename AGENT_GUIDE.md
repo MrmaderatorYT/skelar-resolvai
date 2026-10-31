@@ -1,11 +1,54 @@
-# 🤖 System Prompt for Subagents & Collaborators
+# 🤖 AGENT_GUIDE: Defuse Team Guidelines
 
-## Mission
-You are working on the **PolyTech Code Fest (Skelar) AI Hackathon project: ResolvAI (AI Customer Support Operations Agent)**.
-Consult [.roadmap.md](file:///Users/dmytoparkhomenko/Documents/skelar/.roadmap.md) for the master architectural and delivery plan.
+## 🎯 Проєкт: Defuse (polyTech Code Fest × SKELAR)
+**Ціль:** Створити AI-оператора підтримки для B2C підписок (Calmly), який ловить ризик чарджбеку, розуміє сарказм та автоматично або в 1 клік виконує дії (рефанд, скасування, пауза), захищаючи бізнес від перевищення Visa VAMP (1.5%).
 
-## Core Rules for Agents:
-1. **Action-Driven AI:** Every response and decision must be tied to actionable resolution (Stripe refunds, subscription updates, account unlocks, promo compensation), not just chit-chat.
-2. **Human-in-the-Loop Safety:** Financial or critical actions require operator approval unless high-confidence autonomous mode is enabled.
-3. **Keep Context Clean & Typed:** Maintain clean interfaces between the backend, AI tools, and frontend.
-4. **Deadline Discipline:** The deadline is **17:00**. Keep the stack robust, fast to run, and easy to demonstrate locally and via recording.
+---
+
+## 🏛 Архітектурні Заповіді для всіх Агентів
+
+1. **LLM не рухає гроші напряму!**
+   * LLM використовується для: виділення суті (intent), виявлення емоцій/сарказму/погроз (features), формування структурованого JSON та генерації ввічливої персоналізованої відповіді.
+   * Вибір дій та їх валідація робиться виключно **детермінованим кодом policy** (`backend/app/policy/reference_policy.py`).
+2. **Safety First (Zero Unsafe Actions):**
+   * Prompt Injection перевіряється до передачі в LLM (`backend/app/guard/injection.py`).
+   * Будь-які небезпечні або підозрілі запити блокуються та ескалюються на людину.
+   * Повторні запити повинні бути ідемпотентними.
+3. **Дотримання формату SKELAR:**
+   * У папці `docs/features/` мають бути 4 фічі (`triage`, `action-engine`, `agent-copilot`, `analytics`), кожна з повним набором файлів відповідно до культури розробки Skelar (FEATURE.md, business-context.md, end-to-end-flow.md тощо).
+4. **Готовність до офлайн/fallback демо:**
+   * Передбачити перемикач режиму `DEFUSE_LLM_MODE=live|gold` (якщо немає ключа або закінчилися квоти, система повинна безперебійно працювати на gold/mock даних для ідеального демо).
+
+---
+
+## 👥 Розподіл завдань для агентів
+
+### 🛠 Агент 1: Backend & Policy Engineer
+* Скопіювати та налаштувати `backend/data/` з `defuse-data/data/`.
+* Реалізувати `store.py` (швидкий in-memory стан з ендпоінтом `/api/demo/reset`).
+* Інтегрувати `reference_policy.py`, `guard/injection.py`, `billing/mock_billing.py`, `executor.py`.
+* Створити FastAPI роутери для квитків, аналізу, виконання дій та аналітики.
+* Забезпечити проходження `python evaluate.py` та тестів `pytest`.
+
+### 🎨 Агент 2: Frontend & UX Engineer
+* Створити додаток на Vite + React + Tailwind + Lucide Icons.
+* Реалізувати 3 основні вкладки:
+  1. **Support Copilot:** черга тікетів (queue) + картка з Customer 360 + Evidence Spans + Action Approval.
+  2. **Live Simulator:** поле для введення будь-якого тексту під час пітчу на живому демо.
+  3. **Analytics & Impact:** дашборд із метриками VAMP, зекономленими коштами та кластерами причин звернень.
+* Забезпечити швидкий та плавний UI з підтримкою "One-Click Approve".
+
+### 📊 Агент 3: Quality, Eval & Docs Specialist
+* Створити 10 файлів опису фіч у `docs/features/`.
+* Підготувати `docs/demo-script.md` із покроковим сценарієм на 3 хвилини.
+* Зафіксувати метрики eval у `README.md` (0 unsafe refunds, 100% injection defense).
+* Підготувати матеріали для фінальної презентації (структура на 10 слайдів).
+
+---
+
+## ⏰ Ключові дедлайни:
+* **13:30** — Повністю робочий бекенд з API.
+* **15:00** — Зібраний і протестований фронтенд у зв'язці з бекендом.
+* **16:00** — Проведені тести, оформлена документація `docs/features/`.
+* **16:30** — Записане відеодемо та зібрана презентація.
+* **17:00** — Фінальна здача (ZIP + посилання + презентація).
