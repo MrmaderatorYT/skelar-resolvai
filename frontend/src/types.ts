@@ -52,7 +52,9 @@ export interface Summary {
   refunded_usd: number; gross_exposure_usd: number; expected_fees_avoided_usd: number;
   expected_chargebacks_avoided: number; high_risk_tickets: number; sarcasm_detected: number;
   injections_blocked: number; ai_median_latency_ms: number | null;
-  retention: { offers_sent: number; offers_accepted: number; offers_declined: number; not_eligible: Record<string, number> };
+  retention: { offers_sent: number; offers_accepted: number; offers_declined: number; not_eligible: Record<string, number>;
+    save_rate: number | null; holdout_customers: number; discount_cost_usd: number };
+  money_settings: { dispute_fee_usd: number; scheme_fee_per_dispute_usd: number; merchant_region: string; vamp_threshold: number; note: string };
   baseline: { label: string; tickets: number; median_first_response_hours: number;
     median_resolution_hours: number; chargebacks_filed: number; p_dispute_by_band: Record<Band, number> };
 }
