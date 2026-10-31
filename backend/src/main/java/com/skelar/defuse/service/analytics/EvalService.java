@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skelar.defuse.model.domain.GoldLabel;
 import com.skelar.defuse.model.domain.Ticket;
 import com.skelar.defuse.model.dto.ClassificationFeatures;
+import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.PolicyDecision;
 import com.skelar.defuse.service.guard.InjectionGuardService;
 import com.skelar.defuse.service.llm.LlmClassifierService;
@@ -27,32 +28,32 @@ import java.util.function.Predicate;
 import org.springframework.stereotype.Service;
 
 /**
- * Scores the classifier on the 38 labelled tickets (port of defuse-data/evaluate.py).
+ * Scores the classifier on every labelled seed ticket (port of defuse-data/evaluate.py).
  * The gate fails on any unsafe auto-refund or missed injection.
  */
 @Service
 public class EvalService {
     static final Path REPORT_FILE = Path.of("eval_report.json");
 
-    private final InMemoryStore store;
     private final DataLoader loader;
     private final InjectionGuardService guard;
     private final LlmClassifierService classifier;
-    private final ContextBuilderService contexts;
     private final ReferencePolicyService policy;
     private final ObjectMapper mapper;
     private Map<String,Long> latencies = new LinkedHashMap<>();
+    private final Map<String, CustomerContext> seedContexts = new LinkedHashMap<>();
 
     public EvalService(InMemoryStore store, DataLoader loader, InjectionGuardService guard,
                        LlmClassifierService classifier, ContextBuilderService contexts,
                        ReferencePolicyService policy, ObjectMapper mapper) {
-        this.store = store;
         this.loader = loader;
         this.guard = guard;
         this.classifier = classifier;
-        this.contexts = contexts;
         this.policy = policy;
         this.mapper = mapper;
+        // Capture immutable contexts before the server accepts demo mutations. This uses the injected
+        // builder, so Opus can change its configuration constructor without coupling the LLM layer.
+        for (Ticket ticket : evalTickets()) seedContexts.put(ticket.id, contexts.build(ticket.customerId));
     }
 
     public record Result(boolean passedGate, String report, Map<String, Double> metrics) {
@@ -103,7 +104,6 @@ public class EvalService {
         if (tickets.isEmpty() || !preds.keySet().equals(tickets.stream().map(t -> t.id).collect(java.util.stream.Collectors.toSet()))) {
             return new Result(false, "INVALID prediction coverage: require every eval ticket exactly once\n", Map.of());
         }
-        ContextBuilderService seedContexts = new ContextBuilderService(new InMemoryStore(loader));
         int cancelReasonOk=0;
         int n = 0, intentOk = 0, bandOk = 0, prioOk = 0, actionsOk = 0, modeOk = 0, sarcasticPositive = 0, sarcastic = 0;
         List<String> misses = new ArrayList<>(), unsafe = new ArrayList<>(), missedInj = new ArrayList<>();
@@ -125,7 +125,7 @@ public class EvalService {
             if (p == null) return new Result(false,"INVALID null prediction for "+t.id,Map.of());
             n++;
             GoldLabel g = t.gold;
-            PolicyDecision d = policy.decide(p, seedContexts.build(t.customerId), p.confidence());
+            PolicyDecision d = policy.decide(p, seedContexts.get(t.id), p.confidence());
             if (p.intent().equals(g.intent)) intentOk++;
             if (java.util.Objects.equals(p.cancelReason(),g.cancelReason==null?"none":g.cancelReason)) cancelReasonOk++;
             if (d.riskBand().equals(g.riskBand)) bandOk++;

@@ -71,3 +71,14 @@ References: OWASP LLM01/LLM05/LLM06 2025 in docs/security.md; Spring configurati
 - 24/24 offline red-team dynamic tests pass: 18/18 expected guard hits, plus 6 separate approve/XSS/social boundaries. Live model outcomes remain UNVERIFIED.
 - Ten triage docs and ten plugin docs exist; docs JSON and Python probe parse. Actual credential-pattern scan found no Google/Anthropic credential values. Broad grep from the brief also matches pre-existing documentation mentioning scan patterns / env names, so absence of those words is not claimed.
 - Keyless API probe was actually run: exit2, explicit UNVERIFIED status, no API calls. No real cache, live eval report or red-team model results were fabricated.
+
+## Integration / cross-review follow-up (2026-10-31)
+
+- First push: commit `073b1a9` on `feat-codex`. GitHub Actions offline run passed: https://github.com/MrmaderatorYT/skelar-resolvai/actions/runs/41197714253 . No live opt-in/key was supplied; this does not verify model quality.
+- Final local suite after compatibility fix: **118 tests, 0 failures/errors/skips**. Added EvalIsolationTest: demo refunds cannot alter the context used by eval. Existing 77 offline tests and the frozen DTOs remain unchanged in content.
+- EvalService now snapshots immutable seed contexts using the injected ContextBuilderService during startup; it does not call a constructor that changed in Opus's branch. This preserves the pristine-context evaluation requirement across both versions.
+- Own reply template corrected: Google Play developer refunds are possible; the MVP's missing store capabilities are a connector scope choice. Primary sources and actual routing are recorded in triage/integrations.md. No policy action names or offer getters changed.
+- Cross-review of `origin/feat-opus` at `f8d35a7`: `.task/reviews/REVIEW-of-opus-by-codex.md`. Three critical findings with proposed diffs: missing annual period changes amount/mode; legal/Calm claims on the slide exceed evidence; Google Play capability is misstated. Further major findings cover zero refunds, non-monthly discount cost, shared YAML parity and unmeasured holdout uplift. No Opus source files were edited.
+- Clean Opus checks: **86 Java tests**, **38 Python tests**, **44/44 gold**, frontend production build passed. Temporary merged copy: **127 Java tests**, all green, after resolving only application.yml and applying the own EvalService compatibility fix. Temp merge was not committed or pushed to feat/main/feat-opus.
+- Integrator: preserve `spring.config.import: classpath:defuse-policy.yml` from Opus and Codex's llm/datasources/billing sections. Address review critical items before demo. Existing requests for UI provenance and README/architecture ownership still apply.
+- GitHub Actions provides validation artifacts. The user plans deployment through Actions, but no hosting target/runtime credentials were given, so this branch does not pretend to configure an unspecified deployment.
