@@ -378,5 +378,65 @@
     "explicit_aggression": false,
     "dispute_signal": false,
     "injection": false
+  },
+  {
+    "ticket_id": "T39",
+    "intent": "cancel",
+    "sentiment": "positive",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T40",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T41",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T42",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T43",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": false,
+    "dispute_signal": false,
+    "injection": false
+  },
+  {
+    "ticket_id": "T44",
+    "intent": "cancel",
+    "sentiment": "neutral",
+    "sarcasm": false,
+    "hidden_aggression": false,
+    "explicit_aggression": true,
+    "dispute_signal": true,
+    "injection": false
   }
 ]

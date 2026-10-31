@@ -11,4 +11,6 @@ public class Subscription {
     public String currentPeriodEnd;
     public String canceledAt;
     public String pauseUntil;
+    public Integer discountPercent;
+    public String discountUntil;
 }

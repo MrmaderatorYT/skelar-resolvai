@@ -8,6 +8,7 @@ import type { Customer, TicketRow } from "../types";
 const STATUS: Record<string, string> = {
   open: "bg-slate-100 text-slate-600", resolved: "bg-emerald-100 text-emerald-800",
   needs_approval: "bg-amber-100 text-amber-800", escalated: "bg-red-100 text-red-800",
+  offer_sent: "bg-sky-100 text-sky-800",
 };
 
 export default function Queue({ open }: { open: (id: string) => void }) {

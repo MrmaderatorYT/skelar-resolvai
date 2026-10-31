@@ -5,6 +5,7 @@ import java.util.List;
 /** Hand-made eval labels. Used in gold mode and tests; never sent to the frontend. */
 public class GoldLabel {
     public String intent;
+    public String cancelReason;
     public boolean sarcasm;
     public boolean hiddenAggression;
     public boolean explicitAggression;

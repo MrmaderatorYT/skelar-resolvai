@@ -21,10 +21,10 @@ F = dict(sarcasm=False, hidden_aggression=False, explicit_aggression=False,
          dispute_signal=False, injection=False)
 
 
-def gold(intent, actions, mode, refund, band, prio, goal, tags, **flags):
+def gold(intent, actions, mode, refund, band, prio, goal, tags, cancel_reason="none", **flags):
     if not actions and mode != "escalate":
         actions = ["reply_only"]
-    return {"intent": intent, **F, **flags, "risk_band": band, "actions": sorted(actions), "mode": mode,
+    return {"intent": intent, "cancel_reason": cancel_reason, **F, **flags, "risk_band": band, "actions": sorted(actions), "mode": mode,
             "refund_amount": refund, "priority": prio, "true_goal": goal, "tags": tags}
 
 
@@ -154,7 +154,8 @@ SCENARIOS = [
          sessions=4, cancel_abandoned=2, channel="chat",
          text="Where is the cancel button?? I've looked everywhere in settings. Just cancel it please.",
          gold=gold("cancel", ["cancel"], "auto", 0.0, "low", "P3",
-                   "Cancel; the UI is the real problem", ["cant_find_cancel", "root_cause_ui"])),
+                   "Cancel; the UI is the real problem", ["cant_find_cancel", "root_cause_ui"],
+                   cancel_reason="cant_find_cancel")),
     dict(id="T21", name="Grace Kim", country="US", platform="web", plan="monthly", days=8,
          sessions=20, prior=3, channel="chat",
          text="Honestly this app has been great for my sleep, thank you! Is there a way to switch to the annual plan?",
@@ -251,6 +252,46 @@ SCENARIOS = [
          text="What is this $0.99 charge on my statement?",
          gold=gold("billing_question", [], "auto", 0.0, "low", "P4", "Understand the trial charge",
                    ["billing_question"])),
+    # ---- retention: one offer for the right customer, honest cancel for everyone else ----
+    dict(id="T39", name="Anna Kovalenko", country="UA", platform="web", plan="monthly", days=6,
+         sessions=5, prior=6, channel="chat", acquisition="meta_ads", quiz_goal="sleep",
+         text="Honestly it's a bit too expensive for me right now. Please cancel my subscription.",
+         gold=gold("cancel", ["offer_discount"], "auto", 0.0, "low", "P3",
+                   "Keep the app at a lower price if possible; otherwise cancel",
+                   ["retention", "offer_eligible", "flagship_demo"], cancel_reason="too_expensive")),
+    dict(id="T40", name="Marcus Hale", country="US", platform="web", plan="monthly", days=9,
+         sessions=3, prior=8, channel="chat", offers_12m=1, last_offer_days=150,
+         fingerprint="fp_shared_9f2c", acquisition="tiktok_ads", quiz_goal="stress",
+         text="Cancel please, it's too expensive. Last time you gave me 50% off, happy to take another one 😉",
+         gold=gold("cancel", ["cancel"], "auto", 0.0, "low", "P3",
+                   "Fish for another discount",
+                   ["retention", "discount_seeker", "offer_cooldown"], cancel_reason="too_expensive")),
+    dict(id="T41", name="Marc Hale", country="US", platform="web", plan="monthly", days=4,
+         sessions=2, prior=3, channel="email", fingerprint="fp_shared_9f2c", acquisition="tiktok_ads",
+         quiz_goal="stress",
+         text="Too pricey for me. Please cancel.",
+         gold=gold("cancel", ["cancel"], "auto", 0.0, "low", "P3",
+                   "Cancel (second account on a card that already got an offer)",
+                   ["retention", "identity_cluster", "multi_account"], cancel_reason="too_expensive")),
+    dict(id="T42", name="Sofia Rossi", country="ES", platform="web", plan="monthly", days=12,
+         sessions=14, prior=7, channel="chat", acquisition="organic", quiz_goal="focus",
+         text="I'm travelling for work for the next two months and won't have time for the app. Can you cancel it?",
+         gold=gold("cancel", ["offer_pause"], "auto", 0.0, "low", "P3",
+                   "Stop paying while travelling; a pause fits better than losing her progress",
+                   ["retention", "offer_eligible", "pause_offer"], cancel_reason="no_time")),
+    dict(id="T43", name="Daniel Novak", country="PL", platform="web", plan="quarterly", days=20,
+         sessions=1, prior=1, channel="email", acquisition="google_ads", quiz_goal="sleep",
+         text="Not really using it lately, please cancel.",
+         gold=gold("cancel", ["cancel"], "auto", 0.0, "low", "P3",
+                   "Cancel; eligible, but in the 10% holdout that measures whether offers really work",
+                   ["retention", "holdout"], cancel_reason="not_using")),
+    dict(id="T44", name="Kyle Brennan", country="US", platform="web", plan="quarterly", days=8,
+         sessions=4, prior=3, channel="chat", acquisition="meta_ads", quiz_goal="stress",
+         text="This is way too expensive and honestly feels like a SCAM. Cancel now or I dispute it with my bank.",
+         gold=gold("cancel", ["cancel"], "auto", 0.0, "high", "P1",
+                   "Cancel immediately; no bargaining with someone threatening a chargeback",
+                   ["retention", "no_offer_under_dispute_threat"], cancel_reason="too_expensive",
+                   explicit_aggression=True, dispute_signal=True)),
 ]
 
 
@@ -258,7 +299,7 @@ def iso(days_ago, minutes=0):
     return (NOW - timedelta(days=days_ago, minutes=minutes)).isoformat()
 
 
-def make_customer(i, sc, rng, data):
+def make_customer(i, sc, rng, data, prng):
     """Append one customer, subscription, payments and usage row; return customer id."""
     cid = f"cus_{i:04d}"
     price, period = PLANS[sc["plan"]]
@@ -295,6 +336,14 @@ def make_customer(i, sc, rng, data):
         "id": cid, "name": sc["name"], "email": f"customer{i:04d}@example.com", "country": country,
         "language": LANG_BY_COUNTRY[country], "platform": plat, "signup_at": iso(signup_days),
         "ltv_usd": ltv, "contacts_last_30d": sc.get("contacts", 0),
+        # retention profile (separate rng, so the rest of the seed stays byte-identical)
+        "acquisition_channel": sc.get("acquisition") or prng.choice(
+            ["meta_ads", "tiktok_ads", "google_ads", "organic", "referral"] if plat == "web" else ["app_store_search", "organic"]),
+        "funnel": "web_quiz" if plat == "web" else plat + "_paywall",
+        "quiz_goal": sc.get("quiz_goal") or (prng.choice(["sleep", "stress", "focus"]) if plat == "web" else None),
+        "card_fingerprint": sc.get("fingerprint", f"fp_{i:04d}"),
+        "offers_12m": sc.get("offers_12m", 0),
+        "last_offer_at": iso(sc["last_offer_days"]) if sc.get("last_offer_days") is not None else None,
     })
     data["subscriptions"].append({
         "id": f"sub_{i:04d}", "customer_id": cid, "plan": sc["plan"], "price": price,
@@ -389,10 +438,11 @@ def history_tickets(rng, customers, data):
 
 def main():
     rng = random.Random(42)
+    prng = random.Random(7)  # retention profile fields only
     data = {k: [] for k in ("customers", "subscriptions", "payments", "usage")}
     tickets = []
     for i, sc in enumerate(SCENARIOS, start=1):
-        cid = make_customer(i, sc, rng, data)
+        cid = make_customer(i, sc, rng, data, prng)
         tickets.append({"id": sc["id"], "customer_id": cid, "channel": sc["channel"],
                         "language": data["customers"][-1]["language"],
                         "created_at": iso(0, minutes=rng.randint(1, 25)),
@@ -408,7 +458,9 @@ def main():
                   prior=rng.choices([0, 1, 2, 4, 6], [40, 25, 15, 12, 8])[0],
                   contacts=rng.choices([0, 1, 2], [80, 15, 5])[0],
                   status=rng.choices(["active", "canceled", "paused"], [80, 15, 5])[0])
-        make_customer(i, sc, rng, data)
+        if prng.random() < 0.08:  # ~8% got a retention offer in the last year
+            sc.update(offers_12m=1, last_offer_days=prng.randint(1, 360))
+        make_customer(i, sc, rng, data, prng)
         background.append(data["customers"][-1])
 
     DATA.mkdir(exist_ok=True)

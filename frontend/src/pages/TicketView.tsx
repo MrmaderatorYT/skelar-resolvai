@@ -64,7 +64,8 @@ export default function TicketView({ id, back }: { id: string; back: () => void 
           {a && <ReplyEditor value={reply} onChange={setReply} editable={a.status === "needs_approval"} />}
         </div>
         <div className="space-y-4">
-          {a && <DecisionCard a={a} onApprove={() => run(() => api.approve(id, reply))} onReject={() => run(() => api.reject(id, "agent escalated"))} />}
+          {a && <DecisionCard a={a} onApprove={() => run(() => api.approve(id, reply))} onReject={() => run(() => api.reject(id, "agent escalated"))}
+            onAccept={() => run(() => api.acceptOffer(id))} onDecline={() => run(() => api.declineOffer(id))} />}
           <Timeline events={d.audit} />
         </div>
         <CustomerPanel c={d.customer} />

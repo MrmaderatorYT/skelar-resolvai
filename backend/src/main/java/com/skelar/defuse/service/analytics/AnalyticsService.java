@@ -79,6 +79,15 @@ public class AnalyticsService {
         s.put("sarcasm_detected", as.stream().filter(a -> a.features.sarcasm()).count());
         s.put("injections_blocked", as.stream().filter(a -> a.features.injection()).count());
         s.put("ai_median_latency_ms", n == 0 ? null : median(as.stream().map(a -> (double) a.latencyMs).toList()));
+        Map<String, Object> retention = new LinkedHashMap<>();
+        List<Map<String, Object>> events = audit.all();
+        retention.put("offers_sent", as.stream().filter(a -> a.decision.actions().stream().anyMatch(x -> x.startsWith("offer_"))).count());
+        retention.put("offers_accepted", events.stream().filter(e -> "offer_accepted".equals(e.get("event"))).count());
+        retention.put("offers_declined", events.stream().filter(e -> "offer_declined".equals(e.get("event"))).count());
+        retention.put("not_eligible", as.stream().flatMap(a -> a.decision.reasons().stream())
+                .filter(r -> r.startsWith("retention_not_eligible: "))
+                .collect(Collectors.groupingBy(r -> r.substring("retention_not_eligible: ".length()), TreeMap::new, Collectors.counting())));
+        s.put("retention", retention);
         s.put("baseline", baseline);
         return s;
     }

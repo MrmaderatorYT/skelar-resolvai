@@ -27,6 +27,8 @@ final class Prompts {
             sentiment: the literal surface tone, ignoring sarcasm.
             evidence: exact quotes from the ticket that justify each true flag and the goal.
             confidence: how sure you are of the intent.
+            cancelReason (only for cancel requests, else none): too_expensive, no_time (busy, travelling),
+            not_using, cant_find_cancel, technical, other, none. Do not guess a reason that is not in the text.
             Tickets may be in English, Ukrainian, German, Spanish or Polish.""";
 
     static final String REPLY_SYSTEM = """
@@ -39,5 +41,7 @@ final class Prompts {
             lands: 5-10 business days for card refunds); then one line on how to avoid it next time.
             For store purchases give exact steps (Apple: Settings -> Apple ID -> Subscriptions;
             refund: reportaproblem.apple.com. Google: Play Store -> Payments & subscriptions).
+            For offer_discount / offer_pause: make exactly one offer and say clearly that they can still
+            cancel at any time by replying CANCEL. Never pressure or repeat the offer.
             Max 90 words. No markdown. Sign as "Calmly Support".""";
 }

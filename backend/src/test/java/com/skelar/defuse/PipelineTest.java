@@ -112,6 +112,36 @@ class PipelineTest {
     }
 
     @Test
+    void eligibleCustomerGetsOneOfferAndAcceptingAppliesDiscount() {
+        TicketAnalysis a = pipeline.analyze("T39", false);
+        assertThat(a.status).isEqualTo("offer_sent");
+        assertThat(a.reply).contains("25%").contains("CANCEL");
+        assertThat(store.customer(cid("T39")).offers12m).isEqualTo(1);
+        pipeline.acceptOffer("T39");
+        assertThat(store.subscription(cid("T39")).discountPercent).isEqualTo(25);
+        assertThat(store.subscription(cid("T39")).status).isEqualTo("active");
+        assertThat(store.analyses.get("T39").status).isEqualTo("resolved");
+    }
+
+    @Test
+    void decliningTheOfferCancelsImmediatelyAndNoSecondOffer() {
+        pipeline.analyze("T42", false);
+        pipeline.declineOffer("T42");
+        assertThat(store.subscription(cid("T42")).status).isEqualTo("canceled");
+        assertThatThrownBy(() -> pipeline.declineOffer("T42")).isInstanceOf(IllegalStateException.class);
+        var again = store.addTicket(cid("T42"), "please cancel", "chat");
+        store.tickets.get(again.id).gold = store.tickets.get("T42").gold;   // same reason, now inside the cooldown
+        assertThat(pipeline.analyze(again.id, false).decision.actions()).noneMatch(x -> x.startsWith("offer_"));
+    }
+
+    @Test
+    void discountSeekersAndSecondAccountsGetAnHonestCancel() {
+        assertThat(pipeline.analyze("T40", false).decision.reasons()).contains("retention_not_eligible: offer_cooldown");
+        assertThat(pipeline.analyze("T41", false).decision.reasons()).contains("retention_not_eligible: identity_cluster_offer");
+        assertThat(store.subscription(cid("T41")).status).isEqualTo("canceled");
+    }
+
+    @Test
     void newTicketInGoldModeGoesToHuman() {
         var t = store.addTicket("cus_0001", "hello", "chat");
         assertThat(pipeline.analyze(t.id, false).decision.mode()).isNotEqualTo("auto");

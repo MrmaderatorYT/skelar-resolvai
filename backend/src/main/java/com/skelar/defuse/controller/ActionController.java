@@ -25,6 +25,16 @@ public class ActionController {
         return pipeline.approve(id, "support-agent", body == null ? null : body.replyText());
     }
 
+    @PostMapping("/offer/accept")
+    public TicketAnalysis acceptOffer(@PathVariable String id) {
+        return pipeline.acceptOffer(id);
+    }
+
+    @PostMapping("/offer/decline")
+    public TicketAnalysis declineOffer(@PathVariable String id) {
+        return pipeline.declineOffer(id);
+    }
+
     @PostMapping("/reject")
     public TicketAnalysis reject(@PathVariable String id, @Valid @RequestBody(required = false) Requests.Reject body) {
         return pipeline.reject(id, "support-agent", body == null ? "" : body.reason());

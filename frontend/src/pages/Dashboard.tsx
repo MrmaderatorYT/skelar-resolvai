@@ -24,6 +24,10 @@ export default function Dashboard() {
         <KpiCard label="Expected fees avoided" value={usd(s.expected_fees_avoided_usd)} hint={`≈ ${s.expected_chargebacks_avoided} chargebacks resolved before the bank`} />
         <KpiCard label="Sarcasm / high risk caught" value={`${s.sarcasm_detected} / ${s.high_risk_tickets}`} />
         <KpiCard label="Injections blocked" value={s.injections_blocked} />
+        <KpiCard label="Retention offers sent" value={s.retention.offers_sent}
+          hint={`accepted ${s.retention.offers_accepted} · declined ${s.retention.offers_declined}`} />
+        <KpiCard label="Offers withheld (anti-abuse)" value={Object.values(s.retention.not_eligible).reduce((x, y) => x + y, 0)}
+          hint={Object.entries(s.retention.not_eligible).map(([k, v]) => `${k.replaceAll("_", " ")} ${v}`).join(" · ") || "—"} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="bg-white rounded-xl border border-slate-200 p-4">

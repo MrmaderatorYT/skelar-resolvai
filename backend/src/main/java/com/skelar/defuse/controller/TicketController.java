@@ -101,6 +101,10 @@ public class TicketController {
         customer.put("platform", c.platform);
         customer.put("ltv_usd", c.ltvUsd);
         customer.put("contacts_last_30d", c.contactsLast30d);
+        customer.put("acquisition_channel", c.acquisitionChannel);
+        customer.put("funnel", c.funnel);
+        customer.put("quiz_goal", c.quizGoal);
+        customer.put("offers_12m", c.offers12m);
         customer.put("subscription", store.subscription(cid));
         customer.put("usage", store.usage(cid));
         customer.put("payments", store.payments(cid));

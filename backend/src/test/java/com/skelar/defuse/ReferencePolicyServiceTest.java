@@ -31,7 +31,7 @@ class ReferencePolicyServiceTest {
     }
 
     static Stream<String> ticketIds() {
-        return Stream.iterate(1, i -> i <= 38, i -> i + 1).map(i -> "T%02d".formatted(i));
+        return Stream.iterate(1, i -> i <= 44, i -> i + 1).map(i -> "T%02d".formatted(i));
     }
 
     private PolicyDecision decide(String id, double confidence) {
@@ -77,7 +77,7 @@ class ReferencePolicyServiceTest {
         Ticket t = store.tickets.get("T01");
         var ctx = contexts.build(t.customerId);
         var bogus = new ClassificationFeatures("refund_everything", "", false, false, false, false, false,
-                "neutral", "en", 1.0, java.util.List.of());
+                "neutral", "en", 1.0, java.util.List.of(), "none");
         assertThat(policy.decide(bogus, ctx, 1.0).mode()).isEqualTo("escalate");
         assertThat(policy.decide(LlmClassifierService.fromGold(t), ctx, Double.NaN).mode()).isEqualTo("escalate");
     }
@@ -93,7 +93,8 @@ class ReferencePolicyServiceTest {
         return new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), c.platform(), processor, c.ltvUsd(),
                 c.contactsLast30d(), refunds, chargebacks, c.subscriptionStatus(), c.plan(), c.price(),
                 new com.skelar.defuse.model.dto.LastPayment(c.lastPayment().id(), amount, status, days),
-                c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned());
+                c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned(), c.acquisitionChannel(),
+                c.tenureMonths(), c.paidRenewals(), c.offers12m(), c.identityOffers12m(), c.retentionOffers30d(), c.inHoldout());
     }
 
     @Test
@@ -123,6 +124,27 @@ class ReferencePolicyServiceTest {
         var pause = LlmClassifierService.fromGold(store.tickets.get("T34"));
         assertThat(policy.decide(pause, ctxWith("T34", c -> copy(c, "google_play", 29.99, "succeeded", 18, 0, 0)), 1).mode())
                 .isEqualTo("escalate");
+    }
+
+    @Test
+    void retentionOfferOnlyForEligibleCustomers() {
+        var f = LlmClassifierService.fromGold(store.tickets.get("T39"));
+        var base = contexts.build(store.tickets.get("T39").customerId);
+        assertThat(policy.decide(f, base, 1).actions()).containsExactly("offer_discount");
+        java.util.function.Function<com.skelar.defuse.model.dto.CustomerContext, String> why = c -> policy.retentionOffer(f, c)[1];
+        var c = base;
+        assertThat(why.apply(new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), c.platform(), c.billingProcessor(), c.ltvUsd(),
+                c.contactsLast30d(), c.refundsLast180d(), c.chargebacksLifetime(), c.subscriptionStatus(), c.plan(), c.price(),
+                c.lastPayment(), c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned(), c.acquisitionChannel(),
+                1, c.paidRenewals(), 0, 0, 0, false))).isEqualTo("tenure");
+        assertThat(why.apply(new com.skelar.defuse.model.dto.CustomerContext(c.customerId(), c.platform(), c.billingProcessor(), c.ltvUsd(),
+                c.contactsLast30d(), c.refundsLast180d(), c.chargebacksLifetime(), c.subscriptionStatus(), c.plan(), c.price(),
+                c.lastPayment(), c.duplicatePaymentId(), c.sessionsSinceLastCharge(), c.cancelFlowAbandoned(), c.acquisitionChannel(),
+                c.tenureMonths(), c.paidRenewals(), 0, 0, ReferencePolicyService.MAX_OFFERS_PER_30D, false))).isEqualTo("monthly_offer_budget");
+        // a cancel_refund request never gets an offer: money questions go the refund path
+        var refund = new ClassificationFeatures("cancel_refund", "", false, false, false, false, false, "neutral", "en", 1.0,
+                java.util.List.of(), "too_expensive");
+        assertThat(policy.decide(refund, base, 1).actions()).noneMatch(a -> a.startsWith("offer_"));
     }
 
     @Test

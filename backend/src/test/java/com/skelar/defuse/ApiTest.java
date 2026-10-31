@@ -51,9 +51,9 @@ class ApiTest {
     void queueIsSortedAndDashboardCounts() throws Exception {
         mvc.perform(post("/api/tickets/analyze-all")).andExpect(status().isOk());
         mvc.perform(get("/api/tickets")).andExpect(jsonPath("$[0].priority").value("P1"))
-                .andExpect(jsonPath("$[37].priority").value("P4"));
+                .andExpect(jsonPath("$[43].priority").value("P4"));
         mvc.perform(get("/api/analytics/summary"))
-                .andExpect(jsonPath("$.analyzed").value(38))
+                .andExpect(jsonPath("$.analyzed").value(44))
                 .andExpect(jsonPath("$.injections_blocked").value(3));
     }
 

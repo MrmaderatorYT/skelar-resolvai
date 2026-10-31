@@ -8,6 +8,7 @@ import com.skelar.defuse.model.domain.Ticket;
 import com.skelar.defuse.model.dto.ClassificationFeatures;
 import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.PolicyDecision;
+import com.skelar.defuse.service.policy.ReferencePolicyService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +72,18 @@ public class ReplyWriterService {
         }
     }
 
+    public static String offerOutcome(String name, String action, boolean failed) {
+        String first = name.split(" ")[0];
+        if (failed) return "Hi " + first + ", thanks! A teammate is finishing this for you and will confirm within 1 hour." + SIGN;
+        return "Hi " + first + ", " + switch (action) {
+            case "apply_discount" -> String.format(Locale.US, "done - your next %d months are %d%% off. Glad you're staying!",
+                    ReferencePolicyService.DISCOUNT_MONTHS, ReferencePolicyService.DISCOUNT_PERCENT);
+            case "pause" -> String.format(Locale.US, "done - your subscription is paused for %d months and nothing will be charged. Your progress is saved.",
+                    ReferencePolicyService.PAUSE_MONTHS);
+            default -> "your subscription is cancelled and you won't be charged again.";
+        } + SIGN;
+    }
+
     public static String template(String name, PolicyDecision d) {
         String first = name.split(" ")[0];
         List<String> acts = d.actions();
@@ -79,6 +92,16 @@ public class ReplyWriterService {
         }
         boolean pending = d.mode().equals("suggest");
         List<String> lines = new ArrayList<>();
+        String canStillCancel = " If you'd still like to cancel, just reply CANCEL and we'll do it right away - no questions asked.";
+        if (acts.contains("offer_discount")) {
+            lines.add(String.format(Locale.US, "Before you go: we can take %d%% off your next %d months.",
+                    ReferencePolicyService.DISCOUNT_PERCENT, ReferencePolicyService.DISCOUNT_MONTHS)
+                    + " Reply YES to keep Calmly at the lower price." + canStillCancel);
+        }
+        if (acts.contains("offer_pause")) {
+            lines.add(String.format(Locale.US, "If it's just a busy stretch, we can pause your subscription for %d months at no cost and keep your progress.",
+                    ReferencePolicyService.PAUSE_MONTHS) + " Reply PAUSE to do that." + canStillCancel);
+        }
         if (acts.contains("cancel")) lines.add("Your subscription is cancelled and you won't be charged again.");
         if (acts.stream().anyMatch(a -> a.startsWith("refund"))) {
             String state = pending ? "is being confirmed by a teammate (within 1 hour)" : "is on its way";
@@ -97,6 +120,6 @@ public class ReplyWriterService {
         }
         if (acts.contains("ask_clarification")) lines.add("Could you tell us what exactly isn't working and on which device?");
         if (lines.isEmpty()) lines.add("Thanks for your message! A teammate will follow up with the details shortly.");
-        return "Hi " + first + ", " + String.join(" ", lines) + SIGN;
+        return "Hi " + first + ",\n\n" + String.join(" ", lines) + SIGN;
     }
 }

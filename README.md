@@ -7,8 +7,9 @@ Subscription apps lose money when a billing ticket ("charged after my trial 🙂
 1. understands the **real goal** and catches **sarcasm, hidden aggression and dispute signals** (Claude Haiku 5.5, typed structured output);
 2. pulls billing facts (Customer 360) and scores **chargeback risk**;
 3. `ReferencePolicyService` picks the action — cancel, refund, pause, store instructions, evidence pack — and the mode: **auto / 1-click approval / escalate**;
-4. `ActionExecutorService` executes it (idempotent, payment-state checks, audit), then the reply is written from the actual result (Claude Sonnet 5.5);
-5. the dashboard shows chargeback exposure, refund spend, expected fees avoided, and the root causes product should fix.
+4. for cancel requests with a fixable reason, **one retention offer** (25% off or a pause) — only for eligible customers: tenure, no offer in 12 months, no linked-account offer, no refund/chargeback history, no dispute threat, monthly budget, 10% holdout;
+5. `ActionExecutorService` executes it (idempotent, payment-state checks, audit), then the reply is written from the actual result (Claude Sonnet 5.5);
+6. the dashboard shows chargeback exposure, refund spend, expected fees avoided, and the root causes product should fix.
 
 **The LLM understands and writes. Only code moves money.**
 
@@ -23,7 +24,7 @@ DEFUSE_LLM_MODE=live ANTHROPIC_API_KEY=... ./gradlew bootRun   # real Claude
 # frontend — http://localhost:5173 (proxies /api to :8000)
 cd frontend && npm install && npm run dev
 
-# tests (no API calls): 61 JUnit tests, incl. all 38 gold policy decisions
+# tests (no API calls): 71 JUnit tests, incl. all 44 gold policy decisions
 cd backend && ./gradlew test
 # live eval gate: 0 unsafe auto-refunds, 0 missed injections
 ANTHROPIC_API_KEY=... ./gradlew liveEval
@@ -39,12 +40,13 @@ ANTHROPIC_API_KEY=... ./gradlew liveEval
 | POST | `/api/tickets/analyze-all` | analyze every open ticket |
 | POST | `/api/tickets/{id}/approve` (`/execute`) | run actions waiting for approval |
 | POST | `/api/tickets/{id}/reject` | escalate |
+| POST | `/api/tickets/{id}/offer/accept` · `/offer/decline` | customer answer to the retention offer |
 | POST | `/api/tickets` (`/tickets/simulate`) | live ticket for the demo |
 | GET | `/api/analytics/summary` · `/root-causes` · `/dashboard` · `/eval` | KPIs, root causes, eval report |
-| POST | `/api/analytics/eval/run` | live classifier on the 38 labelled tickets |
+| POST | `/api/analytics/eval/run` | live classifier on the 44 labelled tickets |
 | POST | `/api/demo/reset` | reload seed data |
 
-## Eval (38 labelled tickets, EN/UA/DE/ES/PL)
+## Eval (44 labelled tickets, EN/UA/DE/ES/PL)
 
 | Metric | Keyword bot | Defuse (live) |
 |---|---|---|

@@ -41,11 +41,26 @@ public class ContextBuilderService {
         int refunds180 = (int) pays.stream()
                 .filter(p -> p.status.equals("refunded") && daysAgo(p.createdAt) <= 180).count();
         int chargebacks = (int) pays.stream().filter(p -> p.status.equals("charged_back")).count();
+        int paidRenewals = (int) pays.stream().filter(p -> p.type.equals("renewal") && p.status.equals("succeeded")).count();
+        int identityOffers = store.customers.stream()
+                .filter(o -> c.cardFingerprint != null && !o.id.equals(customerId) && c.cardFingerprint.equals(o.cardFingerprint))
+                .mapToInt(ContextBuilderService::recentOffers).sum();
+        int offers30d = (int) store.customers.stream()
+                .filter(o -> o.lastOfferAt != null && daysAgo(o.lastOfferAt) <= 30).count();
+        boolean holdout = Integer.parseInt(customerId.substring(customerId.lastIndexOf('_') + 1)) % 10
+                == ReferencePolicyService.HOLDOUT_BUCKET;
         return new CustomerContext(
                 customerId, c.platform, sub.processor, c.ltvUsd, c.contactsLast30d, refunds180, chargebacks,
                 sub.status, sub.plan, sub.price,
                 new LastPayment(last.id, last.amount, last.status, daysAgo(last.createdAt)),
                 sameDay.size() > 1 ? sameDay.get(sameDay.size() - 1).id : null,
-                u.sessionsSinceLastCharge, u.cancelFlowAbandoned);
+                u.sessionsSinceLastCharge, u.cancelFlowAbandoned,
+                c.acquisitionChannel, Math.floorDiv(daysAgo(c.signupAt), 30), paidRenewals, recentOffers(c),
+                identityOffers, offers30d, holdout);
+    }
+
+    /** Offers made to this customer within the cooldown window. */
+    static int recentOffers(Customer c) {
+        return c.lastOfferAt != null && daysAgo(c.lastOfferAt) <= ReferencePolicyService.OFFER_COOLDOWN_DAYS ? c.offers12m : 0;
     }
 }

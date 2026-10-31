@@ -18,5 +18,20 @@
   "risk_bands": {
     "high": 0.5,
     "medium": 0.3
+  },
+  "retention": {
+    "offers": {
+      "too_expensive": "offer_discount",
+      "no_time": "offer_pause",
+      "not_using": "offer_pause"
+    },
+    "discount_percent": 25,
+    "discount_months": 2,
+    "pause_months": 2,
+    "min_tenure_months": 2,
+    "min_paid_renewals": 1,
+    "cooldown_days": 365,
+    "max_offers_per_30d": 50,
+    "holdout_bucket": 3
   }
 }

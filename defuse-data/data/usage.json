@@ -267,127 +267,127 @@
   },
   {
     "customer_id": "cus_0039",
-    "sessions_since_last_charge": 0,
-    "last_active_at": "2026-10-09T12:00:00+00:00",
-    "streak_days": 0,
+    "sessions_since_last_charge": 5,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0040",
-    "sessions_since_last_charge": 15,
-    "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 25,
+    "sessions_since_last_charge": 3,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 22,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0041",
-    "sessions_since_last_charge": 15,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 4,
+    "sessions_since_last_charge": 2,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0042",
-    "sessions_since_last_charge": 3,
+    "sessions_since_last_charge": 14,
     "last_active_at": "2026-10-30T12:00:00+00:00",
-    "streak_days": 16,
+    "streak_days": 17,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0043",
-    "sessions_since_last_charge": 30,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 16,
+    "sessions_since_last_charge": 1,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 5,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0044",
-    "sessions_since_last_charge": 8,
-    "last_active_at": "2026-10-29T12:00:00+00:00",
-    "streak_days": 13,
+    "sessions_since_last_charge": 4,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 8,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0045",
-    "sessions_since_last_charge": 0,
-    "last_active_at": "2026-10-13T12:00:00+00:00",
-    "streak_days": 0,
+    "sessions_since_last_charge": 3,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0046",
-    "sessions_since_last_charge": 8,
-    "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 29,
+    "sessions_since_last_charge": 15,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0047",
-    "sessions_since_last_charge": 0,
-    "last_active_at": "2026-08-18T12:00:00+00:00",
-    "streak_days": 0,
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0048",
     "sessions_since_last_charge": 30,
-    "last_active_at": "2026-10-30T12:00:00+00:00",
-    "streak_days": 22,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 24,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0049",
-    "sessions_since_last_charge": 0,
-    "last_active_at": "2026-10-15T12:00:00+00:00",
-    "streak_days": 0,
+    "sessions_since_last_charge": 15,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 27,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0050",
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 19,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0051",
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 2,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0052",
+    "sessions_since_last_charge": 8,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 29,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0053",
+    "sessions_since_last_charge": 8,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 18,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0054",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-22T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0051",
+    "customer_id": "cus_0055",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0052",
-    "sessions_since_last_charge": 30,
-    "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 1,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0053",
-    "sessions_since_last_charge": 3,
-    "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 14,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0054",
-    "sessions_since_last_charge": 30,
-    "last_active_at": "2026-10-30T12:00:00+00:00",
-    "streak_days": 27,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0055",
-    "sessions_since_last_charge": 1,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 4,
-    "cancel_flow_abandoned": 0
-  },
-  {
     "customer_id": "cus_0056",
-    "sessions_since_last_charge": 15,
-    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 1,
     "cancel_flow_abandoned": 0
   },
@@ -395,363 +395,363 @@
     "customer_id": "cus_0057",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 19,
+    "streak_days": 14,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0058",
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 27,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0059",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 4,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0059",
+    "customer_id": "cus_0060",
+    "sessions_since_last_charge": 15,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 1,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0061",
+    "sessions_since_last_charge": 3,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 19,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0062",
+    "sessions_since_last_charge": 1,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 4,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0063",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-11T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0060",
+    "customer_id": "cus_0064",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 21,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0061",
+    "customer_id": "cus_0065",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0062",
+    "customer_id": "cus_0066",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 5,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0063",
+    "customer_id": "cus_0067",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0064",
+    "customer_id": "cus_0068",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0065",
+    "customer_id": "cus_0069",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 25,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0066",
+    "customer_id": "cus_0070",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 26,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0067",
+    "customer_id": "cus_0071",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-02T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0068",
+    "customer_id": "cus_0072",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0069",
+    "customer_id": "cus_0073",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-13T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0070",
+    "customer_id": "cus_0074",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0071",
+    "customer_id": "cus_0075",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0072",
+    "customer_id": "cus_0076",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 9,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0073",
+    "customer_id": "cus_0077",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 21,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0074",
+    "customer_id": "cus_0078",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-05T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0075",
+    "customer_id": "cus_0079",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 15,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0076",
+    "customer_id": "cus_0080",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-22T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0077",
+    "customer_id": "cus_0081",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0078",
+    "customer_id": "cus_0082",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 20,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0079",
+    "customer_id": "cus_0083",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 12,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0080",
+    "customer_id": "cus_0084",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 27,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0081",
+    "customer_id": "cus_0085",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 15,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0082",
+    "customer_id": "cus_0086",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0083",
+    "customer_id": "cus_0087",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 12,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0084",
+    "customer_id": "cus_0088",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 15,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0085",
+    "customer_id": "cus_0089",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 6,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0086",
-    "sessions_since_last_charge": 8,
-    "last_active_at": "2026-10-29T12:00:00+00:00",
-    "streak_days": 5,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0087",
-    "sessions_since_last_charge": 1,
-    "last_active_at": "2026-10-30T12:00:00+00:00",
-    "streak_days": 2,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0088",
-    "sessions_since_last_charge": 30,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 21,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0089",
-    "sessions_since_last_charge": 3,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 22,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0090",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-29T12:00:00+00:00",
-    "streak_days": 10,
+    "streak_days": 5,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0091",
+    "sessions_since_last_charge": 1,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 2,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0092",
+    "sessions_since_last_charge": 30,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 21,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0093",
+    "sessions_since_last_charge": 3,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 22,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0094",
+    "sessions_since_last_charge": 8,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 10,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0095",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 15,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0092",
+    "customer_id": "cus_0096",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 16,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0093",
+    "customer_id": "cus_0097",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 2,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0094",
+    "customer_id": "cus_0098",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0095",
+    "customer_id": "cus_0099",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 6,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0096",
+    "customer_id": "cus_0100",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0097",
+    "customer_id": "cus_0101",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 3,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0098",
+    "customer_id": "cus_0102",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-06T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0099",
+    "customer_id": "cus_0103",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0100",
+    "customer_id": "cus_0104",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-10T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0101",
+    "customer_id": "cus_0105",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 8,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0102",
+    "customer_id": "cus_0106",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 9,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0103",
+    "customer_id": "cus_0107",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0104",
-    "sessions_since_last_charge": 0,
-    "last_active_at": "2026-10-27T12:00:00+00:00",
-    "streak_days": 0,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0105",
-    "sessions_since_last_charge": 1,
-    "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 28,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0106",
-    "sessions_since_last_charge": 15,
-    "last_active_at": "2026-10-29T12:00:00+00:00",
-    "streak_days": 18,
-    "cancel_flow_abandoned": 0
-  },
-  {
-    "customer_id": "cus_0107",
-    "sessions_since_last_charge": 1,
-    "last_active_at": "2026-10-28T12:00:00+00:00",
-    "streak_days": 2,
-    "cancel_flow_abandoned": 0
-  },
-  {
     "customer_id": "cus_0108",
     "sessions_since_last_charge": 0,
-    "last_active_at": "2026-10-02T12:00:00+00:00",
+    "last_active_at": "2026-10-27T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
@@ -759,560 +759,602 @@
     "customer_id": "cus_0109",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-31T12:00:00+00:00",
-    "streak_days": 21,
+    "streak_days": 28,
     "cancel_flow_abandoned": 0
   },
   {
     "customer_id": "cus_0110",
+    "sessions_since_last_charge": 15,
+    "last_active_at": "2026-10-29T12:00:00+00:00",
+    "streak_days": 18,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0111",
+    "sessions_since_last_charge": 1,
+    "last_active_at": "2026-10-28T12:00:00+00:00",
+    "streak_days": 2,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0112",
+    "sessions_since_last_charge": 0,
+    "last_active_at": "2026-10-02T12:00:00+00:00",
+    "streak_days": 0,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0113",
+    "sessions_since_last_charge": 1,
+    "last_active_at": "2026-10-31T12:00:00+00:00",
+    "streak_days": 21,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0114",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 29,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0111",
+    "customer_id": "cus_0115",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 17,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0112",
+    "customer_id": "cus_0116",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0113",
+    "customer_id": "cus_0117",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-04-16T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0114",
+    "customer_id": "cus_0118",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 27,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0115",
+    "customer_id": "cus_0119",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 18,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0116",
+    "customer_id": "cus_0120",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 15,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0117",
+    "customer_id": "cus_0121",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0118",
+    "customer_id": "cus_0122",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 30,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0119",
+    "customer_id": "cus_0123",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-21T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0120",
+    "customer_id": "cus_0124",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 25,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0121",
+    "customer_id": "cus_0125",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0122",
+    "customer_id": "cus_0126",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-11T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0123",
+    "customer_id": "cus_0127",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-09T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0124",
+    "customer_id": "cus_0128",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 22,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0125",
+    "customer_id": "cus_0129",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 26,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0126",
+    "customer_id": "cus_0130",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 20,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0127",
+    "customer_id": "cus_0131",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 23,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0128",
+    "customer_id": "cus_0132",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 30,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0129",
+    "customer_id": "cus_0133",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-20T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0130",
+    "customer_id": "cus_0134",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-04-10T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0131",
+    "customer_id": "cus_0135",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-08-30T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0132",
+    "customer_id": "cus_0136",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-07T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0133",
+    "customer_id": "cus_0137",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 18,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0134",
+    "customer_id": "cus_0138",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-24T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0135",
+    "customer_id": "cus_0139",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 2,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0136",
+    "customer_id": "cus_0140",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-17T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0137",
+    "customer_id": "cus_0141",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-08-14T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0138",
+    "customer_id": "cus_0142",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-13T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0139",
+    "customer_id": "cus_0143",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-13T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0140",
+    "customer_id": "cus_0144",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 1,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0141",
+    "customer_id": "cus_0145",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-03T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0142",
+    "customer_id": "cus_0146",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 25,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0143",
+    "customer_id": "cus_0147",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0144",
+    "customer_id": "cus_0148",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0145",
+    "customer_id": "cus_0149",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 27,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0146",
+    "customer_id": "cus_0150",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0147",
+    "customer_id": "cus_0151",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0148",
+    "customer_id": "cus_0152",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 2,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0149",
+    "customer_id": "cus_0153",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 24,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0150",
+    "customer_id": "cus_0154",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 13,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0151",
+    "customer_id": "cus_0155",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 1,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0152",
+    "customer_id": "cus_0156",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-20T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0153",
+    "customer_id": "cus_0157",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 2,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0154",
+    "customer_id": "cus_0158",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 9,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0155",
+    "customer_id": "cus_0159",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 7,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0156",
+    "customer_id": "cus_0160",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 16,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0157",
+    "customer_id": "cus_0161",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0158",
+    "customer_id": "cus_0162",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 27,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0159",
+    "customer_id": "cus_0163",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 14,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0160",
+    "customer_id": "cus_0164",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 14,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0161",
+    "customer_id": "cus_0165",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 16,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0162",
+    "customer_id": "cus_0166",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-10T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0163",
+    "customer_id": "cus_0167",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 10,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0164",
+    "customer_id": "cus_0168",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 9,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0165",
+    "customer_id": "cus_0169",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0166",
+    "customer_id": "cus_0170",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-14T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0167",
+    "customer_id": "cus_0171",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 4,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0168",
+    "customer_id": "cus_0172",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 24,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0169",
+    "customer_id": "cus_0173",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 14,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0170",
+    "customer_id": "cus_0174",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 20,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0171",
+    "customer_id": "cus_0175",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 28,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0172",
+    "customer_id": "cus_0176",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-15T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0173",
+    "customer_id": "cus_0177",
     "sessions_since_last_charge": 30,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 9,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0174",
+    "customer_id": "cus_0178",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-08-12T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0175",
+    "customer_id": "cus_0179",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 2,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0176",
+    "customer_id": "cus_0180",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 19,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0177",
+    "customer_id": "cus_0181",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 12,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0178",
+    "customer_id": "cus_0182",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 24,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0179",
+    "customer_id": "cus_0183",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-10-09T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0180",
+    "customer_id": "cus_0184",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-09-01T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0181",
+    "customer_id": "cus_0185",
     "sessions_since_last_charge": 8,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0182",
+    "customer_id": "cus_0186",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 10,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0183",
+    "customer_id": "cus_0187",
     "sessions_since_last_charge": 1,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 17,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0184",
+    "customer_id": "cus_0188",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-29T12:00:00+00:00",
     "streak_days": 14,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0185",
+    "customer_id": "cus_0189",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-28T12:00:00+00:00",
     "streak_days": 11,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0186",
+    "customer_id": "cus_0190",
     "sessions_since_last_charge": 0,
     "last_active_at": "2026-03-19T12:00:00+00:00",
     "streak_days": 0,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0187",
+    "customer_id": "cus_0191",
     "sessions_since_last_charge": 3,
     "last_active_at": "2026-10-30T12:00:00+00:00",
     "streak_days": 16,
     "cancel_flow_abandoned": 0
   },
   {
-    "customer_id": "cus_0188",
+    "customer_id": "cus_0192",
     "sessions_since_last_charge": 15,
     "last_active_at": "2026-10-31T12:00:00+00:00",
     "streak_days": 8,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0193",
+    "sessions_since_last_charge": 0,
+    "last_active_at": "2026-08-28T12:00:00+00:00",
+    "streak_days": 0,
+    "cancel_flow_abandoned": 0
+  },
+  {
+    "customer_id": "cus_0194",
+    "sessions_since_last_charge": 8,
+    "last_active_at": "2026-10-30T12:00:00+00:00",
+    "streak_days": 25,
     "cancel_flow_abandoned": 0
   }
 ]

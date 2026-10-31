@@ -1,0 +1,27 @@
+{
+  "api": [
+    "POST /api/tickets/{id}/analyze",
+    "POST /api/tickets/{id}/offer/accept",
+    "POST /api/tickets/{id}/offer/decline",
+    "GET /api/analytics/summary"
+  ],
+  "backend": [
+    "backend/src/main/java/com/skelar/defuse/service/policy/ReferencePolicyService.java#retentionOffer",
+    "backend/src/main/java/com/skelar/defuse/service/policy/ContextBuilderService.java#build",
+    "backend/src/main/java/com/skelar/defuse/service/executor/MockBillingService.java#recordOffer",
+    "backend/src/main/java/com/skelar/defuse/service/TicketPipelineService.java#acceptOffer"
+  ],
+  "frontend": [
+    "frontend/src/components/DecisionCard.tsx",
+    "frontend/src/components/CustomerPanel.tsx",
+    "frontend/src/pages/Dashboard.tsx"
+  ],
+  "data": [
+    "defuse-data/generate_seed.py (T39-T44)",
+    "defuse-data/reference_policy.py#retention_offer"
+  ],
+  "tests": [
+    "backend/src/test/java/com/skelar/defuse/PipelineTest.java",
+    "backend/src/test/java/com/skelar/defuse/ReferencePolicyServiceTest.java"
+  ]
+}

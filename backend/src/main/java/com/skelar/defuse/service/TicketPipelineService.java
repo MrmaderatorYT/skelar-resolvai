@@ -72,7 +72,8 @@ public class TicketPipelineService {
         a.context = ctx;
         a.decision = d;
         a.money = money.atRisk(f, d, ctx);
-        a.status = t.status = STATUS.get(d.mode());
+        a.status = t.status = d.mode().equals("auto") && d.actions().stream().anyMatch(x -> x.startsWith("offer_"))
+                ? "offer_sent" : STATUS.get(d.mode());
         store.analyses.put(ticketId, a);
         audit.log("analyzed", ticketId, Map.of("intent", f.intent(), "risk", d.riskBand(), "mode", d.mode(),
                 "actions", d.actions(), "reasons", d.reasons()));
@@ -103,8 +104,37 @@ public class TicketPipelineService {
         }
         // reply_text is plain text for the customer only; actions and amounts always come from the stored decision
         if (replyText != null && !replyText.isBlank()) a.reply = replyText;
-        a.status = ticket(ticketId).status = "resolved";
+        boolean offer = a.decision.actions().stream().anyMatch(x -> x.startsWith("offer_"));
+        a.status = ticket(ticketId).status = offer ? "offer_sent" : "resolved";
         audit.log("approved", ticketId, Map.of("by", agent));
+        return a;
+    }
+
+    /** Customer accepted the save offer: apply the discount or the pause. */
+    public TicketAnalysis acceptOffer(String ticketId) {
+        TicketAnalysis a = offerPending(ticketId);
+        String apply = a.decision.actions().contains("offer_discount") ? "apply_discount" : "pause";
+        return closeOffer(a, ticketId, apply, "offer_accepted");
+    }
+
+    /** Customer said no (or repeated "cancel"): cancel right away, no second offer. */
+    public TicketAnalysis declineOffer(String ticketId) {
+        return closeOffer(offerPending(ticketId), ticketId, "cancel", "offer_declined");
+    }
+
+    private TicketAnalysis offerPending(String ticketId) {
+        TicketAnalysis a = analysis(ticketId);
+        if (!a.status.equals("offer_sent")) throw new IllegalStateException("ticket " + ticketId + " has no pending offer");
+        return a;
+    }
+
+    private TicketAnalysis closeOffer(TicketAnalysis a, String ticketId, String action, String event) {
+        List<Map<String, Object>> results = executor.execute(ticketId, List.of(action), a.decision, a.context, "customer");
+        a.executed.addAll(results);
+        boolean failed = results.stream().anyMatch(r -> r.containsKey("error"));
+        a.status = ticket(ticketId).status = failed ? "escalated" : "resolved";
+        a.reply = ReplyWriterService.offerOutcome(store.customer(a.context.customerId()).name, action, failed);
+        audit.log(event, ticketId, Map.of("by", "customer", "action", action));
         return a;
     }
 

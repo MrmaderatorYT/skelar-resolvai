@@ -12,8 +12,14 @@ export default function CustomerPanel({ c }: { c: TicketDetail["customer"] }) {
     <section className="bg-white rounded-xl border border-slate-200 p-4">
       <h3 className="font-semibold mb-2">{c.name} <span className="text-slate-400 text-sm">· {c.country}</span></h3>
       {row("Plan", `${c.subscription.plan} · ${usd(c.subscription.price)}`)}
-      {row("Subscription", c.subscription.status)}
-      {row("Platform", c.platform)}
+      {row("Subscription", c.subscription.status + (c.subscription.discount_percent ? ` · −${c.subscription.discount_percent}%` : ""))}
+      {row("Came from", `${c.acquisition_channel ?? "—"} · ${c.funnel ?? "—"}`)}
+      {c.quiz_goal && row("Quiz goal", c.quiz_goal)}
+      {row("With us", `${c.context.tenure_months} mo · ${c.context.paid_renewals} paid renewals`)}
+      {row("Offers (12 mo) / linked accounts", `${c.context.offers_12m} / ${c.context.identity_offers_12m}`,
+        c.context.offers_12m + c.context.identity_offers_12m > 0)}
+      {c.context.in_holdout && row("Retention holdout", "yes — no offers", true)}
+      {row("Billing", c.context.billing_processor)}
       {row("LTV", usd(c.ltv_usd))}
       {row("Last charge", `${usd(lp.amount)} · ${lp.days_ago}d ago · ${lp.status}`)}
       {row("Sessions since charge", c.usage.sessions_since_last_charge)}

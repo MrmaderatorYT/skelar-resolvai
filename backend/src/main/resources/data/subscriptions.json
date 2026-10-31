@@ -424,8 +424,8 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-10T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-24T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -435,8 +435,8 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-23T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-21T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -446,8 +446,8 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-12T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-26T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -458,41 +458,41 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-12T12:00:00+00:00",
+    "current_period_end": "2026-11-18T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0043",
     "customer_id": "cus_0043",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-25T12:00:00+00:00",
+    "current_period_end": "2027-01-10T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0044",
     "customer_id": "cus_0044",
-    "plan": "annual",
-    "price": 89.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-16T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2027-01-22T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0045",
     "customer_id": "cus_0045",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
-    "status": "active",
+    "status": "canceled",
     "processor": "app_store",
-    "current_period_end": "2026-11-14T12:00:00+00:00",
-    "canceled_at": null
+    "current_period_end": "2026-12-21T12:00:00+00:00",
+    "canceled_at": "2026-09-22T12:00:00+00:00"
   },
   {
     "id": "sub_0046",
@@ -501,19 +501,19 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-01T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-23T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0047",
     "customer_id": "cus_0047",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "annual",
+    "price": 89.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-19T12:00:00+00:00",
+    "current_period_end": "2027-10-07T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -522,36 +522,14 @@
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
-    "status": "canceled",
+    "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-14T12:00:00+00:00",
-    "canceled_at": "2026-10-16T12:00:00+00:00"
+    "current_period_end": "2026-11-13T12:00:00+00:00",
+    "canceled_at": null
   },
   {
     "id": "sub_0049",
     "customer_id": "cus_0049",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-16T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0050",
-    "customer_id": "cus_0050",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2027-01-23T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0051",
-    "customer_id": "cus_0051",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -561,14 +539,36 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0052",
-    "customer_id": "cus_0052",
+    "id": "sub_0050",
+    "customer_id": "cus_0050",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "canceled",
+    "processor": "card",
+    "current_period_end": "2026-12-14T12:00:00+00:00",
+    "canceled_at": "2026-09-15T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0051",
+    "customer_id": "cus_0051",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
-    "status": "paused",
+    "status": "canceled",
+    "processor": "google_play",
+    "current_period_end": "2026-11-04T12:00:00+00:00",
+    "canceled_at": "2026-10-06T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0052",
+    "customer_id": "cus_0052",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-16T12:00:00+00:00",
+    "current_period_end": "2026-12-01T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -578,30 +578,30 @@
     "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-23T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-12-05T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0054",
     "customer_id": "cus_0054",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-01T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2027-01-23T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0055",
     "customer_id": "cus_0055",
-    "plan": "annual",
-    "price": 89.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2027-04-15T12:00:00+00:00",
+    "current_period_end": "2026-11-07T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -610,9 +610,9 @@
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "status": "paused",
+    "processor": "card",
+    "current_period_end": "2026-11-16T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -623,7 +623,7 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-12-31T12:00:00+00:00",
+    "current_period_end": "2026-11-23T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -633,41 +633,41 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
+    "processor": "google_play",
     "current_period_end": "2026-11-01T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0059",
     "customer_id": "cus_0059",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-12T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0060",
-    "customer_id": "cus_0060",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "paused",
-    "processor": "card",
-    "current_period_end": "2026-12-05T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0061",
-    "customer_id": "cus_0061",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2027-09-07T12:00:00+00:00",
+    "current_period_end": "2027-04-15T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0060",
+    "customer_id": "cus_0060",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0061",
+    "customer_id": "cus_0061",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-12-31T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -678,29 +678,29 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-17T12:00:00+00:00",
+    "current_period_end": "2026-11-01T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0063",
     "customer_id": "cus_0063",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "canceled",
-    "processor": "card",
-    "current_period_end": "2027-01-21T12:00:00+00:00",
-    "canceled_at": "2026-10-23T12:00:00+00:00"
-  },
-  {
-    "id": "sub_0064",
-    "customer_id": "cus_0064",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-24T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-12T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0064",
+    "customer_id": "cus_0064",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "paused",
+    "processor": "card",
+    "current_period_end": "2026-12-05T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -710,8 +710,8 @@
     "price": 89.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2027-08-02T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2027-09-07T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -721,41 +721,41 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-03T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-17T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0067",
     "customer_id": "cus_0067",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
-    "status": "active",
+    "status": "canceled",
     "processor": "card",
-    "current_period_end": "2026-11-03T12:00:00+00:00",
-    "canceled_at": null
+    "current_period_end": "2027-01-21T12:00:00+00:00",
+    "canceled_at": "2026-10-23T12:00:00+00:00"
   },
   {
     "id": "sub_0068",
     "customer_id": "cus_0068",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
     "processor": "google_play",
-    "current_period_end": "2027-01-16T12:00:00+00:00",
+    "current_period_end": "2026-11-24T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0069",
     "customer_id": "cus_0069",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "annual",
+    "price": 89.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-14T12:00:00+00:00",
+    "processor": "google_play",
+    "current_period_end": "2027-08-02T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -765,19 +765,19 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-07T12:00:00+00:00",
+    "processor": "google_play",
+    "current_period_end": "2026-11-03T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0071",
     "customer_id": "cus_0071",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-27T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-03T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -786,10 +786,10 @@
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
-    "status": "canceled",
-    "processor": "app_store",
-    "current_period_end": "2027-01-08T12:00:00+00:00",
-    "canceled_at": "2026-10-10T12:00:00+00:00"
+    "status": "active",
+    "processor": "google_play",
+    "current_period_end": "2027-01-16T12:00:00+00:00",
+    "canceled_at": null
   },
   {
     "id": "sub_0073",
@@ -799,7 +799,7 @@
     "currency": "USD",
     "status": "active",
     "processor": "app_store",
-    "current_period_end": "2026-11-16T12:00:00+00:00",
+    "current_period_end": "2026-11-14T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -809,52 +809,52 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-06T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-07T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0075",
     "customer_id": "cus_0075",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-28T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0076",
-    "customer_id": "cus_0076",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-23T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0077",
-    "customer_id": "cus_0077",
-    "plan": "annual",
-    "price": 89.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-03-08T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0078",
-    "customer_id": "cus_0078",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
     "status": "active",
     "processor": "google_play",
-    "current_period_end": "2026-12-01T12:00:00+00:00",
+    "current_period_end": "2026-11-27T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0076",
+    "customer_id": "cus_0076",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "canceled",
+    "processor": "app_store",
+    "current_period_end": "2027-01-08T12:00:00+00:00",
+    "canceled_at": "2026-10-10T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0077",
+    "customer_id": "cus_0077",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-11-16T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0078",
+    "customer_id": "cus_0078",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-06T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -864,13 +864,57 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-22T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-28T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0080",
     "customer_id": "cus_0080",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-11-23T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0081",
+    "customer_id": "cus_0081",
+    "plan": "annual",
+    "price": 89.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2027-03-08T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0082",
+    "customer_id": "cus_0082",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "google_play",
+    "current_period_end": "2026-12-01T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0083",
+    "customer_id": "cus_0083",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-22T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0084",
+    "customer_id": "cus_0084",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -880,8 +924,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0081",
-    "customer_id": "cus_0081",
+    "id": "sub_0085",
+    "customer_id": "cus_0085",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -891,8 +935,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0082",
-    "customer_id": "cus_0082",
+    "id": "sub_0086",
+    "customer_id": "cus_0086",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -902,58 +946,14 @@
     "canceled_at": "2026-10-11T12:00:00+00:00"
   },
   {
-    "id": "sub_0083",
-    "customer_id": "cus_0083",
+    "id": "sub_0087",
+    "customer_id": "cus_0087",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
     "status": "active",
     "processor": "app_store",
     "current_period_end": "2027-09-19T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0084",
-    "customer_id": "cus_0084",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-18T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0085",
-    "customer_id": "cus_0085",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-01-22T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0086",
-    "customer_id": "cus_0086",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-01-16T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0087",
-    "customer_id": "cus_0087",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-01-27T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -964,30 +964,30 @@
     "currency": "USD",
     "status": "active",
     "processor": "app_store",
-    "current_period_end": "2026-11-27T12:00:00+00:00",
+    "current_period_end": "2026-11-18T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0089",
     "customer_id": "cus_0089",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-04T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2027-01-22T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0090",
     "customer_id": "cus_0090",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
-    "status": "canceled",
+    "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-05T12:00:00+00:00",
-    "canceled_at": "2026-10-07T12:00:00+00:00"
+    "current_period_end": "2027-01-16T12:00:00+00:00",
+    "canceled_at": null
   },
   {
     "id": "sub_0091",
@@ -996,8 +996,8 @@
     "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-12-30T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2027-01-27T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1008,7 +1008,7 @@
     "currency": "USD",
     "status": "active",
     "processor": "app_store",
-    "current_period_end": "2026-11-20T12:00:00+00:00",
+    "current_period_end": "2026-11-27T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1018,8 +1018,8 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-23T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-04T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1028,31 +1028,31 @@
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
-    "status": "paused",
-    "processor": "app_store",
-    "current_period_end": "2026-11-19T12:00:00+00:00",
-    "canceled_at": null
+    "status": "canceled",
+    "processor": "card",
+    "current_period_end": "2026-11-05T12:00:00+00:00",
+    "canceled_at": "2026-10-07T12:00:00+00:00"
   },
   {
     "id": "sub_0095",
     "customer_id": "cus_0095",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-24T12:00:00+00:00",
+    "processor": "google_play",
+    "current_period_end": "2026-12-30T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0096",
     "customer_id": "cus_0096",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-24T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-20T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1063,18 +1063,18 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "current_period_end": "2026-11-23T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0098",
     "customer_id": "cus_0098",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-01-07T12:00:00+00:00",
+    "status": "paused",
+    "processor": "app_store",
+    "current_period_end": "2026-11-19T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1084,13 +1084,57 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-24T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0100",
     "customer_id": "cus_0100",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-24T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0101",
+    "customer_id": "cus_0101",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0102",
+    "customer_id": "cus_0102",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2027-01-07T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0103",
+    "customer_id": "cus_0103",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0104",
+    "customer_id": "cus_0104",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1100,8 +1144,8 @@
     "canceled_at": "2026-10-13T12:00:00+00:00"
   },
   {
-    "id": "sub_0101",
-    "customer_id": "cus_0101",
+    "id": "sub_0105",
+    "customer_id": "cus_0105",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1111,8 +1155,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0102",
-    "customer_id": "cus_0102",
+    "id": "sub_0106",
+    "customer_id": "cus_0106",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1122,8 +1166,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0103",
-    "customer_id": "cus_0103",
+    "id": "sub_0107",
+    "customer_id": "cus_0107",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1133,8 +1177,8 @@
     "canceled_at": "2026-09-29T12:00:00+00:00"
   },
   {
-    "id": "sub_0104",
-    "customer_id": "cus_0104",
+    "id": "sub_0108",
+    "customer_id": "cus_0108",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1144,8 +1188,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0105",
-    "customer_id": "cus_0105",
+    "id": "sub_0109",
+    "customer_id": "cus_0109",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1155,8 +1199,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0106",
-    "customer_id": "cus_0106",
+    "id": "sub_0110",
+    "customer_id": "cus_0110",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1166,8 +1210,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0107",
-    "customer_id": "cus_0107",
+    "id": "sub_0111",
+    "customer_id": "cus_0111",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1177,8 +1221,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0108",
-    "customer_id": "cus_0108",
+    "id": "sub_0112",
+    "customer_id": "cus_0112",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1188,8 +1232,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0109",
-    "customer_id": "cus_0109",
+    "id": "sub_0113",
+    "customer_id": "cus_0113",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1199,8 +1243,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0110",
-    "customer_id": "cus_0110",
+    "id": "sub_0114",
+    "customer_id": "cus_0114",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1210,8 +1254,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0111",
-    "customer_id": "cus_0111",
+    "id": "sub_0115",
+    "customer_id": "cus_0115",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1221,8 +1265,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0112",
-    "customer_id": "cus_0112",
+    "id": "sub_0116",
+    "customer_id": "cus_0116",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1232,8 +1276,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0113",
-    "customer_id": "cus_0113",
+    "id": "sub_0117",
+    "customer_id": "cus_0117",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
@@ -1243,8 +1287,8 @@
     "canceled_at": "2026-04-19T12:00:00+00:00"
   },
   {
-    "id": "sub_0114",
-    "customer_id": "cus_0114",
+    "id": "sub_0118",
+    "customer_id": "cus_0118",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1254,8 +1298,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0115",
-    "customer_id": "cus_0115",
+    "id": "sub_0119",
+    "customer_id": "cus_0119",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1265,8 +1309,8 @@
     "canceled_at": "2026-10-08T12:00:00+00:00"
   },
   {
-    "id": "sub_0116",
-    "customer_id": "cus_0116",
+    "id": "sub_0120",
+    "customer_id": "cus_0120",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1276,8 +1320,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0117",
-    "customer_id": "cus_0117",
+    "id": "sub_0121",
+    "customer_id": "cus_0121",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1287,8 +1331,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0118",
-    "customer_id": "cus_0118",
+    "id": "sub_0122",
+    "customer_id": "cus_0122",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1298,8 +1342,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0119",
-    "customer_id": "cus_0119",
+    "id": "sub_0123",
+    "customer_id": "cus_0123",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1309,8 +1353,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0120",
-    "customer_id": "cus_0120",
+    "id": "sub_0124",
+    "customer_id": "cus_0124",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1320,8 +1364,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0121",
-    "customer_id": "cus_0121",
+    "id": "sub_0125",
+    "customer_id": "cus_0125",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1331,8 +1375,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0122",
-    "customer_id": "cus_0122",
+    "id": "sub_0126",
+    "customer_id": "cus_0126",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1342,8 +1386,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0123",
-    "customer_id": "cus_0123",
+    "id": "sub_0127",
+    "customer_id": "cus_0127",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1353,8 +1397,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0124",
-    "customer_id": "cus_0124",
+    "id": "sub_0128",
+    "customer_id": "cus_0128",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1364,8 +1408,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0125",
-    "customer_id": "cus_0125",
+    "id": "sub_0129",
+    "customer_id": "cus_0129",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1375,8 +1419,8 @@
     "canceled_at": "2026-10-05T12:00:00+00:00"
   },
   {
-    "id": "sub_0126",
-    "customer_id": "cus_0126",
+    "id": "sub_0130",
+    "customer_id": "cus_0130",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1386,8 +1430,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0127",
-    "customer_id": "cus_0127",
+    "id": "sub_0131",
+    "customer_id": "cus_0131",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
@@ -1397,8 +1441,8 @@
     "canceled_at": "2026-10-15T12:00:00+00:00"
   },
   {
-    "id": "sub_0128",
-    "customer_id": "cus_0128",
+    "id": "sub_0132",
+    "customer_id": "cus_0132",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1408,8 +1452,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0129",
-    "customer_id": "cus_0129",
+    "id": "sub_0133",
+    "customer_id": "cus_0133",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1419,8 +1463,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0130",
-    "customer_id": "cus_0130",
+    "id": "sub_0134",
+    "customer_id": "cus_0134",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
@@ -1430,58 +1474,14 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0131",
-    "customer_id": "cus_0131",
+    "id": "sub_0135",
+    "customer_id": "cus_0135",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
     "status": "active",
     "processor": "app_store",
     "current_period_end": "2026-12-01T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0132",
-    "customer_id": "cus_0132",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-12-09T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0133",
-    "customer_id": "cus_0133",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "canceled",
-    "processor": "card",
-    "current_period_end": "2026-11-16T12:00:00+00:00",
-    "canceled_at": "2026-10-18T12:00:00+00:00"
-  },
-  {
-    "id": "sub_0134",
-    "customer_id": "cus_0134",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-12-26T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0135",
-    "customer_id": "cus_0135",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "paused",
-    "processor": "card",
-    "current_period_end": "2026-11-09T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1492,12 +1492,56 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-12-19T12:00:00+00:00",
+    "current_period_end": "2026-12-09T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0137",
     "customer_id": "cus_0137",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "canceled",
+    "processor": "card",
+    "current_period_end": "2026-11-16T12:00:00+00:00",
+    "canceled_at": "2026-10-18T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0138",
+    "customer_id": "cus_0138",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-12-26T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0139",
+    "customer_id": "cus_0139",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "paused",
+    "processor": "card",
+    "current_period_end": "2026-11-09T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0140",
+    "customer_id": "cus_0140",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-12-19T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0141",
+    "customer_id": "cus_0141",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1507,8 +1551,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0138",
-    "customer_id": "cus_0138",
+    "id": "sub_0142",
+    "customer_id": "cus_0142",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1518,8 +1562,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0139",
-    "customer_id": "cus_0139",
+    "id": "sub_0143",
+    "customer_id": "cus_0143",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1529,8 +1573,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0140",
-    "customer_id": "cus_0140",
+    "id": "sub_0144",
+    "customer_id": "cus_0144",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1540,8 +1584,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0141",
-    "customer_id": "cus_0141",
+    "id": "sub_0145",
+    "customer_id": "cus_0145",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1551,8 +1595,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0142",
-    "customer_id": "cus_0142",
+    "id": "sub_0146",
+    "customer_id": "cus_0146",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1562,8 +1606,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0143",
-    "customer_id": "cus_0143",
+    "id": "sub_0147",
+    "customer_id": "cus_0147",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1573,8 +1617,8 @@
     "canceled_at": "2026-09-07T12:00:00+00:00"
   },
   {
-    "id": "sub_0144",
-    "customer_id": "cus_0144",
+    "id": "sub_0148",
+    "customer_id": "cus_0148",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1584,8 +1628,8 @@
     "canceled_at": "2026-10-28T12:00:00+00:00"
   },
   {
-    "id": "sub_0145",
-    "customer_id": "cus_0145",
+    "id": "sub_0149",
+    "customer_id": "cus_0149",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1595,58 +1639,14 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0146",
-    "customer_id": "cus_0146",
+    "id": "sub_0150",
+    "customer_id": "cus_0150",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
     "current_period_end": "2027-01-09T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0147",
-    "customer_id": "cus_0147",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-17T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0148",
-    "customer_id": "cus_0148",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-01T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0149",
-    "customer_id": "cus_0149",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2027-01-03T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0150",
-    "customer_id": "cus_0150",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2027-01-24T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1657,7 +1657,7 @@
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-11-27T12:00:00+00:00",
+    "current_period_end": "2026-11-17T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1667,19 +1667,19 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-21T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-01T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0153",
     "customer_id": "cus_0153",
-    "plan": "monthly",
-    "price": 29.99,
+    "plan": "quarterly",
+    "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-13T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2027-01-03T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1689,8 +1689,8 @@
     "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2027-01-21T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2027-01-24T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1700,30 +1700,30 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-11T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-27T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0156",
     "customer_id": "cus_0156",
-    "plan": "quarterly",
-    "price": 49.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
-    "current_period_end": "2026-12-22T12:00:00+00:00",
+    "current_period_end": "2026-11-21T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0157",
     "customer_id": "cus_0157",
-    "plan": "annual",
-    "price": 89.99,
+    "plan": "monthly",
+    "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-12-05T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-13T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1733,8 +1733,8 @@
     "price": 49.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-11T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2027-01-21T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1744,13 +1744,57 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-21T12:00:00+00:00",
+    "processor": "app_store",
+    "current_period_end": "2026-11-11T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0160",
     "customer_id": "cus_0160",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-12-22T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0161",
+    "customer_id": "cus_0161",
+    "plan": "annual",
+    "price": 89.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-12-05T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0162",
+    "customer_id": "cus_0162",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "google_play",
+    "current_period_end": "2026-11-11T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0163",
+    "customer_id": "cus_0163",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-21T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0164",
+    "customer_id": "cus_0164",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1760,58 +1804,14 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0161",
-    "customer_id": "cus_0161",
+    "id": "sub_0165",
+    "customer_id": "cus_0165",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
     "status": "active",
     "processor": "card",
     "current_period_end": "2026-11-29T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0162",
-    "customer_id": "cus_0162",
-    "plan": "monthly",
-    "price": 29.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-11T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0163",
-    "customer_id": "cus_0163",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2027-01-22T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0164",
-    "customer_id": "cus_0164",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "card",
-    "current_period_end": "2026-11-08T12:00:00+00:00",
-    "canceled_at": null
-  },
-  {
-    "id": "sub_0165",
-    "customer_id": "cus_0165",
-    "plan": "quarterly",
-    "price": 49.99,
-    "currency": "USD",
-    "status": "active",
-    "processor": "app_store",
-    "current_period_end": "2026-11-04T12:00:00+00:00",
     "canceled_at": null
   },
   {
@@ -1821,13 +1821,57 @@
     "price": 29.99,
     "currency": "USD",
     "status": "active",
-    "processor": "google_play",
-    "current_period_end": "2026-11-15T12:00:00+00:00",
+    "processor": "card",
+    "current_period_end": "2026-11-11T12:00:00+00:00",
     "canceled_at": null
   },
   {
     "id": "sub_0167",
     "customer_id": "cus_0167",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2027-01-22T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0168",
+    "customer_id": "cus_0168",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-08T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0169",
+    "customer_id": "cus_0169",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "app_store",
+    "current_period_end": "2026-11-04T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0170",
+    "customer_id": "cus_0170",
+    "plan": "monthly",
+    "price": 29.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "google_play",
+    "current_period_end": "2026-11-15T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0171",
+    "customer_id": "cus_0171",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1837,8 +1881,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0168",
-    "customer_id": "cus_0168",
+    "id": "sub_0172",
+    "customer_id": "cus_0172",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1848,8 +1892,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0169",
-    "customer_id": "cus_0169",
+    "id": "sub_0173",
+    "customer_id": "cus_0173",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1859,8 +1903,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0170",
-    "customer_id": "cus_0170",
+    "id": "sub_0174",
+    "customer_id": "cus_0174",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1870,8 +1914,8 @@
     "canceled_at": "2026-10-12T12:00:00+00:00"
   },
   {
-    "id": "sub_0171",
-    "customer_id": "cus_0171",
+    "id": "sub_0175",
+    "customer_id": "cus_0175",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1881,8 +1925,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0172",
-    "customer_id": "cus_0172",
+    "id": "sub_0176",
+    "customer_id": "cus_0176",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1892,8 +1936,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0173",
-    "customer_id": "cus_0173",
+    "id": "sub_0177",
+    "customer_id": "cus_0177",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
@@ -1903,8 +1947,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0174",
-    "customer_id": "cus_0174",
+    "id": "sub_0178",
+    "customer_id": "cus_0178",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1914,8 +1958,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0175",
-    "customer_id": "cus_0175",
+    "id": "sub_0179",
+    "customer_id": "cus_0179",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1925,8 +1969,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0176",
-    "customer_id": "cus_0176",
+    "id": "sub_0180",
+    "customer_id": "cus_0180",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1936,8 +1980,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0177",
-    "customer_id": "cus_0177",
+    "id": "sub_0181",
+    "customer_id": "cus_0181",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1947,8 +1991,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0178",
-    "customer_id": "cus_0178",
+    "id": "sub_0182",
+    "customer_id": "cus_0182",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1958,8 +2002,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0179",
-    "customer_id": "cus_0179",
+    "id": "sub_0183",
+    "customer_id": "cus_0183",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1969,8 +2013,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0180",
-    "customer_id": "cus_0180",
+    "id": "sub_0184",
+    "customer_id": "cus_0184",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -1980,8 +2024,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0181",
-    "customer_id": "cus_0181",
+    "id": "sub_0185",
+    "customer_id": "cus_0185",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -1991,8 +2035,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0182",
-    "customer_id": "cus_0182",
+    "id": "sub_0186",
+    "customer_id": "cus_0186",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -2002,8 +2046,8 @@
     "canceled_at": "2026-09-15T12:00:00+00:00"
   },
   {
-    "id": "sub_0183",
-    "customer_id": "cus_0183",
+    "id": "sub_0187",
+    "customer_id": "cus_0187",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -2013,8 +2057,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0184",
-    "customer_id": "cus_0184",
+    "id": "sub_0188",
+    "customer_id": "cus_0188",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -2024,8 +2068,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0185",
-    "customer_id": "cus_0185",
+    "id": "sub_0189",
+    "customer_id": "cus_0189",
     "plan": "quarterly",
     "price": 49.99,
     "currency": "USD",
@@ -2035,8 +2079,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0186",
-    "customer_id": "cus_0186",
+    "id": "sub_0190",
+    "customer_id": "cus_0190",
     "plan": "annual",
     "price": 89.99,
     "currency": "USD",
@@ -2046,8 +2090,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0187",
-    "customer_id": "cus_0187",
+    "id": "sub_0191",
+    "customer_id": "cus_0191",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -2057,8 +2101,8 @@
     "canceled_at": null
   },
   {
-    "id": "sub_0188",
-    "customer_id": "cus_0188",
+    "id": "sub_0192",
+    "customer_id": "cus_0192",
     "plan": "monthly",
     "price": 29.99,
     "currency": "USD",
@@ -2066,5 +2110,27 @@
     "processor": "google_play",
     "current_period_end": "2026-11-30T12:00:00+00:00",
     "canceled_at": "2026-10-31T12:00:00+00:00"
+  },
+  {
+    "id": "sub_0193",
+    "customer_id": "cus_0193",
+    "plan": "quarterly",
+    "price": 49.99,
+    "currency": "USD",
+    "status": "active",
+    "processor": "card",
+    "current_period_end": "2026-11-29T12:00:00+00:00",
+    "canceled_at": null
+  },
+  {
+    "id": "sub_0194",
+    "customer_id": "cus_0194",
+    "plan": "annual",
+    "price": 89.99,
+    "currency": "USD",
+    "status": "canceled",
+    "processor": "card",
+    "current_period_end": "2027-09-28T12:00:00+00:00",
+    "canceled_at": "2026-09-29T12:00:00+00:00"
   }
 ]

@@ -8,7 +8,9 @@ const MODE = {
   escalate: { label: "Escalated to human", cls: "bg-red-600 text-white" },
 };
 
-export default function DecisionCard({ a, onApprove, onReject }: { a: Analysis; onApprove: () => void; onReject: () => void }) {
+export default function DecisionCard({ a, onApprove, onReject, onAccept, onDecline }: {
+  a: Analysis; onApprove: () => void; onReject: () => void; onAccept: () => void; onDecline: () => void;
+}) {
   const d = a.decision;
   const pending = a.status === "needs_approval";
   const m = a.money;
@@ -17,8 +19,9 @@ export default function DecisionCard({ a, onApprove, onReject }: { a: Analysis; 
     <section className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
         <RiskBadge band={d.risk_band} score={d.risk_score} large />
-        <span className={`rounded-md px-2 py-1 text-sm font-semibold ${MODE[d.mode].cls}`}>
-          {a.status === "resolved" && d.mode === "suggest" ? "Approved — done" : MODE[d.mode].label}
+        <span className={`rounded-md px-2 py-1 text-sm font-semibold ${a.status === "offer_sent" ? "bg-sky-600 text-white" : MODE[d.mode].cls}`}>
+          {a.status === "offer_sent" ? "Offer sent — waiting for customer"
+            : a.status === "resolved" && d.mode === "suggest" ? "Approved — done" : MODE[d.mode].label}
         </span>
         <span className="text-xs text-slate-400 ml-auto">{a.latency_ms} ms · conf {a.features.confidence.toFixed(2)}</span>
       </div>
@@ -41,6 +44,15 @@ export default function DecisionCard({ a, onApprove, onReject }: { a: Analysis; 
         <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm">
           Chargeback exposure: <b>{usd(m.amount_at_risk)}</b> charge + <b>{usd(m.fees_at_risk)}</b> fees (est.) ·
           P(chargeback) {Math.round(m.p_dispute * 100)}% · expected fees avoided <b>{usd(m.expected_fees_avoided)}</b>
+        </div>
+      )}
+      {a.status === "offer_sent" && (
+        <div className="space-y-2">
+          <p className="text-xs text-slate-500">One offer only. If the customer says no or repeats "cancel", we cancel right away.</p>
+          <div className="flex gap-2">
+            <button onClick={onAccept} className="flex-1 rounded-md bg-sky-600 text-white py-2 font-semibold hover:bg-sky-500">Customer accepts</button>
+            <button onClick={onDecline} className="flex-1 rounded-md border border-slate-300 py-2 hover:bg-slate-100">Customer declines → cancel</button>
+          </div>
         </div>
       )}
       {pending && (

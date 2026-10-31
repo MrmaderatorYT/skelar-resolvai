@@ -30,7 +30,21 @@ POLICY = {
         "max_contacts": 3,
     },
     "risk_bands": {"high": 0.50, "medium": 0.30},
+    "retention": {
+        # one save offer per ticket, only for the right customer; everyone else gets an honest cancel
+        "offers": {"too_expensive": "offer_discount", "no_time": "offer_pause", "not_using": "offer_pause"},
+        "discount_percent": 25,
+        "discount_months": 2,
+        "pause_months": 2,
+        "min_tenure_months": 2,
+        "min_paid_renewals": 1,
+        "cooldown_days": 365,
+        "max_offers_per_30d": 50,
+        "holdout_bucket": 3,  # customers whose id % 10 == 3 never get offers: measures real uplift
+    },
 }
+
+CANCEL_REASONS = {"too_expensive", "no_time", "not_using", "cant_find_cancel", "technical", "other", "none"}
 
 REFUND_INTENTS = {"refund", "cancel_refund"}
 CANCEL_INTENTS = {"cancel", "cancel_refund"}
@@ -66,6 +80,13 @@ def build_context(customer_id, data=None):
     last = pays[-1]
     same_day = [p for p in pays if p["status"] == "succeeded" and p["amount"] == last["amount"]
                 and p["created_at"][:10] == last["created_at"][:10]]
+    ret = POLICY["retention"]
+
+    def recent_offers(c):
+        last_offer = c.get("last_offer_at")
+        return c.get("offers_12m", 0) if last_offer and _days_ago(last_offer) <= ret["cooldown_days"] else 0
+
+    fingerprint = cust.get("card_fingerprint")
     return {
         "customer_id": customer_id,
         "platform": cust["platform"],
@@ -83,7 +104,40 @@ def build_context(customer_id, data=None):
         "duplicate_payment_id": same_day[-1]["id"] if len(same_day) > 1 else None,
         "sessions_since_last_charge": usage["sessions_since_last_charge"],
         "cancel_flow_abandoned": usage["cancel_flow_abandoned"],
+        # retention profile
+        "acquisition_channel": cust.get("acquisition_channel"),
+        "tenure_months": _days_ago(cust["signup_at"]) // 30,
+        "paid_renewals": sum(1 for p in pays if p["type"] == "renewal" and p["status"] == "succeeded"),
+        "offers_12m": recent_offers(cust),
+        "identity_offers_12m": sum(recent_offers(c) for c in data["customers"]
+                                   if fingerprint and c["id"] != customer_id
+                                   and c.get("card_fingerprint") == fingerprint),
+        "retention_offers_30d": sum(1 for c in data["customers"] if c.get("last_offer_at")
+                                    and _days_ago(c["last_offer_at"]) <= 30),
+        "in_holdout": int(customer_id.split("_")[-1]) % 10 == ret["holdout_bucket"],
     }
+
+
+def retention_offer(f, ctx):
+    """(offer_action, None) if a save offer is allowed, (None, why_not) otherwise, (None, None) if
+    the cancel reason is not one we make offers for."""
+    ret = POLICY["retention"]
+    offer = ret["offers"].get(f.get("cancel_reason"))
+    if not offer:
+        return None, None
+    checks = [
+        (f["dispute_signal"] or f["hidden_aggression"] or f["explicit_aggression"], "dispute_or_aggression"),
+        (ctx.get("contacts_last_30d", 0) > 0, "repeat_contact"),
+        (ctx.get("tenure_months", 0) < ret["min_tenure_months"]
+         or ctx.get("paid_renewals", 0) < ret["min_paid_renewals"], "tenure"),
+        (ctx.get("offers_12m", 0) > 0, "offer_cooldown"),
+        (ctx.get("identity_offers_12m", 0) > 0, "identity_cluster_offer"),
+        (ctx["refunds_last_180d"] > 0 or ctx["chargebacks_lifetime"] > 0, "refund_or_chargeback_history"),
+        (ctx.get("retention_offers_30d", 0) >= ret["max_offers_per_30d"], "monthly_offer_budget"),
+        (ctx.get("in_holdout", False), "retention_holdout"),
+    ]
+    why = next((reason for failed, reason in checks if failed), None)
+    return (None, why) if why else (offer, None)
 
 
 def risk_score(f, ctx):
@@ -184,6 +238,14 @@ def decide(f, ctx, confidence=1.0):
         if acts:
             reasons.append("store_billing: only Apple/Google can refund or cancel")
             return out(acts, "auto")
+
+    if intent == "cancel" and ctx["subscription_status"] in ("active", "paused"):
+        offer, why_not = retention_offer(f, ctx)
+        if offer:
+            reasons.append("retention_offer: one offer; the customer can still cancel at any time")
+            return out([offer], "auto")
+        if why_not:
+            reasons.append(f"retention_not_eligible: {why_not}")
 
     acts, refund, mode = [], 0.0, "auto"
     if intent in CANCEL_INTENTS and ctx["subscription_status"] in ("active", "paused"):

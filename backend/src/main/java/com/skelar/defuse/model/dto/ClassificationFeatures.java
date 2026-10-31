@@ -20,16 +20,18 @@ public record ClassificationFeatures(
         String language,
         @JsonPropertyDescription("0..1, how sure you are of the intent")
         double confidence,
-        List<Evidence> evidence) {
+        List<Evidence> evidence,
+        @JsonPropertyDescription("Only for cancel requests: too_expensive | no_time | not_using | cant_find_cancel | technical | other | none")
+        String cancelReason) {
 
     public ClassificationFeatures withInjection(boolean value) {
         return new ClassificationFeatures(intent, trueGoal, sarcasm, hiddenAggression, explicitAggression,
-                disputeSignal, value, sentiment, language, confidence, evidence);
+                disputeSignal, value, sentiment, language, confidence, evidence, cancelReason);
     }
 
     /** Safe default: zero confidence, so the policy never auto-executes. */
     public static ClassificationFeatures fallback(String language, String reason) {
         return new ClassificationFeatures("unclear", reason, false, false, false, false, false,
-                "neutral", language, 0.0, List.of());
+                "neutral", language, 0.0, List.of(), "none");
     }
 }

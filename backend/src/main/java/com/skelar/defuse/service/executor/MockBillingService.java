@@ -6,6 +6,7 @@ import com.skelar.defuse.model.domain.Subscription;
 import com.skelar.defuse.model.dto.CustomerContext;
 import com.skelar.defuse.model.dto.PolicyDecision;
 import com.skelar.defuse.service.audit.AuditService;
+import com.skelar.defuse.service.policy.ReferencePolicyService;
 import com.skelar.defuse.store.InMemoryStore;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
@@ -39,6 +40,8 @@ public class MockBillingService {
                 yield refund(ctx.duplicatePaymentId(), d.refundAmount());
             }
             case "pause" -> pause(ctx);
+            case "offer_discount", "offer_pause" -> recordOffer(ctx, action);
+            case "apply_discount" -> applyDiscount(ctx);
             case "extend_access_7d" -> extendAccess(ctx);
             case "evidence_pack" -> evidencePack(ctx, ticketId);
             case "store_refund_instructions", "store_cancel_instructions", "reply_only", "ask_clarification" ->
@@ -70,9 +73,28 @@ public class MockBillingService {
 
     Map<String, Object> pause(CustomerContext ctx) {
         Subscription s = store.subscription(ctx.customerId());
+        if (s.status.equals("canceled")) throw new BillingException("subscription " + s.id + " is canceled");
         s.status = "paused";
-        s.pauseUntil = InMemoryStore.NOW.plusDays(60).toString();
+        s.pauseUntil = InMemoryStore.NOW.plusMonths(ReferencePolicyService.PAUSE_MONTHS).toString();
         return Map.of("subscription_id", s.id, "status", "paused", "until", s.pauseUntil);
+    }
+
+    /** Sending an offer moves no money, but it is what the 12-month cooldown counts. */
+    Map<String, Object> recordOffer(CustomerContext ctx, String action) {
+        Customer c = store.customer(ctx.customerId());
+        c.offers12m += 1;
+        c.lastOfferAt = InMemoryStore.NOW_ISO;
+        return action.equals("offer_discount")
+                ? Map.of("offer", "discount", "percent", ReferencePolicyService.DISCOUNT_PERCENT, "months", ReferencePolicyService.DISCOUNT_MONTHS)
+                : Map.of("offer", "pause", "months", ReferencePolicyService.PAUSE_MONTHS);
+    }
+
+    Map<String, Object> applyDiscount(CustomerContext ctx) {
+        Subscription s = store.subscription(ctx.customerId());
+        if (!s.status.equals("active")) throw new BillingException("subscription " + s.id + " is " + s.status);
+        s.discountPercent = ReferencePolicyService.DISCOUNT_PERCENT;
+        s.discountUntil = InMemoryStore.NOW.plusMonths(ReferencePolicyService.DISCOUNT_MONTHS).toString();
+        return Map.of("subscription_id", s.id, "discount_percent", s.discountPercent, "until", s.discountUntil);
     }
 
     Map<String, Object> extendAccess(CustomerContext ctx) {

@@ -17,5 +17,13 @@ public record CustomerContext(
         LastPayment lastPayment,
         String duplicatePaymentId,
         int sessionsSinceLastCharge,
-        int cancelFlowAbandoned) {
+        int cancelFlowAbandoned,
+        // retention profile
+        String acquisitionChannel,
+        long tenureMonths,
+        int paidRenewals,
+        @JsonProperty("offers_12m") int offers12m,
+        @JsonProperty("identity_offers_12m") int identityOffers12m,
+        @JsonProperty("retention_offers_30d") int retentionOffers30d,
+        boolean inHoldout) {
 }

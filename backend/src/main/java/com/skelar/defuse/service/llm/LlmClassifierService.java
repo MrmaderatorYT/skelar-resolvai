@@ -43,7 +43,7 @@ public class LlmClassifierService {
         GoldLabel g = t.gold;
         if (g == null) return ClassificationFeatures.fallback(t.language, "gold mode: no labels for this ticket");
         return new ClassificationFeatures(g.intent, g.trueGoal, g.sarcasm, g.hiddenAggression, g.explicitAggression,
-                g.disputeSignal, g.injection, "neutral", t.language, 1.0, List.of());
+                g.disputeSignal, g.injection, "neutral", t.language, 1.0, List.of(), g.cancelReason == null ? "none" : g.cancelReason);
     }
 
     public ClassificationFeatures classifyLive(Ticket t) {

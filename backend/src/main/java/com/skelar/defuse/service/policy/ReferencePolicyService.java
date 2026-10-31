@@ -6,6 +6,7 @@ import com.skelar.defuse.model.dto.LastPayment;
 import com.skelar.defuse.model.dto.PolicyDecision;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,14 @@ public class ReferencePolicyService {
     public static final Set<String> MONEY_INTENTS = Set.of("refund", "cancel_refund", "duplicate_charge");
     public static final Set<String> INTENTS = Set.of("cancel", "refund", "cancel_refund", "duplicate_charge",
             "pause", "technical_issue", "account_access", "account_security", "question", "billing_question", "unclear");
+
+    // retention: one save offer per ticket, only for the right customer; everyone else gets an honest cancel
+    public static final Map<String, String> RETENTION_OFFERS =
+            Map.of("too_expensive", "offer_discount", "no_time", "offer_pause", "not_using", "offer_pause");
+    public static final int DISCOUNT_PERCENT = 25, DISCOUNT_MONTHS = 2, PAUSE_MONTHS = 2;
+    public static final int MIN_TENURE_MONTHS = 2, MIN_PAID_RENEWALS = 1, OFFER_COOLDOWN_DAYS = 365;
+    public static final int MAX_OFFERS_PER_30D = 50;
+    public static final int HOLDOUT_BUCKET = 3;   // customer id % 10 == 3 never gets offers: measures real uplift
 
     public record Risk(double score, String band) {
     }
@@ -114,6 +123,15 @@ public class ReferencePolicyService {
             }
         }
 
+        if (intent.equals("cancel") && Set.of("active", "paused").contains(ctx.subscriptionStatus())) {
+            String[] offer = retentionOffer(feat, ctx);
+            if (offer[0] != null) {
+                reasons.add("retention_offer: one offer; the customer can still cancel at any time");
+                return out.of(List.of(offer[0]), "auto", 0);
+            }
+            if (offer[1] != null) reasons.add("retention_not_eligible: " + offer[1]);
+        }
+
         List<String> acts = new ArrayList<>();
         double refund = 0;
         String mode = "auto";
@@ -152,6 +170,23 @@ public class ReferencePolicyService {
             mode = "suggest";
         }
         return out.of(acts, mode, refund);
+    }
+
+    /** {offerAction, null} if a save offer is allowed; {null, whyNot} if not; {null, null} if the
+     *  cancel reason is not one we make offers for. Deterministic: the LLM only names the reason. */
+    public String[] retentionOffer(ClassificationFeatures f, CustomerContext ctx) {
+        String offer = f.cancelReason() == null ? null : RETENTION_OFFERS.get(f.cancelReason());
+        if (offer == null) return new String[] {null, null};
+        String why = null;
+        if (f.disputeSignal() || f.hiddenAggression() || f.explicitAggression()) why = "dispute_or_aggression";
+        else if (ctx.contactsLast30d() > 0) why = "repeat_contact";
+        else if (ctx.tenureMonths() < MIN_TENURE_MONTHS || ctx.paidRenewals() < MIN_PAID_RENEWALS) why = "tenure";
+        else if (ctx.offers12m() > 0) why = "offer_cooldown";
+        else if (ctx.identityOffers12m() > 0) why = "identity_cluster_offer";
+        else if (ctx.refundsLast180d() > 0 || ctx.chargebacksLifetime() > 0) why = "refund_or_chargeback_history";
+        else if (ctx.retentionOffers30d() >= MAX_OFFERS_PER_30D) why = "monthly_offer_budget";
+        else if (ctx.inHoldout()) why = "retention_holdout";
+        return why == null ? new String[] {offer, null} : new String[] {null, why};
     }
 
     private record Out(ClassificationFeatures f, Risk risk, boolean disputed, double confidence, List<String> reasons,

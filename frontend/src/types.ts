@@ -1,6 +1,6 @@
 export type Band = "low" | "medium" | "high";
 export type Mode = "auto" | "suggest" | "escalate";
-export type Status = "open" | "resolved" | "needs_approval" | "escalated";
+export type Status = "open" | "resolved" | "needs_approval" | "escalated" | "offer_sent";
 export type Signal = "sarcasm" | "hidden_aggression" | "explicit_aggression" | "dispute_signal" | "injection";
 
 export interface TicketRow {
@@ -35,10 +35,12 @@ export interface TicketDetail {
   ticket: { id: string; text: string; channel: string; language: string; created_at: string; status: Status; customer_id: string };
   customer: {
     id: string; name: string; country: string; platform: string; ltv_usd: number; contacts_last_30d: number;
-    subscription: { plan: string; price: number; status: string; current_period_end: string };
+    acquisition_channel: string | null; funnel: string | null; quiz_goal: string | null; offers_12m: number;
+    subscription: { plan: string; price: number; status: string; current_period_end: string; discount_percent: number | null; pause_until: string | null };
     usage: { sessions_since_last_charge: number; cancel_flow_abandoned: number; streak_days: number };
     payments: Payment[];
-    context: { last_payment: { amount: number; status: string; days_ago: number }; refunds_last_180d: number; chargebacks_lifetime: number };
+    context: { last_payment: { amount: number; status: string; days_ago: number }; refunds_last_180d: number; chargebacks_lifetime: number;
+      tenure_months: number; paid_renewals: number; offers_12m: number; identity_offers_12m: number; in_holdout: boolean; billing_processor: string };
   };
   analysis: Analysis | null;
   audit: { at: string; event: string; action?: string; by?: string; reasons?: string[]; error?: string; amount?: number }[];
@@ -50,6 +52,7 @@ export interface Summary {
   refunded_usd: number; gross_exposure_usd: number; expected_fees_avoided_usd: number;
   expected_chargebacks_avoided: number; high_risk_tickets: number; sarcasm_detected: number;
   injections_blocked: number; ai_median_latency_ms: number | null;
+  retention: { offers_sent: number; offers_accepted: number; offers_declined: number; not_eligible: Record<string, number> };
   baseline: { label: string; tickets: number; median_first_response_hours: number;
     median_resolution_hours: number; chargebacks_filed: number; p_dispute_by_band: Record<Band, number> };
 }
